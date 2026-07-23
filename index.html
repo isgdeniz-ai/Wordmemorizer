@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Memorizer</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1877f2">
+    <meta name="description" content="İngilizce kelimeleri kalıcı olarak öğrenmeniz için aralıklı tekrar uygulaması.">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Word Memorizer">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -117,6 +126,8 @@
         .stat-word span { color: #606770; text-align: right; }
         .stat-empty { padding: 14px; font-size: 13px; color: #606770; text-align: center; }
         #stats-btn { cursor: pointer; }
+        #install-btn { display: none; width: 100%; margin-bottom: 18px; padding: 14px; font-size: 15px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: 2px solid #1877f2; border-radius: 12px; cursor: pointer; }
+        #install-btn:active { background: #d5e9fb; }
     </style>
 </head>
 <body>
@@ -125,6 +136,7 @@
         <!-- 1. GİRİŞ EKRANI VE SÖZLÜK ARAMASI -->
         <div id="welcome-screen">
             <h1 class="welcome-title">Word Memorizer</h1>
+            <button id="install-btn">📲 Uygulamayı telefona yükle</button>
             
             <div class="search-container">
                 <div class="search-input-wrap">
@@ -135,7 +147,7 @@
             </div>
             
             <div class="info-box">
-                <p style="margin: 0 0 10px;">Word Memorizer, İngilizce kelimeleri kalıcı olarak öğrenmenizi kolaylaştırmak için tasarlandı. Özellikle YDS gibi sınavlara hazırlananlar için birebir; ama kelime dağarcığını güçlendirmek isteyen herkes rahatça kullanabilir. Amaç olarak: her kelimeyi, unutmayacak kadar iyi öğrenene dek doğru aralıklarla önünüze getirmek.</p>
+                <p style="margin: 0 0 10px;">Word Memorizer, İngilizce kelimeleri kalıcı olarak öğrenmenizi kolaylaştırmak için tasarlandı. Özellikle YDS gibi sınavlara hazırlananlar için birebir; ama kelime dağarcığını güçlendirmek isteyen herkes rahatça kullanabilir. Amaç basit: her kelimeyi, unutmayacak kadar iyi öğrenene dek doğru aralıklarla önünüze getirmek.</p>
                 <p style="margin: 0 0 10px;">Her kelime, aklınızda yer etmesi için birkaç gün boyunca karşınıza çıkar. İlk günlerde seçenekli sorularla tanışır, dördüncü gün kelimeyi kendiniz yazarak pekiştirirsiniz. Bir kelimede zorlanırsanız endişelenmeyin; doğrusu ve örnek cümlesiyle yeniden karşınıza gelir, her tekrarda biraz daha kalıcılaşır.</p>
                 <p style="margin: 0;">Öğrendiklerinizi korumak için haftalık ve aylık kısa tekrarlar da otomatik gelir. Başlamak için tek yapmanız gereken seviyenizi ve günlük hedefinizi seçmek.</p>
             </div>
@@ -6731,6 +6743,36 @@
             body.style.display = open ? 'none' : 'block';
             const arrow = head.querySelector('.acc-arrow');
             if (arrow) arrow.textContent = open ? '\u25be' : '\u25b4';
+        });
+
+        // --- PWA: service worker kaydi (cevrimdisi calisma icin) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js').catch(function() {});
+            });
+        }
+
+        // --- PWA: "telefona yukle" istemi ---
+        let deferredInstall = null;
+        const installBtn = document.getElementById('install-btn');
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            deferredInstall = e;
+            if (installBtn) installBtn.style.display = 'block';
+        });
+        if (installBtn) {
+            installBtn.addEventListener('click', function() {
+                if (!deferredInstall) return;
+                deferredInstall.prompt();
+                deferredInstall.userChoice.then(function() {
+                    deferredInstall = null;
+                    installBtn.style.display = 'none';
+                });
+            });
+        }
+        window.addEventListener('appinstalled', function() {
+            deferredInstall = null;
+            if (installBtn) installBtn.style.display = 'none';
         });
 
         // Acilista: kayitli ayarlari giris ekranina yansit
