@@ -52,7 +52,7 @@
         
         /* ANA UYGULAMA (Kelimeler) */
         #main-app { display: none; flex-direction: column; height: 100%; }
-        header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 8px; }
         .badge { background-color: #e4e6eb; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; color: #1c1e21; }
         .word-card { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
@@ -80,7 +80,12 @@
         input[type="text"]:focus { border-color: #1877f2; }
         
         .option-btn { width: 100%; padding: 18px; margin-bottom: 12px; font-size: 16px; background-color: #f5f6f7; border: 2px solid #e4e6eb; border-radius: 12px; cursor: pointer; font-weight: 700; color: #1c1e21; transition: 0.2s;}
-        .option-btn:hover { background-color: #e4e6eb; }
+        /* iOS'ta dokunma sonrasi hover takili kaliyordu; sadece gercek fare varsa uygula */
+        @media (hover: hover) and (pointer: fine) {
+            .option-btn:hover { background-color: #e4e6eb; }
+        }
+        .option-btn, .primary-btn, .badge { -webkit-tap-highlight-color: transparent; }
+        .option-btn:focus { outline: none; }
         
         .primary-btn { width: 100%; padding: 18px; font-size: 18px; color: white; background-color: #1877f2; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; transition: transform 0.1s;}
         .primary-btn:active { transform: scale(0.98); }
@@ -126,6 +131,35 @@
         .stat-word span { color: #606770; text-align: right; }
         .stat-empty { padding: 14px; font-size: 13px; color: #606770; text-align: center; }
         #stats-btn { cursor: pointer; }
+        /* --- Cevap geri bildirimi: dikey ve net duzen --- */
+        #english-word.fb { flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .fb-badge { font-size: 16px; font-weight: 800; padding: 7px 18px; border-radius: 999px; display: inline-flex; align-items: center; gap: 8px; }
+        .fb-badge.ok { color: #1a7f37; background: #e7f6ec; }
+        .fb-badge.no { color: #c1352c; background: #fdeceb; }
+        .fb-word { font-size: 34px; font-weight: 800; color: #1c1e21; display: flex; align-items: center; justify-content: center; gap: 9px; flex-wrap: wrap; line-height: 1.15; }
+        .fb-meaning { font-size: 18px; font-weight: 700; color: #3a5169; background: #eef2f7; padding: 8px 18px; border-radius: 10px; line-height: 1.35; }
+        .fb-meaning.hi { color: #1a7f37; background: #e7f6ec; }
+        @keyframes fbPop { 0% { transform: scale(.7); opacity: 0; } 55% { transform: scale(1.10); opacity: 1; } 100% { transform: scale(1); } }
+        @keyframes fbShake { 0%,100% { transform: translateX(0); } 15% { transform: translateX(-11px); } 30% { transform: translateX(10px); } 45% { transform: translateX(-7px); } 60% { transform: translateX(6px); } 80% { transform: translateX(-3px); } }
+        @keyframes fbRise { 0% { transform: translateY(9px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        .anim-pop { animation: fbPop .42s cubic-bezier(.3,1.4,.5,1) both; }
+        .anim-shake { animation: fbShake .5s ease both; }
+        .anim-rise { animation: fbRise .32s ease both; }
+        @media (prefers-reduced-motion: reduce) {
+            .anim-pop, .anim-shake, .anim-rise { animation: none !important; }
+        }
+        .quiz-q { font-size: 15px; font-weight: 700; color: #606770; margin-bottom: 4px; }
+        .quiz-target { font-size: 30px; font-weight: 800; color: #1c1e21; line-height: 1.2; }
+        .quiz-hint { font-size: 13px; font-weight: 600; color: #8a8d91; margin-top: 2px; }
+        #end-actions { width: 100%; display: none; }
+        #end-actions .primary-btn { margin-bottom: 12px; }
+        #quiz-result-list { display: none; width: 100%; text-align: left; margin-top: 6px; max-height: 260px; overflow-y: auto; background: #fff7f7; border: 1px solid #f5d0d0; border-radius: 12px; padding: 6px 0; }
+        #quiz-result-list .qr-item { padding: 9px 14px; font-size: 14px; border-top: 1px solid #fbe4e4; }
+        #quiz-result-list .qr-item:first-child { border-top: none; }
+        #quiz-result-list b { color: #1c1e21; }
+        #quiz-result-list span { color: #606770; }
+        #quiz-result-head { font-size: 13px; font-weight: 700; color: #8a1327; padding: 8px 14px 2px; }
+        #sound-btn { cursor: pointer; padding: 8px 12px; user-select: none; }
         #install-btn { display: none; width: 100%; margin-bottom: 18px; padding: 14px; font-size: 15px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: 2px solid #1877f2; border-radius: 12px; cursor: pointer; }
         #install-btn:active { background: #d5e9fb; }
     </style>
@@ -196,6 +230,7 @@
             <header>
                 <div class="badge" id="level-badge">Kelime Modu</div>
                 <div class="badge" id="stats-btn" title="İstatistik">📊 İstatistik</div>
+                <div class="badge" id="sound-btn" title="Ses aç/kapat">🔊</div>
                 <div id="progress" class="badge">0 / 0</div>
             </header>
             <main class="word-card">
@@ -226,11 +261,17 @@
                     <button class="option-btn" id="option-1">Seçenek 1</button>
                     <button class="option-btn" id="option-2">Seçenek 2</button>
                     <button class="option-btn" id="option-3">Seçenek 3</button>
+                    <button class="option-btn" id="option-4">Seçenek 4</button>
                 </div>
 
                 <button id="check-btn" class="primary-btn">Kontrol Et</button>
                 <button id="next-btn" class="primary-btn" style="display:none; background-color: #31a24c; margin-top: 20px;">Sıradaki Kelime</button>
                 <button id="review-restart-btn" class="primary-btn" style="display:none; background-color: #6c757d; margin-top: 12px;">Tekrarı Baştan Al</button>
+                <div id="quiz-result-list"></div>
+                <div id="end-actions">
+                    <button id="quiz-btn" class="primary-btn">📝 Öğrendiklerini Test Et</button>
+                    <button id="home-btn" class="primary-btn" style="background-color: #6c757d;">🏠 Ana Sayfa</button>
+                </div>
             </main>
         </div>
 
@@ -5916,6 +5957,65 @@
         ['pointerdown', 'touchstart', 'keydown'].forEach(function(evt) {
             document.addEventListener(evt, _warmTTS, { once: true, passive: true });
         });
+        // ==========================================
+        // Cevap geri bildirimi: ses + animasyon
+        // Ses dosyasi kullanilmaz; tonlar tarayicida uretilir (cevrimdisi calisir, dosya sismez)
+        // ==========================================
+        let soundOn = (localStorage.getItem('wm_sound') !== '0');
+        let _actx = null;
+        function _audio() {
+            if (!_actx) {
+                try { _actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { _actx = null; }
+            }
+            if (_actx && _actx.state === 'suspended') { try { _actx.resume(); } catch (e) {} }
+            return _actx;
+        }
+        function _tone(freq, delay, dur, vol, type) {
+            const ac = _audio();
+            if (!ac) return;
+            try {
+                const t0 = ac.currentTime + delay;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(freq, t0);
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.linearRampToValueAtTime(vol, t0 + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+                osc.connect(gain); gain.connect(ac.destination);
+                osc.start(t0); osc.stop(t0 + dur + 0.03);
+            } catch (e) {}
+        }
+        function playCorrect() { if (!soundOn) return; _tone(660, 0, 0.13, 0.15); _tone(990, 0.10, 0.20, 0.13); }
+        function playWrong()   { if (!soundOn) return; _tone(196, 0, 0.17, 0.15, 'triangle'); _tone(147, 0.13, 0.24, 0.13, 'triangle'); }
+
+        function _animate(el, cls) {
+            if (!el) return;
+            el.classList.remove('anim-pop', 'anim-shake', 'anim-rise');
+            void el.offsetWidth;          // animasyonu yeniden tetiklemek icin
+            el.classList.add(cls);
+        }
+
+        // Cevap ekranini kurar: ustte durum rozeti, altinda Ingilizce kelime, altinda anlam
+        function showFeedback(isCorrect, wordObj) {
+            const host = document.getElementById('english-word');
+            const typeHtml = wordObj.type ? '<span class="type-tag">' + wordObj.type + '</span>' : '';
+            const rozet = isCorrect
+                ? '<div class="fb-badge ok">\u2713 Do\u011fru</div>'
+                : '<div class="fb-badge no">\u2715 Yanl\u0131\u015f</div>';
+            const anlam = '<div class="fb-meaning' + (isCorrect ? '' : ' hi') + '">' + wordObj.tr + '</div>';
+            host.classList.add('fb');
+            host.innerHTML = rozet + '<div class="fb-word">' + wordObj.en + ' ' + typeHtml + '</div>' + anlam;
+            const badge = host.querySelector('.fb-badge');
+            const word  = host.querySelector('.fb-word');
+            if (isCorrect) { _animate(badge, 'anim-pop'); _animate(word, 'anim-rise'); playCorrect(); }
+            else           { _animate(badge, 'anim-pop'); _animate(host, 'anim-shake'); playWrong(); }
+        }
+        function clearFeedback() {
+            const host = document.getElementById('english-word');
+            host.classList.remove('fb', 'anim-shake', 'anim-pop', 'anim-rise');
+        }
+
         function setCardSpeak(word) {
             const b = document.getElementById('card-speak-btn');
             if (!b) return;
@@ -6308,6 +6408,7 @@
             const kalanHavuz = appState ? appState.pool.length : 0;
             const biten = appState ? appState.completed.length : 0;
             document.getElementById('progress').textContent = "Bitti";
+            clearFeedback();
             document.getElementById('english-word').innerHTML = "Bugünün çalışması tamam! ✓";
             hideCardSpeak();
             document.getElementById('example-en').textContent = "Tamamlanan: " + biten + " · Havuzda bekleyen: " + kalanHavuz;
@@ -6320,10 +6421,15 @@
             document.getElementById('check-btn').style.display = "none";
             document.getElementById('review-restart-btn').style.display = "none";
             document.getElementById('next-btn').style.display = "none";
+            document.getElementById('quiz-btn').textContent = "\uD83D\uDCDD \u00d6\u011frendiklerini Test Et";
+            document.getElementById('quiz-result-list').style.display = "none";
+            document.getElementById('end-actions').style.display = "block";
         }
 
         function showReviewIntro(rev) {
             document.getElementById('progress').textContent = "Tekrar";
+            clearFeedback();
+            hideEndActions();
             document.getElementById('english-word').innerHTML = "📅 " + rev.label + " Tekrar";
             hideCardSpeak();
             document.getElementById('example-en').textContent = "Bu dönemde çıkan " + rev.words.length + " kelimeyi bir kez daha görelim. Bu tekrar günlük ilerlemeni etkilemez.";
@@ -6351,6 +6457,8 @@
             if (appState && appState.activeReview) { appState.activeReview.index = reviewIndex; saveState(); }
             const w = reviewPool[reviewIndex];
             currentMode = "review";
+            clearFeedback();
+            hideEndActions();
             document.getElementById('progress').textContent = "Tekrar " + (reviewIndex + 1) + " / " + reviewPool.length;
             let typeHtml = w.type ? '<span class="type-tag">' + w.type + '</span>' : '';
             document.getElementById('english-word').innerHTML = w.en + ' ' + typeHtml + ' <span class="level-tag">#' + w.level + '</span>';
@@ -6365,26 +6473,28 @@
             document.getElementById('typing-section').style.display = "none";
             document.getElementById('test-section').style.display = "block";
             document.getElementById('review-restart-btn').style.display = "block";
-            let options = generateOptions(w.tr);
-            for (let i = 0; i < 3; i++) {
-                let btn = document.getElementById('option-' + (i + 1));
-                btn.textContent = options[i];
-                btn.className = "option-btn";
-                btn.onclick = () => handleReviewAnswer(btn.textContent === w.tr, w, btn);
+            const revOptions = generateOptions(w, reviewPool);
+            for (let i = 0; i < OPTION_COUNT; i++) {
+                const btn = document.getElementById('option-' + (i + 1));
+                if (!btn) continue;
+                if (i < revOptions.length) {
+                    btn.textContent = revOptions[i];
+                    btn.className = "option-btn";
+                    btn.style.display = "block";
+                    btn.onclick = (function(b){ return function(){ handleReviewAnswer(b.textContent === w.tr, w, b); }; })(btn);
+                } else {
+                    btn.style.display = "none";
+                    btn.onclick = null;
+                }
             }
         }
 
         function handleReviewAnswer(isCorrect, wordObj, uiElement) {
             document.getElementById('test-section').style.display = "none";
             document.getElementById('check-btn').style.display = "none";
-            let typeHtml = wordObj.type ? '<span class="type-tag">' + wordObj.type + '</span>' : '';
-            if (isCorrect) {
-                uiElement.classList.add('correct');
-                document.getElementById('english-word').innerHTML = '<span style="color:#31a24c;">Doğru!</span> ' + wordObj.en + ' ' + typeHtml + ' <span style="color:#606770; font-weight:600;">(' + wordObj.tr + ')</span>';
-            } else {
-                uiElement.classList.add('incorrect');
-                document.getElementById('english-word').innerHTML = '<span style="color:#e74c3c;">Yanlış!</span> "' + wordObj.en + '" kelimesinin doğru cevabı: <b style="color:#31a24c;">' + wordObj.tr + '</b>';
-            }
+            if (isCorrect) { uiElement.classList.add('correct'); }
+            else { uiElement.classList.add('incorrect'); }
+            showFeedback(isCorrect, wordObj);
             setCardSpeak(wordObj.en);
             document.getElementById('example-container').style.display = "block";
             document.getElementById('review-restart-btn').style.display = "block";
@@ -6474,18 +6584,100 @@
             updateUI();
         }
 
-        function generateOptions(correctAnswer) {
-            let options = [correctAnswer];
-            while (options.length < 3) {
-                let randomWord = fullFilteredPool[Math.floor(Math.random() * fullFilteredPool.length)];
-                if (!options.includes(randomWord.tr)) options.push(randomWord.tr);
+        const OPTION_COUNT = 4;
+
+        // Duzgun karistirma (Fisher-Yates). Eski sort(()=>Math.random()-0.5) esit dagitmiyordu.
+        function _shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
             }
-            return options.sort(() => Math.random() - 0.5);
+            return arr;
+        }
+
+        function _typeTokens(t) {
+            return (t || '').toLowerCase().split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        }
+        // Ayni sozcuk turu mu? ("n., v." gibi coklu turlerde ortak tur yeterli)
+        function _sameType(a, b) {
+            const A = _typeTokens(a), B = _typeTokens(b);
+            if (!A.length || !B.length) return true;
+            return A.some(function(x){ return B.indexOf(x) !== -1; });
+        }
+        // Es anlamli kelimeler caldirici olamaz (ikisi de dogru sayilabilir, haksizlik olur)
+        function _areSynonyms(a, b) {
+            if (a.synonyms && a.synonyms.some(function(s){ return s.en === b.en; })) return true;
+            if (b.synonyms && b.synonyms.some(function(s){ return s.en === a.en; })) return true;
+            return false;
+        }
+
+        // Caldiricilar: ayni sozcuk turunden, yakin seviyeden, es anlamli OLMAYAN kelimeler.
+        // Oncelik o gun calisilan kelimelerde - ayni gun ogrenilenleri birbirinden ayirmak en ogretici olan.
+        function generateOptions(correctWord, contextPool) {
+            const target = (correctWord && typeof correctWord === 'object') ? correctWord : null;
+            const correctTr = target ? target.tr : correctWord;
+            const options = [correctTr];
+            const used = {};
+            used[correctTr] = true;
+
+            function uygun(w) {
+                if (!w || w.tr === undefined || used[w.tr]) return false;
+                if (!target) return true;
+                if (w.en === target.en) return false;
+                if (!_sameType(w.type, target.type)) return false;
+                if (_areSynonyms(target, w)) return false;
+                return true;
+            }
+            function ekle(list) {
+                const c = _shuffle(list.slice());
+                for (let i = 0; i < c.length && options.length < OPTION_COUNT; i++) {
+                    if (uygun(c[i])) { options.push(c[i].tr); used[c[i].tr] = true; }
+                }
+            }
+
+            // 1) Ayni oturumdaki AYNI SEVIYE kelimeler (en ogretici ve en adil ayrim)
+            if (contextPool && contextPool.length && target) {
+                ekle(contextPool.filter(function(w){ return w.level === target.level; }));
+            }
+            // 2) Havuzdaki ayni seviye kelimeler
+            if (options.length < OPTION_COUNT && target) {
+                ekle(fullFilteredPool.filter(function(w){ return w.level === target.level; }));
+            }
+            // 3) Ayni oturumdan seviye farketmeksizin
+            if (options.length < OPTION_COUNT && contextPool && contextPool.length) ekle(contextPool);
+            // 4) Ayni turden herhangi biri
+            if (options.length < OPTION_COUNT) ekle(fullFilteredPool);
+            // 4) Havuz cok kucukse tur filtresini gevset
+            let guard = 0;
+            while (options.length < OPTION_COUNT && guard++ < 400) {
+                const w = fullFilteredPool[Math.floor(Math.random() * fullFilteredPool.length)];
+                if (w && !used[w.tr] && (!target || w.en !== target.en)) { options.push(w.tr); used[w.tr] = true; }
+            }
+            return _shuffle(options);
+        }
+
+        // Secenek butonlarini ciz (secenek sayisi havuza gore 4'ten az kalabilir)
+        function renderOptions(w, pool) {
+            const options = generateOptions(w, pool);
+            for (let i = 0; i < OPTION_COUNT; i++) {
+                const btn = document.getElementById('option-' + (i + 1));
+                if (!btn) continue;
+                if (i < options.length) {
+                    btn.textContent = options[i];
+                    btn.className = "option-btn";
+                    btn.style.display = "block";
+                    btn.onclick = (function(b){ return function(){ handleAnswer(b.textContent === w.tr, w, b); }; })(btn);
+                } else {
+                    btn.style.display = "none";
+                    btn.onclick = null;
+                }
+            }
         }
 
         function updateUI() {
             document.getElementById('progress').textContent = (currentIndex + 1) + " / " + dailyPool.length;
             document.getElementById('review-restart-btn').style.display = "none";
+            hideEndActions();
 
             if (currentIndex >= dailyPool.length) {
                 // Gunluk grup bitti -> gun tamamlandi olarak isaretle (ilerleme icin)
@@ -6513,6 +6705,7 @@
             // Gun 4: YAZMA, Turkce anlam gosterilir, kullanici Ingilizce kelimeyi yazar (kullanicinin ilk sartı).
             if (w.day <= 3 || w.mistakeCount >= 2) {
                 currentMode = "test";
+                clearFeedback();
                 let typeHtml = w.type ? '<span class="type-tag">' + w.type + '</span>' : '';
                 document.getElementById('english-word').innerHTML = w.en + ' ' + typeHtml + ' <span class="level-tag">#' + w.level + '</span>';
                 setCardSpeak(w.en);
@@ -6527,15 +6720,10 @@
                 document.getElementById('typing-section').style.display = "none";
                 document.getElementById('test-section').style.display = "block";
                 
-                let options = generateOptions(w.tr);
-                for (let i = 0; i < 3; i++) {
-                    let btn = document.getElementById('option-' + (i+1));
-                    btn.textContent = options[i];
-                    btn.className = "option-btn";
-                    btn.onclick = () => handleAnswer(btn.textContent === w.tr, w, btn);
-                }
+                renderOptions(w, dailyPool);
             } else {
                 currentMode = "typing";
+                clearFeedback();
                 document.getElementById('english-word').innerHTML = w.tr + ' <span class="level-tag">#' + w.level + '</span>';
                 hideCardSpeak();
                 document.getElementById('example-en').textContent = w.ex;
@@ -6579,9 +6767,7 @@
                 document.getElementById('test-section').style.display = "none";
                 document.getElementById('check-btn').style.display = "none";
                 
-                // Dogru cevapta kelimeyi ve dogru anlami acikca goster (yazma modunda kart Turkce idi)
-                let typeHtml = wordObj.type ? '<span class="type-tag">' + wordObj.type + '</span>' : '';
-                document.getElementById('english-word').innerHTML = '<span style="color:#31a24c;">Doğru!</span> ' + wordObj.en + ' ' + typeHtml + ' <span style="color:#606770; font-weight:600;">(' + wordObj.tr + ')</span>';
+                showFeedback(true, wordObj);
                 setCardSpeak(wordObj.en);
                 document.getElementById('example-container').style.display = "block";
                 document.getElementById('next-btn').textContent = "Sıradaki Kelime";
@@ -6599,7 +6785,7 @@
                 document.getElementById('test-section').style.display = "none";
                 document.getElementById('check-btn').style.display = "none";
                 
-                document.getElementById('english-word').innerHTML = '<span style="color:#e74c3c;">Yanlış!</span> "' + wordObj.en + '" kelimesinin doğru cevabı: <b style="color:#31a24c;">' + wordObj.tr + '</b>';
+                showFeedback(false, wordObj);
                 setCardSpeak(wordObj.en);
                 document.getElementById('example-container').style.display = "block";
                 
@@ -6643,6 +6829,7 @@
         }
 
         document.getElementById('next-btn').onclick = () => {
+            if (quizOn) { quizIndex++; renderQuiz(); return; }
             if (restartPending) {
                 restartPending = false;
                 document.getElementById('next-btn').textContent = "Sıradaki Kelime";
@@ -6666,6 +6853,215 @@
         document.getElementById('turkish-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') document.getElementById('check-btn').click();
         });
+
+        // ==========================================
+        // TEST MODU: gorulmus kelimelerden sinav
+        // Iki soru tipi: (1) Turkce anlam -> Ingilizce kelime, (2) en yakin anlamli kelime
+        // Gun motoruna DOKUNMAZ: ilerleme, hata sayisi ve havuz degismez.
+        // ==========================================
+        let quizOn = false, quizList = [], quizIndex = 0, quizScore = 0, quizWrong = [], quizAnswered = false;
+        const QUIZ_MAX = 15;
+
+        function hideEndActions() {
+            const e = document.getElementById('end-actions');
+            if (e) e.style.display = 'none';
+            const r = document.getElementById('quiz-result-list');
+            if (r) r.style.display = 'none';
+        }
+
+        // Kullanicinin gordugu kelimeler = tamamlananlar + halen calisilanlar
+        function quizSeenWords() {
+            if (!appState) return [];
+            const map = {};
+            fullFilteredPool.forEach(function(w){ map[w.en] = w; });
+            const seen = (appState.completed || []).concat(Object.keys(appState.wordState || {}));
+            const out = [], used = {};
+            seen.forEach(function(en){ if (map[en] && !used[en]) { used[en] = true; out.push(map[en]); } });
+            return out;
+        }
+
+        // Sik uretimi: Ingilizce kelimeler arasindan, ayni tur/seviye, es anlamli olmayan
+        function quizOptions(target, correctEn, banned) {
+            const opts = [correctEn];
+            const used = {}; used[correctEn] = true;
+            (banned || []).forEach(function(en){ used[en] = true; });
+            function ekle(list) {
+                const c = _shuffle(list.slice());
+                for (let i = 0; i < c.length && opts.length < OPTION_COUNT; i++) {
+                    const w = c[i];
+                    if (!w || used[w.en]) continue;
+                    if (!_sameType(w.type, target.type)) continue;
+                    if (_areSynonyms(target, w)) continue;
+                    opts.push(w.en); used[w.en] = true;
+                }
+            }
+            ekle(fullFilteredPool.filter(function(w){ return w.level === target.level; }));
+            if (opts.length < OPTION_COUNT) ekle(fullFilteredPool);
+            let g = 0;
+            while (opts.length < OPTION_COUNT && g++ < 400) {
+                const w = fullFilteredPool[Math.floor(Math.random() * fullFilteredPool.length)];
+                if (w && !used[w.en]) { opts.push(w.en); used[w.en] = true; }
+            }
+            return _shuffle(opts);
+        }
+
+        function buildQuiz() {
+            const havuz = _shuffle(quizSeenWords().slice());
+            const list = [];
+            for (let i = 0; i < havuz.length && list.length < QUIZ_MAX; i++) {
+                const w = havuz[i];
+                const syns = (w.synonyms || []).filter(function(s){ return s && s.en; });
+                // Es anlamlisi varsa bazen "en yakin anlamli" sorusu sor
+                if (syns.length > 0 && Math.random() < 0.4) {
+                    const dogru = syns[Math.floor(Math.random() * syns.length)].en;
+                    const yasak = [w.en].concat(syns.map(function(s){ return s.en; }));
+                    list.push({ type: 'syn', word: w, correct: dogru, options: quizOptions(w, dogru, yasak) });
+                } else {
+                    const yasak = syns.map(function(s){ return s.en; });
+                    list.push({ type: 'meaning', word: w, correct: w.en, options: quizOptions(w, w.en, yasak) });
+                }
+            }
+            return list;
+        }
+
+        function startQuiz() {
+            const list = buildQuiz();
+            if (list.length < 4) {
+                alert('Test i\u00e7in yeterli kelime yok. Birka\u00e7 g\u00fcn \u00e7al\u0131\u015ft\u0131ktan sonra tekrar dene.');
+                return;
+            }
+            quizOn = true; quizList = list; quizIndex = 0; quizScore = 0; quizWrong = [];
+            document.getElementById('main-app').style.display = 'flex';
+            renderQuiz();
+        }
+
+        function renderQuiz() {
+            if (quizIndex >= quizList.length) { showQuizResult(); return; }
+            quizAnswered = false;
+            const q = quizList[quizIndex];
+            clearFeedback(); hideCardSpeak(); hideEndActions();
+            document.getElementById('progress').textContent = 'Test ' + (quizIndex + 1) + ' / ' + quizList.length;
+            const host = document.getElementById('english-word');
+            if (q.type === 'meaning') {
+                host.innerHTML = '<div class="quiz-q">Bu anlama gelen kelime hangisi?</div>' +
+                                 '<div class="quiz-target">' + q.word.tr + '</div>' +
+                                 '<div class="quiz-hint">' + (q.word.type || '') + '</div>';
+            } else {
+                host.innerHTML = '<div class="quiz-q">Anlamca en yak\u0131n kelime hangisi?</div>' +
+                                 '<div class="quiz-target">' + q.word.en + '</div>' +
+                                 '<div class="quiz-hint">' + q.word.tr + '</div>';
+            }
+            host.classList.add('fb');
+            document.getElementById('example-container').style.display = 'none';
+            document.getElementById('synonyms-section').style.display = 'none';
+            document.getElementById('synonym-details').style.display = 'none';
+            document.getElementById('typing-section').style.display = 'none';
+            document.getElementById('check-btn').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('review-restart-btn').style.display = 'none';
+            document.getElementById('test-section').style.display = 'block';
+            for (let i = 0; i < OPTION_COUNT; i++) {
+                const btn = document.getElementById('option-' + (i + 1));
+                if (!btn) continue;
+                if (i < q.options.length) {
+                    btn.textContent = q.options[i];
+                    btn.className = 'option-btn';
+                    btn.style.display = 'block';
+                    btn.onclick = (function(b){ return function(){ handleQuizAnswer(b.textContent, b); }; })(btn);
+                } else { btn.style.display = 'none'; btn.onclick = null; }
+            }
+        }
+
+        function handleQuizAnswer(chosen, btn) {
+            if (quizAnswered) return;
+            quizAnswered = true;
+            const q = quizList[quizIndex];
+            const dogru = (chosen === q.correct);
+            const hedefKelime = fullFilteredPool.filter(function(w){ return w.en === q.correct; })[0] || q.word;
+            if (dogru) { quizScore++; btn.classList.add('correct'); }
+            else { btn.classList.add('incorrect'); quizWrong.push(q); }
+            // dogru siki isaretle
+            for (let i = 0; i < OPTION_COUNT; i++) {
+                const b = document.getElementById('option-' + (i + 1));
+                if (b && b.style.display !== 'none' && b.textContent === q.correct) b.classList.add('correct');
+            }
+            const host = document.getElementById('english-word');
+            const rozet = dogru ? '<div class="fb-badge ok">\u2713 Do\u011fru</div>' : '<div class="fb-badge no">\u2715 Yanl\u0131\u015f</div>';
+            host.classList.add('fb');
+            host.innerHTML = rozet +
+                '<div class="fb-word">' + q.correct + '</div>' +
+                '<div class="fb-meaning' + (dogru ? '' : ' hi') + '">' + hedefKelime.tr + '</div>';
+            const badge = host.querySelector('.fb-badge');
+            if (dogru) { _animate(badge, 'anim-pop'); playCorrect(); }
+            else { _animate(badge, 'anim-pop'); _animate(host, 'anim-shake'); playWrong(); }
+            setCardSpeak(q.correct);
+            document.getElementById('example-en').textContent = hedefKelime.ex || '';
+            document.getElementById('usage-note').textContent = hedefKelime.usage || '';
+            document.getElementById('example-container').style.display = 'block';
+            document.getElementById('test-section').style.display = 'none';
+            document.getElementById('next-btn').textContent = (quizIndex + 1 >= quizList.length) ? 'Sonucu G\u00f6r' : 'S\u0131radaki Soru';
+            document.getElementById('next-btn').style.display = 'block';
+        }
+
+        function showQuizResult() {
+            quizOn = false;
+            const toplam = quizList.length;
+            const yuzde = toplam ? Math.round(quizScore / toplam * 100) : 0;
+            clearFeedback(); hideCardSpeak();
+            document.getElementById('progress').textContent = 'Test bitti';
+            const host = document.getElementById('english-word');
+            host.classList.add('fb');
+            host.innerHTML = '<div class="fb-badge ' + (yuzde >= 60 ? 'ok' : 'no') + '">Test Sonucu</div>' +
+                             '<div class="fb-word">' + quizScore + ' / ' + toplam + '</div>' +
+                             '<div class="fb-meaning">%' + yuzde + ' do\u011fru</div>';
+            _animate(host.querySelector('.fb-badge'), 'anim-pop');
+            document.getElementById('example-container').style.display = 'none';
+            document.getElementById('test-section').style.display = 'none';
+            document.getElementById('typing-section').style.display = 'none';
+            document.getElementById('check-btn').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('review-restart-btn').style.display = 'none';
+            const liste = document.getElementById('quiz-result-list');
+            if (quizWrong.length > 0) {
+                let html = '<div id="quiz-result-head">Yanl\u0131\u015f bildiklerin (' + quizWrong.length + ')</div>';
+                quizWrong.forEach(function(q){
+                    const kw = fullFilteredPool.filter(function(w){ return w.en === q.correct; })[0] || q.word;
+                    html += '<div class="qr-item"><b>' + q.correct + '</b> <span>\u2014 ' + kw.tr + '</span></div>';
+                });
+                liste.innerHTML = html;
+                liste.style.display = 'block';
+            } else {
+                liste.style.display = 'none';
+            }
+            document.getElementById('quiz-btn').textContent = '\uD83D\uDD01 Tekrar Test \u00c7\u00f6z';
+            document.getElementById('end-actions').style.display = 'block';
+        }
+
+        function goHome() {
+            quizOn = false;
+            clearFeedback(); hideCardSpeak(); hideEndActions();
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'flex';
+            restoreWelcomeDefaults();
+        }
+
+        document.getElementById('quiz-btn').addEventListener('click', function(){
+            document.getElementById('quiz-btn').textContent = '\uD83D\uDCDD \u00d6\u011frendiklerini Test Et';
+            startQuiz();
+        });
+        document.getElementById('home-btn').addEventListener('click', goHome);
+
+        const soundBtn = document.getElementById('sound-btn');
+        function refreshSoundBtn() { if (soundBtn) soundBtn.textContent = soundOn ? '\uD83D\uDD0A' : '\uD83D\uDD07'; }
+        refreshSoundBtn();
+        if (soundBtn) {
+            soundBtn.addEventListener('click', function() {
+                soundOn = !soundOn;
+                localStorage.setItem('wm_sound', soundOn ? '1' : '0');
+                refreshSoundBtn();
+                if (soundOn) playCorrect();   // acildiginda ornek ses
+            });
+        }
 
         document.getElementById('card-speak-btn').addEventListener('click', function() {
             const w = this.getAttribute('data-w');
