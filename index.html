@@ -144,6 +144,14 @@
         .fb-word { font-size: 34px; font-weight: 800; color: #1c1e21; display: flex; align-items: center; justify-content: center; gap: 9px; flex-wrap: wrap; line-height: 1.15; }
         .fb-meaning { font-size: 18px; font-weight: 700; color: #3a5169; background: #eef2f7; padding: 8px 18px; border-radius: 10px; line-height: 1.35; }
         .fb-meaning.hi { color: #1a7f37; background: #e7f6ec; }
+        /* Cizilen tik / carpi: sabit karakter yerine kendini cizen SVG */
+        .fb-mark { width: 19px; height: 19px; flex: none; }
+        .fb-mark path { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; }
+        .fb-badge.ok .fb-mark path { stroke: #1a7f37; animation: markDraw .30s ease .05s forwards; }
+        .fb-badge.no .fb-mark path.m1 { stroke: #c1352c; animation: markDraw .18s ease .04s forwards; }
+        .fb-badge.no .fb-mark path.m2 { stroke: #c1352c; animation: markDraw .18s ease .17s forwards; }
+        @keyframes markDraw { to { stroke-dashoffset: 0; } }
+        .confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 2000; }
         @keyframes fbPop { 0% { transform: scale(.7); opacity: 0; } 55% { transform: scale(1.10); opacity: 1; } 100% { transform: scale(1); } }
         @keyframes fbShake { 0%,100% { transform: translateX(0); } 15% { transform: translateX(-11px); } 30% { transform: translateX(10px); } 45% { transform: translateX(-7px); } 60% { transform: translateX(6px); } 80% { transform: translateX(-3px); } }
         @keyframes fbRise { 0% { transform: translateY(9px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
@@ -152,6 +160,7 @@
         .anim-rise { animation: fbRise .32s ease both; }
         @media (prefers-reduced-motion: reduce) {
             .anim-pop, .anim-shake, .anim-rise { animation: none !important; }
+            .fb-mark path { animation: none !important; stroke-dashoffset: 0 !important; }
         }
         .quiz-q { font-size: 15px; font-weight: 700; color: #606770; margin-bottom: 4px; }
         .quiz-target { font-size: 30px; font-weight: 800; color: #1c1e21; line-height: 1.2; }
@@ -5995,6 +6004,76 @@
         function playCorrect() { if (!soundOn) return; _tone(660, 0, 0.13, 0.15); _tone(990, 0.10, 0.20, 0.13); }
         function playWrong()   { if (!soundOn) return; _tone(196, 0, 0.17, 0.15, 'triangle'); _tone(147, 0.13, 0.24, 0.13, 'triangle'); }
 
+        // Cizilen tik ve carpi (SVG yollari kendini cizer)
+        const MARK_OK = '<svg class="fb-mark" viewBox="0 0 24 24" aria-hidden="true"><path class="m1" d="M4 12.6 L9.6 18.2 L20 6.6"/></svg>';
+        const MARK_NO = '<svg class="fb-mark" viewBox="0 0 24 24" aria-hidden="true"><path class="m1" d="M6.5 6.5 L17.5 17.5"/><path class="m2" d="M17.5 6.5 L6.5 17.5"/></svg>';
+
+        function _hareketAzalt() {
+            try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+            catch (e) { return false; }
+        }
+
+        // Kutlama sesi: yukselen uc nota (sadece ozel anlarda)
+        function playFanfare() {
+            if (!soundOn) return;
+            _tone(523, 0, 0.16, 0.13);
+            _tone(659, 0.13, 0.16, 0.13);
+            _tone(784, 0.26, 0.32, 0.14);
+        }
+
+        // Konfeti: sadece gunun calismasi bitince ve testten tam puan alinca
+        function celebrate() {
+            if (_hareketAzalt()) return;
+            if (typeof requestAnimationFrame === 'undefined') return;
+            if (!document.body || !document.createElement) return;
+            let cv, ctx;
+            try {
+                cv = document.createElement('canvas');
+                cv.className = 'confetti-canvas';
+                document.body.appendChild(cv);
+                ctx = cv.getContext('2d');
+                if (!ctx) throw new Error('canvas yok');
+            } catch (e) { return; }
+            const w = cv.width = window.innerWidth;
+            const h = cv.height = window.innerHeight;
+            const renkler = ['#1877f2', '#31a24c', '#f7b928', '#e4405f', '#8b5cf6'];
+            const parcalar = [];
+            for (let i = 0; i < 90; i++) {
+                parcalar.push({
+                    x: Math.random() * w,
+                    y: -20 - Math.random() * h * 0.5,
+                    g: 6 + Math.random() * 6,
+                    y2: 8 + Math.random() * 9,
+                    vy: 2 + Math.random() * 3.2,
+                    vx: -1.2 + Math.random() * 2.4,
+                    r: Math.random() * Math.PI,
+                    vr: -0.13 + Math.random() * 0.26,
+                    c: renkler[Math.floor(Math.random() * renkler.length)]
+                });
+            }
+            const SURE = 2300;
+            let t0 = null;
+            function kare(ts) {
+                if (t0 === null) t0 = ts;
+                const gecen = ts - t0;
+                ctx.clearRect(0, 0, w, h);
+                for (let i = 0; i < parcalar.length; i++) {
+                    const p = parcalar[i];
+                    p.x += p.vx; p.y += p.vy; p.r += p.vr; p.vy += 0.035;
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.r);
+                    ctx.globalAlpha = gecen > SURE * 0.65 ? Math.max(0, 1 - (gecen - SURE * 0.65) / (SURE * 0.35)) : 1;
+                    ctx.fillStyle = p.c;
+                    ctx.fillRect(-p.g / 2, -p.y2 / 2, p.g, p.y2);
+                    ctx.restore();
+                }
+                if (gecen < SURE) requestAnimationFrame(kare);
+                else if (cv.parentNode) cv.parentNode.removeChild(cv);
+            }
+            requestAnimationFrame(kare);
+        }
+
         function _animate(el, cls) {
             if (!el) return;
             el.classList.remove('anim-pop', 'anim-shake', 'anim-rise');
@@ -6007,8 +6086,8 @@
             const host = document.getElementById('english-word');
             const typeHtml = wordObj.type ? '<span class="type-tag">' + wordObj.type + '</span>' : '';
             const rozet = isCorrect
-                ? '<div class="fb-badge ok">\u2713 Do\u011fru</div>'
-                : '<div class="fb-badge no">\u2715 Yanl\u0131\u015f</div>';
+                ? '<div class="fb-badge ok">' + MARK_OK + ' Do\u011fru</div>'
+                : '<div class="fb-badge no">' + MARK_NO + ' Yanl\u0131\u015f</div>';
             const anlam = '<div class="fb-meaning' + (isCorrect ? '' : ' hi') + '">' + wordObj.tr + '</div>';
             host.classList.add('fb');
             host.innerHTML = rozet + '<div class="fb-word">' + wordObj.en + ' ' + typeHtml + '</div>' + anlam;
@@ -6503,6 +6582,8 @@
             document.getElementById('quiz-btn').textContent = "\uD83D\uDCDD \u00d6\u011frendiklerini Test Et";
             document.getElementById('quiz-result-list').style.display = "none";
             document.getElementById('end-actions').style.display = "block";
+            celebrate();
+            playFanfare();
         }
 
         function showReviewIntro(rev) {
@@ -7065,7 +7146,7 @@
                 if (b && b.style.display !== 'none' && b.textContent === q.correct) b.classList.add('correct');
             }
             const host = document.getElementById('english-word');
-            const rozet = dogru ? '<div class="fb-badge ok">\u2713 Do\u011fru</div>' : '<div class="fb-badge no">\u2715 Yanl\u0131\u015f</div>';
+            const rozet = dogru ? '<div class="fb-badge ok">' + MARK_OK + ' Do\u011fru</div>' : '<div class="fb-badge no">' + MARK_NO + ' Yanl\u0131\u015f</div>';
             host.classList.add('fb');
             host.innerHTML = rozet +
                 '<div class="fb-word">' + q.correct + '</div>' +
@@ -7114,6 +7195,7 @@
             }
             document.getElementById('quiz-btn').textContent = '\uD83D\uDD01 Tekrar Test \u00c7\u00f6z';
             document.getElementById('end-actions').style.display = 'block';
+            if (toplam > 0 && quizScore === toplam) { celebrate(); playFanfare(); }
         }
 
         function goHome() {
