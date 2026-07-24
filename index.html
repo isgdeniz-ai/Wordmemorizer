@@ -173,7 +173,7 @@
         #quiz-result-list b { color: #1c1e21; }
         #quiz-result-list span { color: #606770; }
         #quiz-result-head { font-size: 13px; font-weight: 700; color: #8a1327; padding: 8px 14px 2px; }
-        #sound-btn { cursor: pointer; padding: 8px 12px; user-select: none; }
+        #sound-btn, #home-top-btn { cursor: pointer; padding: 8px 12px; user-select: none; }
         #install-btn { display: none; width: 100%; margin-bottom: 18px; padding: 14px; font-size: 15px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: 2px solid #1877f2; border-radius: 12px; cursor: pointer; }
         #install-btn:active { background: #d5e9fb; }
     </style>
@@ -223,15 +223,11 @@
                 <label for="daily-goal">Günlük Hedefiniz (Kelime):</label>
                 <select id="daily-goal">
                     <option value="5">5 Kelime</option>
-                    <option value="10">10 Kelime</option>
+                    <option value="10" selected>10 Kelime</option>
                     <option value="15">15 Kelime</option>
                     <option value="20">20 Kelime</option>
                     <option value="25">25 Kelime</option>
                     <option value="30">30 Kelime</option>
-                    <option value="35">35 Kelime</option>
-                    <option value="40">40 Kelime</option>
-                    <option value="45">45 Kelime</option>
-                    <option value="50" selected>50 Kelime</option>
                 </select>
             </div>
 
@@ -245,6 +241,7 @@
                 <div class="badge" id="level-badge">Kelime Modu</div>
                 <div class="badge" id="stats-btn" title="İstatistik">📊 İstatistik</div>
                 <div class="badge" id="sound-btn" title="Ses aç/kapat">🔊</div>
+                <div class="badge" id="home-top-btn" title="Ana Sayfa">🏠</div>
                 <div id="progress" class="badge">0 / 0</div>
             </header>
             <main class="word-card">
@@ -6412,6 +6409,18 @@
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
         let dateOverride = null; // test amacli tarih sabitleme
 
+        // Bir onceki gunun tarihi (gunluk seri hesabi icin)
+        function _oncekiGun(gunStr) {
+            try {
+                const p = String(gunStr).split('-');
+                const d = new Date(Date.UTC(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)));
+                d.setUTCDate(d.getUTCDate() - 1);
+                const ay = (d.getUTCMonth() + 1 < 10 ? '0' : '') + (d.getUTCMonth() + 1);
+                const gun = (d.getUTCDate() < 10 ? '0' : '') + d.getUTCDate();
+                return d.getUTCFullYear() + '-' + ay + '-' + gun;
+            } catch (e) { return null; }
+        }
+
         function todayStr() {
             if (dateOverride) return dateOverride;
             const d = new Date();
@@ -6490,7 +6499,9 @@
                 pool: fullFilteredPool.map(w => w.en),
                 completed: [],
                 introLog: [],
-                activeReview: null
+                activeReview: null,
+                streak: 0,
+                lastDoneDate: null
             };
             drawNewCohort();
         }
@@ -6558,6 +6569,16 @@
             if (appState && !appState.sessionCompleted) {
                 appState.sessionCompleted = true;
                 appState.sessionDate = todayStr();
+                // Gunluk seri: dun de calistiysa artar, arada gun atlandiysa 1'e doner
+                const bugun = todayStr();
+                if (appState.lastDoneDate !== bugun) {
+                    if (appState.lastDoneDate && appState.lastDoneDate === _oncekiGun(bugun)) {
+                        appState.streak = (appState.streak || 0) + 1;
+                    } else {
+                        appState.streak = 1;
+                    }
+                    appState.lastDoneDate = bugun;
+                }
                 saveState();
             }
         }
@@ -6569,7 +6590,9 @@
             clearFeedback();
             document.getElementById('english-word').innerHTML = "Bugünün çalışması tamam! ✓";
             hideCardSpeak();
-            document.getElementById('example-en').textContent = "Tamamlanan: " + biten + " · Havuzda bekleyen: " + kalanHavuz;
+            const seri = appState ? (appState.streak || 0) : 0;
+            const seriMetni = seri >= 2 ? ("\uD83D\uDD25 " + seri + " g\u00fcnd\u00fcr \u00fcst \u00fcste \u00e7al\u0131\u015f\u0131yorsun  \u00b7  ") : "";
+            document.getElementById('example-en').textContent = seriMetni + "Tamamlanan: " + biten + " · Havuzda bekleyen: " + kalanHavuz;
             document.getElementById('usage-note').textContent = "Yeni kelimeler ve tekrarlar için yarın tekrar gel. İlerlemen kaydedildi.";
             document.getElementById('example-container').style.display = "block";
             document.getElementById('typing-section').style.display = "none";
@@ -6662,12 +6685,29 @@
             document.getElementById('next-btn').style.display = "block";
         }
 
+        // Eski kayitlarda 35-50 gibi bir hedef varsa o secenegi listeye geri ekle,
+        // yoksa deger secilemez ve kullanicinin ilerlemesi "ayar degisti" sayilip sifirlanir.
+        function _ensureGoalOption(val) {
+            const sel = document.getElementById('daily-goal');
+            if (!sel || !val) return;
+            for (let i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value === String(val)) return;
+            }
+            const o = document.createElement('option');
+            o.value = String(val);
+            o.textContent = val + ' Kelime';
+            sel.appendChild(o);
+        }
+
         function restoreWelcomeDefaults() {
             const s = loadState();
             if (s && s.settings) {
                 document.getElementById('current-level').value = s.settings.currentLvl;
                 document.getElementById('target-level').value = s.settings.targetLvl;
-                document.getElementById('daily-goal').value = s.settings.dailyGoal;
+                _ensureGoalOption(s.settings.dailyGoal);
+                const gsel = document.getElementById('daily-goal');
+                gsel.value = String(s.settings.dailyGoal);
+                if (!gsel.value) gsel.value = '10';   // deger listede yoksa guvenli varsayilan
             }
         }
 
@@ -6711,6 +6751,8 @@
                     appState.introLog = appState.cohorts.map(c => ({ day: c.startDay, words: [...c.words] }));
                 }
                 if (appState.activeReview === undefined) appState.activeReview = null;
+                if (appState.streak === undefined) appState.streak = 0;
+                if (appState.lastDoneDate === undefined) appState.lastDoneDate = null;
                 advanceIfNewDay();
             } else {
                 if (kayit && !ayniAyar) {
@@ -7200,11 +7242,26 @@
 
         function goHome() {
             quizOn = false;
+            inReview = false; reviewStarted = false; restartPending = false;
             clearFeedback(); hideCardSpeak(); hideEndActions();
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('welcome-screen').style.display = 'flex';
             restoreWelcomeDefaults();
         }
+
+        // Ust cubuktaki ana sayfa butonu: yarim kalan is varsa once uyarir
+        function anaSayfayaDon() {
+            if (quizOn) {
+                if (!confirm('Testten \u00e7\u0131k\u0131yorsun. Bu testin sonucu kaydedilmeyecek. Ana sayfaya d\u00f6n\u00fcls\u00fcn m\u00fc?')) return;
+            } else if (inReview) {
+                if (!confirm('Tekrardan \u00e7\u0131k\u0131yorsun. Bug\u00fcn tekrar girdi\u011finde kald\u0131\u011f\u0131n yerden devam edebilirsin. Ana sayfaya d\u00f6n\u00fcls\u00fcn m\u00fc?')) return;
+            } else if (currentIndex > 0 && currentIndex < dailyPool.length) {
+                if (!confirm('Ana sayfaya d\u00f6nersen bug\u00fcnk\u00fc \u00e7al\u0131\u015fma ba\u015ftan ba\u015flar; bu oturumda ge\u00e7ti\u011fin kelimeleri yeniden g\u00f6r\u00fcrs\u00fcn. \u00d6\u011frendi\u011fin kelimeler ve g\u00fcn ilerlemen kaybolmaz. Devam edilsin mi?')) return;
+            }
+            goHome();
+        }
+
+        document.getElementById('home-top-btn').addEventListener('click', anaSayfayaDon);
 
         document.getElementById('quiz-btn').addEventListener('click', function(){
             document.getElementById('quiz-btn').textContent = '\uD83D\uDCDD \u00d6\u011frendiklerini Test Et';
@@ -7268,6 +7325,7 @@
                     _statCard('\u00d6\u011freniliyor', active) +
                     _statCard('Kalan', remaining) +
                     _statCard('G\u00fcn', appState.studyDay) +
+                    _statCard('Seri', (appState.streak || 0) + ' g\u00fcn') +
                 '</div>' +
                 '<div class="stat-bar-wrap"><div class="stat-bar" style="width:' + pct + '%;"></div></div>' +
                 '<div class="stat-bar-label">' + done + ' / ' + total + ' tamamland\u0131 (%' + pct + ')</div>' +
