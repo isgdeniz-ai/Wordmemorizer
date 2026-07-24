@@ -174,14 +174,15 @@
         #quiz-result-list span { color: #606770; }
         #quiz-result-head { font-size: 13px; font-weight: 700; color: #8a1327; padding: 8px 14px 2px; }
         #sound-btn { cursor: pointer; padding: 8px 12px; user-select: none; }
-        #home-bottom-btn { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 900;
+        /* Alt gezinme cizgisinin biraz uzerinde dursun; cihazin guvenli alanini da hesaba kat */
+        #home-bottom-btn { position: fixed; left: 50%; bottom: calc(38px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 900;
             display: inline-flex; align-items: center; gap: 7px; padding: 11px 22px; font-size: 14px; font-weight: 700;
             color: #1c1e21; background: #ffffff; border: 1px solid #dcdfe4; border-radius: 999px;
             box-shadow: 0 4px 14px rgba(0,0,0,0.10); cursor: pointer; -webkit-tap-highlight-color: transparent; }
         #home-bottom-btn:active { background: #f0f2f5; }
         #home-bottom-btn:focus { outline: none; }
         /* Alt butonun altinda icerik kalmasin */
-        .word-card { padding-bottom: 74px; }
+        .word-card { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
         #install-btn { display: none; width: 100%; margin-bottom: 18px; padding: 14px; font-size: 15px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: 2px solid #1877f2; border-radius: 12px; cursor: pointer; }
         #install-btn:active { background: #d5e9fb; }
     </style>
