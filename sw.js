@@ -1,7 +1,7 @@
 // Word Memorizer - service worker
 // HTML icin "once ag, olmazsa onbellek" (guncellemeler hemen gelsin)
 // Diger dosyalar icin "once onbellek" (hizli acilsin)
-const CACHE = 'wordmem-v8';
+const CACHE = 'wordmem-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -32,10 +32,12 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
 
-  // Sayfa istekleri: once agdan dene, basarisizsa onbellekten ver
+  // Sayfa istekleri: once agdan dene, basarisizsa onbellekten ver.
+  // ONEMLI: tarayicinin kendi HTTP onbellegini atla ({cache:'no-store'}),
+  // yoksa guncelleme yapildiginda kullaniciya eski sayfa donebiliyor.
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
+      fetch(req.url, { cache: 'no-store' })
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put('./index.html', copy)).catch(() => {});

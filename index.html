@@ -173,7 +173,15 @@
         #quiz-result-list b { color: #1c1e21; }
         #quiz-result-list span { color: #606770; }
         #quiz-result-head { font-size: 13px; font-weight: 700; color: #8a1327; padding: 8px 14px 2px; }
-        #sound-btn, #home-top-btn { cursor: pointer; padding: 8px 12px; user-select: none; }
+        #sound-btn { cursor: pointer; padding: 8px 12px; user-select: none; }
+        #home-bottom-btn { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 900;
+            display: inline-flex; align-items: center; gap: 7px; padding: 11px 22px; font-size: 14px; font-weight: 700;
+            color: #1c1e21; background: #ffffff; border: 1px solid #dcdfe4; border-radius: 999px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.10); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        #home-bottom-btn:active { background: #f0f2f5; }
+        #home-bottom-btn:focus { outline: none; }
+        /* Alt butonun altinda icerik kalmasin */
+        .word-card { padding-bottom: 74px; }
         #install-btn { display: none; width: 100%; margin-bottom: 18px; padding: 14px; font-size: 15px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: 2px solid #1877f2; border-radius: 12px; cursor: pointer; }
         #install-btn:active { background: #d5e9fb; }
     </style>
@@ -241,7 +249,6 @@
                 <div class="badge" id="level-badge">Kelime Modu</div>
                 <div class="badge" id="stats-btn" title="İstatistik">📊 İstatistik</div>
                 <div class="badge" id="sound-btn" title="Ses aç/kapat">🔊</div>
-                <div class="badge" id="home-top-btn" title="Ana Sayfa">🏠</div>
                 <div id="progress" class="badge">0 / 0</div>
             </header>
             <main class="word-card">
@@ -284,6 +291,7 @@
                     <button id="home-btn" class="primary-btn" style="background-color: #6c757d;">🏠 Ana Sayfa</button>
                 </div>
             </main>
+            <button id="home-bottom-btn" title="Ana Sayfa">🏠 Ana Sayfa</button>
         </div>
 
         <div id="stats-panel">
@@ -7261,7 +7269,7 @@
             goHome();
         }
 
-        document.getElementById('home-top-btn').addEventListener('click', anaSayfayaDon);
+        document.getElementById('home-bottom-btn').addEventListener('click', anaSayfayaDon);
 
         document.getElementById('quiz-btn').addEventListener('click', function(){
             document.getElementById('quiz-btn').textContent = '\uD83D\uDCDD \u00d6\u011frendiklerini Test Et';
