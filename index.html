@@ -98,7 +98,12 @@
         #test-question-type { font-size: 14px; color: #1877f2; font-weight: bold; text-align: center; margin-bottom: 10px; text-transform: uppercase; }
         #test-options-container { width: 100%; }
         .test-option { width: 100%; padding: 16px; margin-bottom: 12px; font-size: 16px; background-color: white; border: 2px solid #e4e6eb; border-radius: 12px; cursor: pointer; transition: all 0.2s; font-weight: 600; color: #1c1e21; }
-        .test-option:hover { border-color: #1877f2; background-color: #f0f2f5; }
+        @media (hover: hover) and (pointer: fine) {
+            .test-option:hover { border-color: #1877f2; background-color: #f0f2f5; }
+        }
+        .test-option { -webkit-tap-highlight-color: transparent; }
+        .test-option:focus { outline: none; }
+        #level-breakdown { font-size: 13px; font-weight: 700; color: #606770; text-align: center; margin-bottom: 14px; line-height: 1.6; }
 
         #test-result-screen { display: none; flex-direction: column; height: 100%; align-items: center; }
         .score-circle { width: 120px; height: 120px; border-radius: 50%; background: #1877f2; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; margin: 20px 0; box-shadow: 0 4px 15px rgba(24,119,242,0.3); }
@@ -303,9 +308,10 @@
             <h1 class="welcome-title">Test Analizi</h1>
             <div class="score-circle">
                 <div id="final-score">0</div>
-                <span>/ 100 Puan</span>
+                <span id="final-score-label">/ 20 Soru</span>
             </div>
             <div class="final-level-text" id="final-level-display">Seviyeniz: A1</div>
+            <div id="level-breakdown"></div>
             
             <div class="analysis-list" id="analysis-list"></div>
 
@@ -6114,33 +6120,81 @@
         // ==========================================
         // GELİŞMİŞ SEVİYE BELİRLEME TESTİ
         // ==========================================
-        const placementQuestions = [
-            { level: "A1", type: "Boşluk Doldurma", points: 1, q: "I _ an apple every day.", options: ["eats", "eat", "eating", "ate"], ans: "eat" },
-            { level: "A1", type: "Anlam Bulma", points: 1, q: "'Always' kelimesinin Türkçe karşılığı nedir?", options: ["Asla", "Bazen", "Her zaman", "Sıklıkla"], ans: "Her zaman" },
-            { level: "A1", type: "Boşluk Doldurma", points: 1, q: "They _ playing football now.", options: ["am", "is", "are", "do"], ans: "are" },
-            { level: "A1", type: "Anlam Bulma", points: 1, q: "'Never' kelimesinin anlamı nedir?", options: ["Sıklıkla", "Nadir", "Her zaman", "Asla"], ans: "Asla" },
-            { level: "A1", type: "Boşluk Doldurma", points: 1, q: "She _ a student.", options: ["am", "is", "are", "has"], ans: "is" },
-            { level: "A2", type: "Boşluk Doldurma", points: 2, q: "I didn't _ to work yesterday.", options: ["went", "gone", "go", "going"], ans: "go" },
-            { level: "A2", type: "Anlam Bulma", points: 2, q: "'Enough' kelimesinin anlamı nedir?", options: ["Eksik", "Fazla", "Yeterli", "Hiç"], ans: "Yeterli" },
-            { level: "A2", type: "Boşluk Doldurma", points: 2, q: "He is _ than his brother.", options: ["tall", "taller", "tallest", "more tall"], ans: "taller" },
-            { level: "A2", type: "Anlam Bulma", points: 2, q: "Türkçede 'bazen' anlamına gelen kelime hangisidir?", options: ["Sometimes", "Usually", "Always", "Never"], ans: "Sometimes" },
-            { level: "A2", type: "Boşluk Doldurma", points: 2, q: "I _ seen that movie yet.", options: ["don't", "didn't", "haven't", "hasn't"], ans: "haven't" },
-            { level: "B1", type: "Anlam Bulma", points: 3, q: "'Often' kelimesi aşağıdaki eş anlamlılardan hangisiyle eşleşir?", options: ["Rarely", "Frequently", "Never", "Barely"], ans: "Frequently" },
-            { level: "B1", type: "Boşluk Doldurma", points: 3, q: "We need to _ our options before deciding.", options: ["consider", "make", "take", "do"], ans: "consider" },
-            { level: "B1", type: "Anlam Bulma", points: 3, q: "Cümledeki 'rarely' kelimesinin anlamı nedir? 'He rarely complains.'", options: ["Sık sık", "Nadir", "Her zaman", "Sürekli"], ans: "Nadir" },
-            { level: "B1", type: "Boşluk Doldurma", points: 3, q: "I am looking forward to _ you.", options: ["see", "saw", "seen", "seeing"], ans: "seeing" },
-            { level: "B1", type: "Boşluk Doldurma", points: 3, q: "He is responsible _ managing the team.", options: ["to", "for", "with", "about"], ans: "for" },
-            { level: "B2", type: "Boşluk Doldurma", points: 6, q: "We don't have _ evidence to prove his guilt.", options: ["sufficient", "many", "scarcely", "a few"], ans: "sufficient" },
-            { level: "B2", type: "Anlam Bulma", points: 6, q: "'Farkındalık' anlamına gelen İngilizce kelime hangisidir?", options: ["Ignorance", "Awareness", "Confidence", "Hesitation"], ans: "Awareness" },
-            { level: "B2", type: "Boşluk Doldurma", points: 6, q: "By the time we arrive, the train _ left.", options: ["will have", "would has", "will", "is going to"], ans: "will have" },
-            { level: "B2", type: "Anlam Bulma", points: 6, q: "'Adequate' kelimesinin en yakın eş anlamlısı nedir?", options: ["Insufficient", "Abundant", "Sufficient", "Scarce"], ans: "Sufficient" },
-            { level: "B2", type: "Boşluk Doldurma", points: 6, q: "She _ out that the report contained errors.", options: ["pointed", "made", "took", "put"], ans: "pointed" },
-            { level: "C1", type: "Boşluk Doldurma", points: 8, q: "The company's new approach is highly _.", options: ["unprecedented", "basic", "predictable", "common"], ans: "unprecedented" },
-            { level: "C1", type: "Anlam Bulma", points: 8, q: "'Inevitable' kelimesinin Türkçe karşılığı nedir?", options: ["Olası", "Kaçınılmaz", "Gereksiz", "Şüpheli"], ans: "Kaçınılmaz" },
-            { level: "C1", type: "Boşluk Doldurma", points: 8, q: "She was on the _ of resigning when she got a promotion.", options: ["edge", "verge", "limit", "border"], ans: "verge" },
-            { level: "C1", type: "Anlam Bulma", points: 8, q: "'Mitigate' kelimesinin anlamı nedir?", options: ["Kötüleştirmek", "Görmezden gelmek", "Hafifletmek/Azaltmak", "Suçlamak"], ans: "Hafifletmek/Azaltmak" },
-            { level: "C1", type: "Boşluk Doldurma", points: 8, q: "To _ the truth, I was completely disappointed.", options: ["say", "speak", "tell", "talk"], ans: "tell" }
+        // ==========================================
+        // SEVIYE BELIRLEME TESTI - SORU BANKASI
+        // Tamami KELIME BILGISI olcer. Gramer sorusu yoktur:
+        // bosluk doldurmalarda tum siklar ayni sozcuk turu ve ayni cekimdedir,
+        // dolayisiyla dogru cevabi yalnizca ANLAM belirler.
+        // Tipler: usage (Turkce tanimdan kelime) | cloze (bosluk doldurma)
+        //         meaning (anlam) | synonym (en yakin anlamli)
+        // ==========================================
+        const placementBank = [
+            // ---------- A1 ----------
+            { level:"A1", type:"usage",   q:"Bir kişinin doğduğu günün her yıl kutlanan yıl dönümü hangisidir?", options:["birthday","holiday","weekend","evening"], ans:"birthday" },
+            { level:"A1", type:"meaning", q:"'Always' kelimesinin Türkçe karşılığı nedir?", options:["Her zaman","Asla","Bazen","Nadiren"], ans:"Her zaman" },
+            { level:"A1", type:"cloze",   q:"I drink a glass of _____ every morning.", options:["milk","chair","table","window"], ans:"milk" },
+            { level:"A1", type:"usage",   q:"Yemeklerin pişirildiği ve hazırlandığı oda hangisidir?", options:["kitchen","bedroom","garden","garage"], ans:"kitchen" },
+            { level:"A1", type:"meaning", q:"'Bazen' anlamına gelen İngilizce kelime hangisidir?", options:["sometimes","always","never","often"], ans:"sometimes" },
+            { level:"A1", type:"cloze",   q:"She is very _____; she helps everyone.", options:["kind","angry","lazy","tired"], ans:"kind" },
+            { level:"A1", type:"usage",   q:"Görmemizi sağlayan organ hangisidir?", options:["eye","ear","hand","foot"], ans:"eye" },
+            { level:"A1", type:"meaning", q:"'Cheap' kelimesinin anlamı nedir?", options:["Ucuz","Pahalı","Yeni","Eski"], ans:"Ucuz" },
+
+            // ---------- A2 ----------
+            { level:"A2", type:"usage",   q:"Seçenekler arasından birini seçip karara varmak anlamında kullanılır. Hangi kelime?", options:["decide","repeat","listen","arrive"], ans:"decide" },
+            { level:"A2", type:"cloze",   q:"The shop is _____ on Sundays, so we cannot buy anything.", options:["closed","open","ready","cheap"], ans:"closed" },
+            { level:"A2", type:"meaning", q:"'Enough' kelimesinin anlamı nedir?", options:["Yeterli","Fazla","Eksik","Boş"], ans:"Yeterli" },
+            { level:"A2", type:"usage",   q:"Uçakların iniş ve kalkış yaptığı yer hangisidir?", options:["airport","station","hospital","library"], ans:"airport" },
+            { level:"A2", type:"cloze",   q:"He was very tired, so he decided to _____ for an hour.", options:["rest","shout","climb","cook"], ans:"rest" },
+            { level:"A2", type:"meaning", q:"'Dangerous' kelimesinin Türkçe karşılığı nedir?", options:["Tehlikeli","Güvenli","Kolay","Ucuz"], ans:"Tehlikeli" },
+            { level:"A2", type:"usage",   q:"Günleri, haftaları ve ayları gösteren şey hangisidir?", options:["calendar","notebook","mirror","basket"], ans:"calendar" },
+            { level:"A2", type:"synonym", q:"'Begin' kelimesine anlamca en yakın kelime hangisidir?", options:["start","finish","stop","wait"], ans:"start" },
+
+            // ---------- B1 ----------
+            { level:"B1", type:"usage",   q:"Kötü bir şeyin olmasını önceden engellemek anlamında kullanılır. Hangi kelime?", options:["prevent","provide","promise","produce"], ans:"prevent" },
+            { level:"B1", type:"cloze",   q:"The heavy rain _____ the football match.", options:["cancelled","celebrated","collected","completed"], ans:"cancelled" },
+            { level:"B1", type:"meaning", q:"'Nadiren' anlamına gelen İngilizce kelime hangisidir?", options:["rarely","frequently","always","usually"], ans:"rarely" },
+            { level:"B1", type:"synonym", q:"'Often' kelimesine anlamca en yakın kelime hangisidir?", options:["frequently","rarely","never","hardly"], ans:"frequently" },
+            { level:"B1", type:"usage",   q:"Birine ne yapması gerektiği konusunda yol göstermek, öğüt vermek. Hangi kelime?", options:["advise","admire","announce","arrange"], ans:"advise" },
+            { level:"B1", type:"cloze",   q:"We should _____ all the options before making a decision.", options:["consider","decorate","translate","celebrate"], ans:"consider" },
+            { level:"B1", type:"meaning", q:"'Achievement' kelimesinin anlamı nedir?", options:["Başarı","Başarısızlık","Şans","Deneme"], ans:"Başarı" },
+            { level:"B1", type:"usage",   q:"Bir işin tamamlanması gereken son tarih hangisidir?", options:["deadline","schedule","progress","attempt"], ans:"deadline" },
+
+            // ---------- B2 ----------
+            { level:"B2", type:"usage",   q:"Bir bilginin doğru olduğunu kesinleştirmek, teyit etmek. Hangi kelime?", options:["confirm","assume","suggest","ignore"], ans:"confirm" },
+            { level:"B2", type:"cloze",   q:"We do not have _____ evidence to prove his guilt.", options:["sufficient","previous","cheerful","talkative"], ans:"sufficient" },
+            { level:"B2", type:"meaning", q:"'Farkındalık' anlamına gelen İngilizce kelime hangisidir?", options:["awareness","ignorance","confidence","hesitation"], ans:"awareness" },
+            { level:"B2", type:"synonym", q:"'Adequate' kelimesine anlamca en yakın kelime hangisidir?", options:["sufficient","insufficient","abundant","scarce"], ans:"sufficient" },
+            { level:"B2", type:"usage",   q:"Olumsuz bir durumun sorumluluğunu birine yüklemek. Hangi kelime?", options:["blame","praise","forgive","reward"], ans:"blame" },
+            { level:"B2", type:"cloze",   q:"She managed to _____ her anger during the meeting.", options:["conceal","announce","expand","deliver"], ans:"conceal" },
+            { level:"B2", type:"meaning", q:"'Reluctant' kelimesinin anlamı nedir?", options:["İsteksiz","Hevesli","Kararlı","Sabırlı"], ans:"İsteksiz" },
+            { level:"B2", type:"usage",   q:"Bir isteği veya emri kabul etmeyip geri çevirmek. Hangi kelime?", options:["refuse","accept","approve","permit"], ans:"refuse" },
+
+            // ---------- C1 ----------
+            { level:"C1", type:"meaning", q:"'Inevitable' kelimesinin Türkçe karşılığı nedir?", options:["Kaçınılmaz","Olası","Gereksiz","Şüpheli"], ans:"Kaçınılmaz" },
+            { level:"C1", type:"usage",   q:"Bir acının veya sorunun şiddetini azaltmak, hafifletmek. Hangi kelime?", options:["mitigate","aggravate","accelerate","dominate"], ans:"mitigate" },
+            { level:"C1", type:"cloze",   q:"Her contribution was _____; without her the project would have failed.", options:["crucial","trivial","optional","temporary"], ans:"crucial" },
+            { level:"C1", type:"synonym", q:"'Notorious' kelimesine anlamca en yakın kelime hangisidir?", options:["infamous","renowned","anonymous","modest"], ans:"infamous" },
+            { level:"C1", type:"usage",   q:"Bir kararın veya davranışın haklı olduğunu gerekçelerle göstermek. Hangi kelime?", options:["justify","neglect","postpone","withdraw"], ans:"justify" },
+            { level:"C1", type:"cloze",   q:"The results were _____, so the researchers repeated the experiment.", options:["inconclusive","definitive","remarkable","affordable"], ans:"inconclusive" },
+            { level:"C1", type:"meaning", q:"'Scrutiny' kelimesinin anlamı nedir?", options:["Dikkatli inceleme","Kısa özet","Genel bakış","Rastgele seçim"], ans:"Dikkatli inceleme" },
+            { level:"C1", type:"usage",   q:"Yaygın kabul gören bir görüşe karşı çıkmak, sorgulamak. Hangi kelime?", options:["challenge","comply","conform","endorse"], ans:"challenge" }
         ];
+
+        const PLACEMENT_LEVELS = ["A1","A2","B1","B2","C1"];
+        const PLACEMENT_PER_LEVEL = 4;   // her seviyeden kac soru sorulacak
+        const TYPE_LABEL = { usage: "Tanımdan Kelime", cloze: "Boşluk Doldurma", meaning: "Anlam Bulma", synonym: "En Yakın Anlam" };
+
+        // Her seviyeden rastgele secim: testi her tekrarladiginda farkli sorular gelir
+        let placementQuestions = [];
+        function buildPlacementTest() {
+            const secilen = [];
+            PLACEMENT_LEVELS.forEach(function(L) {
+                const havuz = placementBank.filter(function(q){ return q.level === L; });
+                const karisik = _shuffle(havuz.slice());
+                for (let i = 0; i < karisik.length && i < PLACEMENT_PER_LEVEL; i++) secilen.push(karisik[i]);
+            });
+            return secilen;   // kolaydan zora sirali kalir
+        }
 
         let pTestIndex = 0;
         let testHistory = []; 
@@ -6148,6 +6202,7 @@
         function startPlacementTest() {
             document.getElementById('welcome-screen').style.display = "none";
             document.getElementById('placement-test-screen').style.display = "flex";
+            placementQuestions = buildPlacementTest();
             pTestIndex = 0;
             testHistory = [];
             loadPlacementQuestion();
@@ -6161,13 +6216,13 @@
             
             const q = placementQuestions[pTestIndex];
             document.getElementById('test-progress').textContent = (pTestIndex + 1) + " / " + placementQuestions.length;
-            document.getElementById('test-question-type').textContent = q.type;
+            document.getElementById('test-question-type').textContent = (TYPE_LABEL[q.type] || q.type) + '  \u00b7  ' + q.level;
             document.getElementById('test-question-text').textContent = q.q;
             
             const container = document.getElementById('test-options-container');
             container.innerHTML = "";
             
-            let shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+            let shuffledOptions = _shuffle(q.options.slice());
             shuffledOptions.forEach(opt => {
                 let btn = document.createElement('button');
                 btn.className = "test-option";
@@ -6177,7 +6232,8 @@
                     testHistory.push({
                         question: q.q,
                         level: q.level,
-                        points: q.points,
+                        type: q.type,
+                        points: q.points || 1,
                         userAnswer: opt,
                         correctAnswer: q.ans,
                         isCorrect: isCorrect
@@ -6212,19 +6268,42 @@
                 
                 let answerClass = item.isCorrect ? 'ans-correct' : 'ans-wrong';
                 
-                div.innerHTML = '<strong>Soru ' + (index + 1) + ' (' + item.level + '):</strong> ' + item.question + '<br>Sizin Cevabiniz: <span class="' + answerClass + '">' + item.userAnswer + '</span> ' + resultText;
+                div.innerHTML = '<strong>Soru ' + (index + 1) + ' (' + item.level + ' \u00b7 ' + (TYPE_LABEL[item.type] || '') + '):</strong> ' + item.question + '<br>Sizin Cevabınız: <span class="' + answerClass + '">' + item.userAnswer + '</span> ' + resultText;
                 
                 listContainer.appendChild(div);
             });
 
-            determinedLevelGlobal = "A1";
-            if (totalScore >= 86) determinedLevelGlobal = "C1";
-            else if (totalScore >= 61) determinedLevelGlobal = "B2";
-            else if (totalScore >= 36) determinedLevelGlobal = "B1";
-            else if (totalScore >= 16) determinedLevelGlobal = "A2";
+            // --- SEVIYE BELIRLEME: her seviyedeki dogruluk oranina bakilir ---
+            // A1'den yukari dogru yurunur; %60'in altina dusulen ilk seviyede durulur.
+            const dogruSay = {}, toplamSay = {};
+            testHistory.forEach(function(it) {
+                toplamSay[it.level] = (toplamSay[it.level] || 0) + 1;
+                if (it.isCorrect) dogruSay[it.level] = (dogruSay[it.level] || 0) + 1;
+            });
 
-            document.getElementById('final-score').textContent = totalScore;
+            determinedLevelGlobal = "A1";
+            for (let i = 0; i < PLACEMENT_LEVELS.length; i++) {
+                const L = PLACEMENT_LEVELS[i];
+                const t = toplamSay[L] || 0, d = dogruSay[L] || 0;
+                if (t > 0 && (d / t) >= 0.6) determinedLevelGlobal = L;
+                else break;
+            }
+
+            const toplamDogru = testHistory.filter(function(it){ return it.isCorrect; }).length;
+            document.getElementById('final-score').textContent = toplamDogru;
+            const lbl = document.getElementById('final-score-label');
+            if (lbl) lbl.textContent = '/ ' + testHistory.length + ' Doğru';
             document.getElementById('final-level-display').textContent = "Seviyeniz: " + determinedLevelGlobal;
+
+            const bd = document.getElementById('level-breakdown');
+            if (bd) {
+                bd.innerHTML = PLACEMENT_LEVELS.map(function(L) {
+                    const t = toplamSay[L] || 0, d = dogruSay[L] || 0;
+                    if (!t) return '';
+                    const gecti = (d / t) >= 0.6;
+                    return '<span style="color:' + (gecti ? '#1a7f37' : '#c1352c') + ';">' + L + ': ' + d + '/' + t + '</span>';
+                }).filter(Boolean).join(' &nbsp;·&nbsp; ');
+            }
         }
 
         function returnToWelcome() {
