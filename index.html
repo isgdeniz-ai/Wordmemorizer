@@ -186,8 +186,9 @@
         #quiz-result-head { font-size: 13px; font-weight: 700; color: #8a1327; padding: 8px 14px 2px; }
         #sound-btn { cursor: pointer; padding: 8px 12px; user-select: none; }
         /* Alt cubuk: testler ve ana sayfa. Gun bitince testler burada acilir. */
-        #bottom-bar { position: fixed; left: 50%; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
-            z-index: 900; display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; max-width: 94vw; }
+        /* Ana sayfa solda, Alistirma sagda: birbirine girmezler */
+        #bottom-bar { position: fixed; left: 14px; bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+            z-index: 900; display: flex; gap: 8px; align-items: center; }
         .bar-btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 18px; font-size: 14px; font-weight: 700;
             color: #1c1e21; background: #ffffff; border: 1px solid #dcdfe4; border-radius: 999px;
             box-shadow: 0 4px 14px rgba(0,0,0,0.12); cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
