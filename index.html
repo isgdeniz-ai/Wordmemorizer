@@ -193,8 +193,22 @@
             box-shadow: 0 4px 14px rgba(0,0,0,0.12); cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
         .bar-btn:active { transform: scale(0.97); }
         .bar-btn:focus { outline: none; }
-        .bar-btn.quiz { background: #1877f2; color: #fff; border-color: #1877f2; }
-        .bar-btn.write { background: #7c4dff; color: #fff; border-color: #7c4dff; }
+        .bar-btn.practice { background: #1877f2; color: #fff; border-color: #1877f2; }
+        #fab-arrow { font-size: 11px; opacity: .9; transition: transform .2s; display: inline-block; }
+        #practice-wrap.open #fab-arrow { transform: rotate(180deg); }
+        /* Sag altta alistirma butonu ve yukari acilan menu */
+        #practice-wrap { position: fixed; right: 14px; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); z-index: 950; }
+        #practice-menu { position: absolute; right: 0; bottom: calc(100% + 10px); display: none; flex-direction: column; gap: 8px;
+            background: #ffffff; border: 1px solid #e4e6eb; border-radius: 14px; padding: 8px; box-shadow: 0 8px 26px rgba(0,0,0,0.16);
+            min-width: 208px; transform-origin: bottom right; }
+        #practice-wrap.open #practice-menu { display: flex; animation: menuUp .18s ease both; }
+        @keyframes menuUp { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
+        .menu-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 14px; font-size: 14px; font-weight: 700;
+            color: #1c1e21; background: #f5f6f7; border: 1px solid #e9ebee; border-radius: 10px; cursor: pointer;
+            text-align: left; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+        .menu-item:active { background: #e4e6eb; }
+        .menu-item:focus { outline: none; }
+        @media (prefers-reduced-motion: reduce) { #practice-wrap.open #practice-menu { animation: none; } }
         /* Alt butonun altinda icerik kalmasin */
         .word-card { padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px)); }
         #install-btn { display: none; width: 100%; margin-bottom: 18px; padding: 14px; font-size: 15px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: 2px solid #1877f2; border-radius: 12px; cursor: pointer; }
@@ -309,9 +323,14 @@
                 <div id="quiz-result-list"></div>
             </main>
             <div id="bottom-bar">
-                <button id="quiz-btn" class="bar-btn quiz" style="display:none;">📝 Şıklı Test</button>
-                <button id="quiz-write-btn" class="bar-btn write" style="display:none;">✍️ Yazma</button>
                 <button id="home-bottom-btn" class="bar-btn" title="Ana Sayfa">🏠 Ana Sayfa</button>
+            </div>
+            <div id="practice-wrap" style="display:none;">
+                <div id="practice-menu">
+                    <button id="quiz-btn" class="menu-item">📝 Şıklı Test</button>
+                    <button id="quiz-write-btn" class="menu-item">✍️ Yazma Alıştırması</button>
+                </div>
+                <button id="practice-fab" class="bar-btn practice">🎯 Alıştırma <span id="fab-arrow">▴</span></button>
             </div>
         </div>
 
@@ -6748,8 +6767,6 @@
             document.getElementById('check-btn').style.display = "none";
             document.getElementById('review-restart-btn').style.display = "none";
             document.getElementById('next-btn').style.display = "none";
-            document.getElementById('quiz-btn').textContent = "\uD83D\uDCDD \u015e\u0131kl\u0131 Test";
-            document.getElementById('quiz-write-btn').textContent = "\u270D\uFE0F Yazma";
             document.getElementById('quiz-result-list').style.display = "none";
             refreshBottomBar();
             if (!sessizAcilis) { celebrate(); playFanfare(); }
@@ -7224,13 +7241,17 @@
         // Alt cubuk: gunluk gorev bittiyse test butonlari acilir ve orada kalir.
         // Kelime ilerlemesine bagli degildir; kullanici istedigi an teste girebilir.
         function refreshBottomBar() {
-            const q1 = document.getElementById('quiz-btn');
-            const q2 = document.getElementById('quiz-write-btn');
-            if (!q1 || !q2) return;
+            const wrap = document.getElementById('practice-wrap');
+            if (!wrap) return;
             const gunBitti = !!(appState && appState.sessionCompleted && appState.sessionDate === todayStr());
             const goster = gunBitti && !quizOn;
-            q1.style.display = goster ? 'inline-flex' : 'none';
-            q2.style.display = goster ? 'inline-flex' : 'none';
+            wrap.style.display = goster ? 'block' : 'none';
+            if (!goster) kapatAlistirmaMenusu();
+        }
+
+        function kapatAlistirmaMenusu() {
+            const wrap = document.getElementById('practice-wrap');
+            if (wrap) wrap.classList.remove('open');
         }
 
         // Kullanicinin gordugu kelimeler = tamamlananlar + halen calisilanlar
@@ -7559,8 +7580,6 @@
             } else {
                 liste.style.display = 'none';
             }
-            document.getElementById('quiz-btn').textContent = '\uD83D\uDCDD \u015e\u0131kl\u0131 Test';
-            document.getElementById('quiz-write-btn').textContent = '\u270D\uFE0F Yazma';
             refreshBottomBar();
             if (toplam > 0 && quizScore === toplam) { celebrate(); playFanfare(); }
         }
@@ -7588,11 +7607,25 @@
 
         document.getElementById('home-bottom-btn').addEventListener('click', anaSayfayaDon);
 
+        // Sag alttaki "Alistirma" butonu: yukari dogru menu acar
+        document.getElementById('practice-fab').addEventListener('click', function(ev){
+            ev.stopPropagation();
+            document.getElementById('practice-wrap').classList.toggle('open');
+        });
         document.getElementById('quiz-btn').addEventListener('click', function(){
+            kapatAlistirmaMenusu();
             startQuiz('choice');
         });
         document.getElementById('quiz-write-btn').addEventListener('click', function(){
+            kapatAlistirmaMenusu();
             startQuiz('write');
+        });
+        // Menu disina dokununca kapansin
+        document.addEventListener('click', function(ev){
+            const wrap = document.getElementById('practice-wrap');
+            if (!wrap || !wrap.classList.contains('open')) return;
+            if (ev.target && ev.target.closest && ev.target.closest('#practice-wrap')) return;
+            kapatAlistirmaMenusu();
         });
 
         const soundBtn = document.getElementById('sound-btn');
