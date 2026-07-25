@@ -163,6 +163,7 @@
             .fb-mark path { animation: none !important; stroke-dashoffset: 0 !important; }
         }
         .quiz-q { font-size: 15px; font-weight: 700; color: #606770; margin-bottom: 4px; }
+        .quiz-sentence { font-size: 19px; font-weight: 700; color: #1c1e21; line-height: 1.45; padding: 4px 2px; }
         .quiz-target { font-size: 30px; font-weight: 800; color: #1c1e21; line-height: 1.2; }
         .quiz-hint { font-size: 13px; font-weight: 600; color: #8a8d91; margin-top: 2px; }
         #end-actions { width: 100%; display: none; }
@@ -288,7 +289,8 @@
                 <button id="review-restart-btn" class="primary-btn" style="display:none; background-color: #6c757d; margin-top: 12px;">Tekrarı Baştan Al</button>
                 <div id="quiz-result-list"></div>
                 <div id="end-actions">
-                    <button id="quiz-btn" class="primary-btn">📝 Öğrendiklerini Test Et</button>
+                    <button id="quiz-btn" class="primary-btn">📝 Şıklı Test</button>
+                    <button id="quiz-write-btn" class="primary-btn" style="background-color: #7c4dff;">✍️ Yazma Testi</button>
                     <button id="home-btn" class="primary-btn" style="background-color: #6c757d;">🏠 Ana Sayfa</button>
                 </div>
             </main>
@@ -1178,7 +1180,7 @@
             { en: "compensation", tr: "tazminat", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "She received compensation for her injuries.", usage: "Zarar karşılığı ödenen bedel.", synonyms: [] },
             { en: "compete", tr: "yarışmak/rekabet etmek", type: "v.", level: "B1", day: 1, mistakeCount: 0, ex: "She competes in swimming.", usage: "Bir ödül veya üstünlük için mücadele etmek.", synonyms: [] },
             { en: "competence", tr: "yetkinlik", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "No one doubts her professional competence.", usage: "Bir işi gerektiği gibi yapabilme becerisi.", synonyms: [] },
-            { en: "competent", tr: "yetkin/ehil", type: "adj.", level: "C1", day: 1, mistakeCount: 0, ex: "She is a highly competent manager.", usage: "İşinin gereklerini karşılayan kişi.", synonyms: [] },
+            { en: "competent", tr: "yetkin/ehil", type: "adj.", level: "C1", day: 1, mistakeCount: 0, ex: "She is a highly competent manager.", usage: "İşi gerçekten iyi yapabilen kişiyi anlatır; fiilî beceriyi vurgular. Belge ve diploma vurgusu taşıyan qualified ile karıştırılmamalıdır: biri qualified olup competent olmayabilir.", synonyms: [] },
             { en: "competition", tr: "yarışma/rekabet", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "She won the singing competition.", usage: "Yarışma etkinliği veya piyasadaki rekabet.", synonyms: [] },
             { en: "competitive", tr: "rekabetçi/rekabete dayalı", type: "adj.", level: "B2", day: 1, mistakeCount: 0, ex: "The job market is very competitive.", usage: "Rekabetin yoğun olduğu veya kazanmayı seven.", synonyms: [] },
             { en: "competitor", tr: "rakip/yarışmacı", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "Our main competitor lowered its prices.", usage: "Aynı alanda yarışan kişi veya şirket.", synonyms: [] },
@@ -3742,7 +3744,7 @@
             { en: "put", tr: "koymak/yerleştirmek", type: "v.", level: "A1", day: 1, mistakeCount: 0, ex: "Where did you put my car keys?", usage: "Düzensiz bir fiildir ve 3 hali de aynıdır (put, put, put).", synonyms: [] },
             { en: "puzzle", tr: "bulmaca/kafasını karıştırmak", type: "n., v.", level: "B2", day: 1, mistakeCount: 0, ex: "Her sudden decision puzzled everyone.", usage: "Zeka oyunu; fiil olarak şaşırtmak.", synonyms: [] },
             { en: "qualification", tr: "nitelik/vasıf/belge", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "He has all the right qualifications for this job.", usage: "Bir işi yapabilmek için gereken eğitim, belge, tecrübe veya yetenektir.", synonyms: [] },
-            { en: "qualified", tr: "nitelikli/kalifiye", type: "adj.", level: "B1", day: 1, mistakeCount: 0, ex: "We are looking for highly qualified engineers.", usage: "Gerekli yeteneklere, sertifikalara ve deneyime sahip eğitimli kişileri tanımlar.", synonyms: [] },
+            { en: "qualified", tr: "nitelikli/kalifiye", type: "adj.", level: "B1", day: 1, mistakeCount: 0, ex: "We are looking for highly qualified engineers.", usage: "Gerekli diploma, sertifika ve eğitime sahip olmayı anlatır; kâğıt üzerindeki yeterliliği vurgular. İş ilanlarında qualified candidates kalıbı yaygındır. Fiilî beceriyi anlatan competent ile karıştırılmamalıdır.", synonyms: [] },
             { en: "qualify", tr: "hak kazanmak/yeterlilik kazanmak", type: "v.", level: "B1", day: 1, mistakeCount: 0, ex: "Her score was enough to qualify for the final round.", usage: "Bir yarışmaya katılmaya hak kazanmak veya bir iş için yeterli standartlara ulaşmaktır.", synonyms: [] },
             { en: "quality", tr: "kalite/nitelik", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "This brand is famous for its high quality.", usage: "Bir şeyin ne kadar iyi olduğunu belirten standarttır. 'Quantity' (miktar) ile karıştırılmamalıdır.", synonyms: [] },
             { en: "quantity", tr: "miktar/adet", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "We need a large quantity of paper for the office.", usage: "Sayı veya ölçü olarak ne kadar olduğunu ifade eder. 'Quality' (kalite) kelimesinin zıttı gibi düşünülebilir.", synonyms: [] },
@@ -5918,7 +5920,95 @@
             ["virus","bug","infection"],
             ["nutrition","regime"],
             ["fitness","condition","form","shape"],
-            ["muscle","strength","tissue"]
+            ["muscle","strength","tissue"],
+            ["competent","qualified","capable","skilled"],
+            ["able","capable"],
+            ["abandon","desert"],
+            ["accomplish","achieve","attain"],
+            ["succeed","manage"],
+            ["absurd","ridiculous"],
+            ["silly","stupid"],
+            ["acceptance","approval"],
+            ["adapt","adjust","accommodate"],
+            ["disclose","reveal","expose"],
+            ["terminate","abolish"],
+            ["complement","supplement"],
+            ["coincidence","chance"],
+            ["assemble","gather"],
+            ["conceal","hide"],
+            ["consent","agree"],
+            ["diminish","decrease","reduce"],
+            ["endure","tolerate","bear"],
+            ["essential","vital","crucial"],
+            ["evident","obvious","apparent"],
+            ["forbid","prohibit","ban"],
+            ["fundamental","basic","essential"],
+            ["genuine","authentic","real"],
+            ["enormous","huge"],
+            ["hazard","danger","risk"],
+            ["humble","modest"],
+            ["immense","vast","enormous"],
+            ["imply","suggest","indicate"],
+            ["inquire","ask"],
+            ["intelligent","clever","smart"],
+            ["justify","defend"],
+            ["magnificent","superb"],
+            ["reduce","ease"],
+            ["obtain","acquire","gain"],
+            ["obstacle","barrier"],
+            ["outcome","result","consequence"],
+            ["peculiar","strange","odd"],
+            ["persist","continue"],
+            ["portion","part","share"],
+            ["precise","exact","accurate"],
+            ["prevent","avoid"],
+            ["thrive","flourish"],
+            ["purchase","buy"],
+            ["rapid","quick","fast"],
+            ["reside","live"],
+            ["restrict","limit"],
+            ["reveal","disclose"],
+            ["seldom","rarely"],
+            ["sincere","honest"],
+            ["sufficient","adequate","enough"],
+            ["summit","peak","top"],
+            ["rapid","quick"],
+            ["terrify","frighten","scare"],
+            ["tremendous","huge","enormous"],
+            ["utilize","use"],
+            ["wealthy","rich"],
+            ["withdraw","retreat"],
+            ["anticipate","expect"],
+            ["assist","help","aid"],
+            ["cease","stop","halt"],
+            ["commence","begin","start"],
+            ["confess","admit"],
+            ["demonstrate","show","prove"],
+            ["depart","leave"],
+            ["eliminate","remove"],
+            ["emphasize","stress","highlight"],
+            ["encounter","meet"],
+            ["examine","inspect"],
+            ["frequent","common"],
+            ["illustrate","demonstrate"],
+            ["notorious","infamous"],
+            ["numerous","many"],
+            ["observe","watch","notice"],
+            ["permit","allow"],
+            ["postpone","delay"],
+            ["preserve","conserve","maintain"],
+            ["pursue","chase","follow"],
+            ["relevant","related"],
+            ["require","need"],
+            ["respond","reply","answer"],
+            ["retain","keep"],
+            ["reveal","show"],
+            ["select","choose","pick"],
+            ["significant","important"],
+            ["subsequent","following","next"],
+            ["transform","convert","change"],
+            ["urge","encourage"],
+            ["confirm","prove"]
         ];
 
         // --- Es anlamli baglantilari: kompakt grup listesinden calisma aninda kurulur ---
@@ -6592,7 +6682,7 @@
             }
         }
 
-        function showSessionDone() {
+        function showSessionDone(sessizAcilis) {
             const kalanHavuz = appState ? appState.pool.length : 0;
             const biten = appState ? appState.completed.length : 0;
             document.getElementById('progress').textContent = "Bitti";
@@ -6614,8 +6704,7 @@
             document.getElementById('quiz-btn').textContent = "\uD83D\uDCDD \u00d6\u011frendiklerini Test Et";
             document.getElementById('quiz-result-list').style.display = "none";
             document.getElementById('end-actions').style.display = "block";
-            celebrate();
-            playFanfare();
+            if (!sessizAcilis) { celebrate(); playFanfare(); }
         }
 
         function showReviewIntro(rev) {
@@ -6778,6 +6867,15 @@
             dailyPool = [...currentSessionPool];
             currentIndex = 0;
             saveState();
+
+            // Bugunun calismasi zaten bitmisse bastan gectirme: dogrudan bitis ekranini goster
+            // (testler oradan acilir). Kutlama tekrar oynamaz.
+            if (appState.sessionCompleted && appState.sessionDate === todayStr()
+                && !(appState.activeReview && appState.activeReview.words && appState.activeReview.words.length > 0)) {
+                currentIndex = dailyPool.length;
+                showSessionDone(true);
+                return;
+            }
 
             // Yarim kalan tekrar varsa (ayni gun icinde) kaldigi yerden devam et
             if (appState.activeReview && appState.activeReview.words && appState.activeReview.words.length > 0) {
@@ -6957,6 +7055,7 @@
         }
 
         document.getElementById('check-btn').onclick = () => {
+            if (quizOn && currentMode === 'quizwrite') { handleQuizWrite(); return; }
             if (currentMode !== "typing") return;
             const raw = document.getElementById('turkish-input').value.trim();
             if (raw === "") return;
@@ -7071,6 +7170,8 @@
         // Gun motoruna DOKUNMAZ: ilerleme, hata sayisi ve havuz degismez.
         // ==========================================
         let quizOn = false, quizList = [], quizIndex = 0, quizScore = 0, quizWrong = [], quizAnswered = false;
+        let quizMode = 'choice';      // 'choice' = siklı, 'write' = yazma
+        let writeRetry = false;       // yanlis yazimdan sonra dogrusunu bir kez yazma asamasi
         const QUIZ_MAX = 15;
 
         function hideEndActions() {
@@ -7116,11 +7217,52 @@
             return _shuffle(opts);
         }
 
-        function buildQuiz() {
+        // Ornek cumlede kelimenin gectigi yeri bulur (cekimli haliyle birlikte).
+        // Bulamazsa null doner; o kelime yazma testine alinmaz.
+        function _cumledeKelimeyiBul(en, ex) {
+            if (!en || !ex) return null;
+            const exl = ex.toLowerCase();
+            const w = en.toLowerCase();
+            if (w.indexOf(' ') >= 0 || w.indexOf('-') >= 0) {
+                const i = exl.indexOf(w);
+                return i >= 0 ? { start: i, len: w.length, form: exl.substr(i, w.length) } : null;
+            }
+            const kokler = [w];
+            const son = w.charAt(w.length - 1);
+            if (son === 'e') kokler.push(w.slice(0, -1));
+            if (son === 'y') kokler.push(w.slice(0, -1) + 'i');
+            if ('bdgklmnprt'.indexOf(son) >= 0) kokler.push(w + son);   // admit -> admitted
+            const ekler = ['', 's', 'es', 'ed', 'd', 'ing', 'ies', 'ied'];
+            const adaylar = {};
+            kokler.forEach(function(k) { ekler.forEach(function(e) { adaylar[k + e] = true; }); });
+            const re = /[a-z']+/g;
+            let m;
+            while ((m = re.exec(exl)) !== null) {
+                if (adaylar[m[0]]) return { start: m.index, len: m[0].length, form: m[0] };
+            }
+            return null;
+        }
+
+        // Yazma sorusu: cumlede kelimenin yeri bosluk yapilir
+        function buildWriteQuestion(w) {
+            const yer = _cumledeKelimeyiBul(w.en, w.ex);
+            if (!yer) return null;
+            const bosluk = w.ex.substring(0, yer.start) + '_____' + w.ex.substring(yer.start + yer.len);
+            // Hem sozluk hali hem cumledeki cekimli hali kabul edilir (gramer cezasi olmasin)
+            const kabul = [w.en, yer.form];
+            return { type: 'write', word: w, correct: w.en, sentence: bosluk, accepted: kabul, shown: yer.form };
+        }
+
+        function buildQuiz(mod) {
             const havuz = _shuffle(quizSeenWords().slice());
             const list = [];
             for (let i = 0; i < havuz.length && list.length < QUIZ_MAX; i++) {
                 const w = havuz[i];
+                if (mod === 'write') {
+                    const s = buildWriteQuestion(w);
+                    if (s) list.push(s);
+                    continue;
+                }
                 const syns = (w.synonyms || []).filter(function(s){ return s && s.en; });
                 // Es anlamlisi varsa bazen "en yakin anlamli" sorusu sor
                 if (syns.length > 0 && Math.random() < 0.4) {
@@ -7135,12 +7277,13 @@
             return list;
         }
 
-        function startQuiz() {
-            const list = buildQuiz();
+        function startQuiz(mod) {
+            const list = buildQuiz(mod);
             if (list.length < 4) {
                 alert('Test i\u00e7in yeterli kelime yok. Birka\u00e7 g\u00fcn \u00e7al\u0131\u015ft\u0131ktan sonra tekrar dene.');
                 return;
             }
+            quizMode = mod === 'write' ? 'write' : 'choice';
             quizOn = true; quizList = list; quizIndex = 0; quizScore = 0; quizWrong = [];
             document.getElementById('main-app').style.display = 'flex';
             renderQuiz();
@@ -7149,10 +7292,36 @@
         function renderQuiz() {
             if (quizIndex >= quizList.length) { showQuizResult(); return; }
             quizAnswered = false;
+            writeRetry = false;
             const q = quizList[quizIndex];
             clearFeedback(); hideCardSpeak(); hideEndActions();
             document.getElementById('progress').textContent = 'Test ' + (quizIndex + 1) + ' / ' + quizList.length;
             const host = document.getElementById('english-word');
+
+            // --- YAZMA SORUSU ---
+            if (q.type === 'write') {
+                currentMode = 'quizwrite';
+                host.classList.add('fb');
+                host.innerHTML = '<div class="quiz-q">Bo\u015flu\u011fa uygun kelimeyi yaz</div>' +
+                                 '<div class="quiz-sentence">' + q.sentence + '</div>' +
+                                 '<div class="quiz-hint">' + q.word.tr + '  \u00b7  ' + (q.word.type || '') + '</div>';
+                document.getElementById('example-container').style.display = 'none';
+                document.getElementById('synonyms-section').style.display = 'none';
+                document.getElementById('synonym-details').style.display = 'none';
+                document.getElementById('test-section').style.display = 'none';
+                document.getElementById('next-btn').style.display = 'none';
+                document.getElementById('review-restart-btn').style.display = 'none';
+                document.getElementById('typing-section').style.display = 'block';
+                document.getElementById('check-btn').style.display = 'block';
+                document.getElementById('check-btn').textContent = 'Kontrol Et';
+                const inp = document.getElementById('turkish-input');
+                inp.value = '';
+                inp.className = '';
+                inp.placeholder = '\u0130ngilizce kelimeyi yaz...';
+                inp.focus();
+                return;
+            }
+
             if (q.type === 'meaning') {
                 host.innerHTML = '<div class="quiz-q">Bu anlama gelen kelime hangisi?</div>' +
                                  '<div class="quiz-target">' + q.word.tr + '</div>' +
@@ -7180,6 +7349,81 @@
                     btn.style.display = 'block';
                     btn.onclick = (function(b){ return function(){ handleQuizAnswer(b.textContent, b); }; })(btn);
                 } else { btn.style.display = 'none'; btn.onclick = null; }
+            }
+        }
+
+        // Yazma testi cevabi: yanlissa dogrusu gosterilir ve bir kez dogru yazmasi istenir
+        function handleQuizWrite() {
+            const q = quizList[quizIndex];
+            if (!q || q.type !== 'write') return;
+            const inp = document.getElementById('turkish-input');
+            const yazilan = (inp.value || '').trim();
+            if (yazilan === '') return;
+            const hedefler = q.accepted.map(function(x){ return normalizeAnswer(x); });
+            const dogru = hedefler.indexOf(normalizeAnswer(yazilan)) >= 0;
+
+            // 2. asama: yanlis yapmisti, simdi dogrusunu yaziyor
+            if (writeRetry) {
+                if (!dogru) {
+                    inp.className = 'incorrect';
+                    inp.value = '';
+                    inp.focus();
+                    playWrong();
+                    return;
+                }
+                writeRetry = false;
+                inp.className = 'correct';
+                playCorrect();
+                document.getElementById('typing-section').style.display = 'none';
+                document.getElementById('check-btn').style.display = 'none';
+                document.getElementById('next-btn').textContent = (quizIndex + 1 >= quizList.length) ? 'Sonucu G\u00f6r' : 'S\u0131radaki Soru';
+                document.getElementById('next-btn').style.display = 'block';
+                return;
+            }
+
+            if (quizAnswered) return;
+            quizAnswered = true;
+            const host = document.getElementById('english-word');
+            host.classList.add('fb');
+
+            if (dogru) {
+                quizScore++;
+                inp.className = 'correct';
+                host.innerHTML = '<div class="fb-badge ok">' + MARK_OK + ' Do\u011fru</div>' +
+                                 '<div class="fb-word">' + q.word.en + '</div>' +
+                                 '<div class="fb-meaning">' + q.word.tr + '</div>';
+                _animate(host.querySelector('.fb-badge'), 'anim-pop');
+                playCorrect();
+                setCardSpeak(q.word.en);
+                document.getElementById('example-en').textContent = q.word.ex || '';
+                document.getElementById('usage-note').textContent = q.word.usage || '';
+                document.getElementById('example-container').style.display = 'block';
+                document.getElementById('typing-section').style.display = 'none';
+                document.getElementById('check-btn').style.display = 'none';
+                document.getElementById('next-btn').textContent = (quizIndex + 1 >= quizList.length) ? 'Sonucu G\u00f6r' : 'S\u0131radaki Soru';
+                document.getElementById('next-btn').style.display = 'block';
+            } else {
+                quizWrong.push(q);
+                inp.className = 'incorrect';
+                host.innerHTML = '<div class="fb-badge no">' + MARK_NO + ' Yanl\u0131\u015f</div>' +
+                                 '<div class="fb-word">' + q.shown + '</div>' +
+                                 '<div class="fb-meaning hi">' + q.word.tr + '</div>' +
+                                 '<div class="quiz-hint">Do\u011fru yaz\u0131m\u0131 bir kez de sen yaz</div>';
+                _animate(host.querySelector('.fb-badge'), 'anim-pop');
+                _animate(host, 'anim-shake');
+                playWrong();
+                setCardSpeak(q.word.en);
+                document.getElementById('example-en').textContent = q.word.ex || '';
+                document.getElementById('usage-note').textContent = q.word.usage || '';
+                document.getElementById('example-container').style.display = 'block';
+                // Pekistirme: dogrusunu bir kez yazmasi beklenir
+                writeRetry = true;
+                inp.value = '';
+                inp.className = '';
+                inp.placeholder = q.shown + ' yaz...';
+                inp.focus();
+                document.getElementById('check-btn').textContent = 'Onayla';
+                document.getElementById('next-btn').style.display = 'none';
             }
         }
 
@@ -7244,13 +7488,14 @@
             } else {
                 liste.style.display = 'none';
             }
-            document.getElementById('quiz-btn').textContent = '\uD83D\uDD01 Tekrar Test \u00c7\u00f6z';
+            document.getElementById('quiz-btn').textContent = (quizMode === 'choice') ? '\uD83D\uDD01 Tekrar \u015e\u0131kl\u0131 Test' : '\uD83D\uDCDD \u015e\u0131kl\u0131 Test';
+            document.getElementById('quiz-write-btn').textContent = (quizMode === 'write') ? '\uD83D\uDD01 Tekrar Yazma Testi' : '\u270D\uFE0F Yazma Testi';
             document.getElementById('end-actions').style.display = 'block';
             if (toplam > 0 && quizScore === toplam) { celebrate(); playFanfare(); }
         }
 
         function goHome() {
-            quizOn = false;
+            quizOn = false; writeRetry = false;
             inReview = false; reviewStarted = false; restartPending = false;
             clearFeedback(); hideCardSpeak(); hideEndActions();
             document.getElementById('main-app').style.display = 'none';
@@ -7273,8 +7518,12 @@
         document.getElementById('home-bottom-btn').addEventListener('click', anaSayfayaDon);
 
         document.getElementById('quiz-btn').addEventListener('click', function(){
-            document.getElementById('quiz-btn').textContent = '\uD83D\uDCDD \u00d6\u011frendiklerini Test Et';
-            startQuiz();
+            document.getElementById('quiz-btn').textContent = '\uD83D\uDCDD \u015e\u0131kl\u0131 Test';
+            startQuiz('choice');
+        });
+        document.getElementById('quiz-write-btn').addEventListener('click', function(){
+            document.getElementById('quiz-write-btn').textContent = '\u270D\uFE0F Yazma Testi';
+            startQuiz('write');
         });
         document.getElementById('home-btn').addEventListener('click', goHome);
 
