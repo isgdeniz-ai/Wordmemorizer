@@ -35,7 +35,14 @@
         .search-result-card:last-child { margin-bottom: 0; }
         .res-header { font-size: 16px; margin-bottom: 6px; color: #1c1e21; }
         .res-sub { font-size: 12px; color: #31a24c; font-weight: bold; margin-bottom: 4px; }
-        .res-ex { font-style: italic; color: #606770; font-size: 13px; line-height: 1.4; }
+        .res-ex { font-style: italic; color: #606770; font-size: 13px; line-height: 1.4; margin-top: 5px; }
+        .res-ex.has-tr { cursor: pointer; }
+        .res-ex.has-tr::after { content: " ↔"; font-style: normal; color: #8a8d91; font-size: 11px; font-weight: 700; }
+        .res-tr { font-size: 13px; color: #3a5169; line-height: 1.4; margin-top: 3px; padding-left: 8px; border-left: 3px solid #d3d8de; }
+        .res-detail { margin-top: 8px; padding-top: 8px; border-top: 1px solid #eceef1; }
+        .res-usage { font-size: 13px; color: #1877f2; font-weight: 600; line-height: 1.4; }
+        .res-syn { font-size: 12px; color: #31a24c; font-weight: 700; margin-top: 5px; }
+        .res-toggle { font-size: 12px; font-weight: 700; color: #8a8d91; margin-top: 7px; cursor: pointer; user-select: none; }
         .speak-btn { background: none; border: none; cursor: pointer; font-size: 15px; padding: 2px 5px; vertical-align: middle; line-height: 1; border-radius: 6px; }
         .speak-btn:active { background: #e8f4fd; }
         #card-speak-btn { font-size: 24px; margin: 2px auto 8px; }
@@ -6372,13 +6379,10 @@
             }
 
             // Ayni kelime birden fazla kez listelenmez: dogrudan eslesme her zaman kazanir.
-            // (Once bu yoktu; bir kelime es anlamlisi oldugu her kelime uzerinden tekrar cikiyordu.)
             const bulunan = {};
             wordDatabase.forEach(function(w) {
                 if (w.en.toLowerCase().indexOf(query) >= 0 || (w.tr || '').toLowerCase().indexOf(query) >= 0) {
-                    bulunan[w.en.toLowerCase()] = {
-                        en: w.en, tr: w.tr, type: w.type, level: w.level, ex: w.ex, dogrudan: true
-                    };
+                    bulunan[w.en.toLowerCase()] = { w: w, dogrudan: true };
                 }
             });
             wordDatabase.forEach(function(w) {
@@ -6387,48 +6391,97 @@
                     const k = (syn.en || '').toLowerCase();
                     if (!k || bulunan[k]) return;
                     if (k.indexOf(query) >= 0 || (syn.tr || '').toLowerCase().indexOf(query) >= 0) {
-                        bulunan[k] = {
-                            en: syn.en, tr: syn.tr, type: syn.type, level: syn.level, ex: syn.ex,
-                            dogrudan: false, parentWord: w.en
-                        };
+                        // Gercek kelime kaydini bul: ikinci cumle, kullanim notu vs. oradan gelir
+                        const gercek = wordDatabase.filter(function(x) { return x.en === syn.en; })[0];
+                        bulunan[k] = { w: gercek || syn, dogrudan: false, parentWord: w.en };
                     }
                 });
             });
 
-            // Siralama: tam eslesme > bastan eslesme > icinde gecen > Turkce eslesme
-            function skor(w) {
-                const en = w.en.toLowerCase();
+            function skor(k) {
+                const en = k.w.en.toLowerCase();
                 let s;
                 if (en === query) s = 0;
                 else if (en.indexOf(query) === 0) s = 1;
                 else if (en.indexOf(query) >= 0) s = 2;
                 else s = 3;
-                if (!w.dogrudan) s += 10;
+                if (!k.dogrudan) s += 10;
                 return s;
             }
             const liste = Object.keys(bulunan).map(function(k) { return bulunan[k]; });
-            liste.sort(function(a, b) { return skor(a) - skor(b) || a.en.length - b.en.length; });
+            liste.sort(function(a, b) { return skor(a) - skor(b) || a.w.en.length - b.w.en.length; });
             const gosterilecek = liste.slice(0, 40);
 
-            if (gosterilecek.length > 0) {
-                resultsContainer.innerHTML = gosterilecek.map(function(w) {
-                    const typeHtml = w.type ? '<span class="type-tag">' + w.type + '</span>' : '';
-                    const altSatir = w.dogrudan ? '' : '<div class="res-sub">Eş anlamlısı: ' + w.parentWord + '</div>';
-                    const ornek = w.ex ? '<div class="res-ex">' + _vurgula(w.ex, w.en) + '</div>' : '';
-                    return '<div class="search-result-card"><div class="res-header"><strong>' + w.en + '</strong> ' +
-                           '<button class="speak-btn" data-w="' + w.en + '" title="Seslendir">🔊</button> ' +
-                           typeHtml + ' (' + w.tr + ') <span class="level-tag">#' + w.level + '</span></div>' +
-                           altSatir + ornek + '</div>';
-                }).join('') +
-                (liste.length > gosterilecek.length
-                    ? '<div class="search-result-card" style="border-left-color:#e4e6eb; color:#606770; font-size:13px;">… ' + (liste.length - gosterilecek.length) + ' sonuç daha var, aramayı daralt.</div>'
-                    : '');
-                resultsContainer.style.display = "block";
-            } else {
+            if (gosterilecek.length === 0) {
                 resultsContainer.innerHTML = '<div class="search-result-card" style="border-left-color: #e4e6eb;">Sözlükte bulunamadı...</div>';
                 resultsContainer.style.display = "block";
+                return;
             }
+
+            resultsContainer.innerHTML = gosterilecek.map(function(k, idx) {
+                const w = k.w;
+                const typeHtml = w.type ? '<span class="type-tag">' + w.type + '</span>' : '';
+                const altSatir = k.dogrudan ? '' : '<div class="res-sub">Eş anlamlısı: ' + k.parentWord + '</div>';
+
+                // Ornek cumleler: kelime vurgulu, cevirisi varsa dokununca acilir
+                const cumleler = [];
+                if (w.ex)  cumleler.push({ c: w.ex,  t: w.exTr  || '' });
+                if (w.ex2) cumleler.push({ c: w.ex2, t: w.ex2Tr || '' });
+                if (w.ex3) cumleler.push({ c: w.ex3, t: w.ex3Tr || '' });
+                const cumleHtml = cumleler.map(function(s, j) {
+                    const id = 'sr-' + idx + '-' + j;
+                    return '<div class="res-ex' + (s.t ? ' has-tr' : '') + '" data-tr="' + (s.t ? id : '') + '">' +
+                               _vurgula(s.c, w.en) + '</div>' +
+                           (s.t ? '<div class="res-tr" id="' + id + '" style="display:none;">' + _vurgulaTr(s.t) + '</div>' : '');
+                }).join('');
+
+                // Detay: kullanim notu + es anlamlilar
+                const esler = (w.synonyms || []).map(function(s) { return s.en; });
+                const detay = '<div class="res-detail" id="rd-' + idx + '" style="display:none;">' +
+                        (w.usage ? '<div class="res-usage">' + w.usage + '</div>' : '') +
+                        (esler.length ? '<div class="res-syn">Eş anlamlılar: ' + esler.join(', ') + '</div>' : '') +
+                    '</div>';
+                const detayVar = !!(w.usage || esler.length);
+
+                return '<div class="search-result-card">' +
+                       '<div class="res-header"><strong>' + w.en + '</strong> ' +
+                       '<button class="speak-btn" data-w="' + w.en + '" title="Seslendir">🔊</button> ' +
+                       typeHtml + ' (' + w.tr + ') <span class="level-tag">#' + w.level + '</span></div>' +
+                       altSatir + cumleHtml + detay +
+                       (detayVar ? '<div class="res-toggle" data-d="rd-' + idx + '">Detay ▾</div>' : '') +
+                       '</div>';
+            }).join('') +
+            (liste.length > gosterilecek.length
+                ? '<div class="search-result-card" style="border-left-color:#e4e6eb; color:#606770; font-size:13px;">… ' + (liste.length - gosterilecek.length) + ' sonuç daha var, aramayı daralt.</div>'
+                : '');
+            resultsContainer.style.display = "block";
         }
+
+        // Sozluk sonuclarinda: cumleye dokun -> Turkce ceviri, "Detay" -> kullanim notu ve es anlamlilar
+        document.getElementById('search-results').addEventListener('click', function(ev) {
+            const t = ev.target;
+            if (!t || !t.closest) return;
+            if (t.closest('.speak-btn')) return;   // seslendirme butonu kendi isini yapar
+
+            const cumle = t.closest('.res-ex');
+            if (cumle) {
+                const id = cumle.getAttribute('data-tr');
+                if (id) {
+                    const tr = document.getElementById(id);
+                    if (tr) tr.style.display = (tr.style.display === 'none') ? 'block' : 'none';
+                }
+                return;
+            }
+            const dgm = t.closest('.res-toggle');
+            if (dgm) {
+                const d = document.getElementById(dgm.getAttribute('data-d'));
+                if (d) {
+                    const acik = d.style.display !== 'none';
+                    d.style.display = acik ? 'none' : 'block';
+                    dgm.textContent = acik ? 'Detay ▾' : 'Detay ▴';
+                }
+            }
+        });
 
         document.addEventListener('click', function(event) {
             const searchContainer = document.querySelector('.search-container');
