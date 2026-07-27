@@ -353,6 +353,7 @@
                         <div id="game-right" class="gcol"></div>
                     </div>
                 </div>
+                <button id="game-again-btn" class="primary-btn" style="display:none; background-color:#7c4dff;">🔁 Yeni Seri</button>
                 <div id="quiz-result-list"></div>
             </main>
             <div id="bottom-bar">
@@ -6364,40 +6365,64 @@
         function handleDictionarySearch(e) {
             const query = e.target.value.toLowerCase().trim();
             const resultsContainer = document.getElementById('search-results');
-            
+
             if (query.length < 2) {
                 resultsContainer.style.display = "none";
                 return;
             }
 
-            let foundWords = [];
-
-            wordDatabase.forEach(w => {
-                if (w.en.toLowerCase().includes(query) || w.tr.toLowerCase().includes(query)) {
-                    foundWords.push({
-                        en: w.en, tr: w.tr, type: w.type, level: w.level, ex: w.ex, isSynonym: false
-                    });
-                }
-                if (w.synonyms) {
-                    w.synonyms.forEach(syn => {
-                        if (syn.en.toLowerCase().includes(query) || syn.tr.toLowerCase().includes(query)) {
-                            foundWords.push({
-                                en: syn.en, tr: syn.tr, type: syn.type, level: syn.level, ex: syn.ex, isSynonym: true, parentWord: w.en
-                            });
-                        }
-                    });
+            // Ayni kelime birden fazla kez listelenmez: dogrudan eslesme her zaman kazanir.
+            // (Once bu yoktu; bir kelime es anlamlisi oldugu her kelime uzerinden tekrar cikiyordu.)
+            const bulunan = {};
+            wordDatabase.forEach(function(w) {
+                if (w.en.toLowerCase().indexOf(query) >= 0 || (w.tr || '').toLowerCase().indexOf(query) >= 0) {
+                    bulunan[w.en.toLowerCase()] = {
+                        en: w.en, tr: w.tr, type: w.type, level: w.level, ex: w.ex, dogrudan: true
+                    };
                 }
             });
-
-            if (foundWords.length > 0) {
-                resultsContainer.innerHTML = foundWords.map(w => {
-                    let typeHtml = w.type ? '<span class="type-tag">' + w.type + '</span>' : '';
-                    if (w.isSynonym) {
-                        return '<div class="search-result-card"><div class="res-header"><strong>' + w.en + '</strong> <button class="speak-btn" data-w="' + w.en + '" title="Seslendir">🔊</button> ' + typeHtml + ' (' + w.tr + ') <span class="level-tag">#' + w.level + '</span></div><div class="res-sub">Eş anlamlısı: ' + w.parentWord + '</div><div class="res-ex">' + w.ex + '</div></div>';
-                    } else {
-                        return '<div class="search-result-card"><div class="res-header"><strong>' + w.en + '</strong> <button class="speak-btn" data-w="' + w.en + '" title="Seslendir">🔊</button> ' + typeHtml + ' (' + w.tr + ') <span class="level-tag">#' + w.level + '</span></div><div class="res-ex">' + w.ex + '</div></div>';
+            wordDatabase.forEach(function(w) {
+                if (!w.synonyms) return;
+                w.synonyms.forEach(function(syn) {
+                    const k = (syn.en || '').toLowerCase();
+                    if (!k || bulunan[k]) return;
+                    if (k.indexOf(query) >= 0 || (syn.tr || '').toLowerCase().indexOf(query) >= 0) {
+                        bulunan[k] = {
+                            en: syn.en, tr: syn.tr, type: syn.type, level: syn.level, ex: syn.ex,
+                            dogrudan: false, parentWord: w.en
+                        };
                     }
-                }).join('');
+                });
+            });
+
+            // Siralama: tam eslesme > bastan eslesme > icinde gecen > Turkce eslesme
+            function skor(w) {
+                const en = w.en.toLowerCase();
+                let s;
+                if (en === query) s = 0;
+                else if (en.indexOf(query) === 0) s = 1;
+                else if (en.indexOf(query) >= 0) s = 2;
+                else s = 3;
+                if (!w.dogrudan) s += 10;
+                return s;
+            }
+            const liste = Object.keys(bulunan).map(function(k) { return bulunan[k]; });
+            liste.sort(function(a, b) { return skor(a) - skor(b) || a.en.length - b.en.length; });
+            const gosterilecek = liste.slice(0, 40);
+
+            if (gosterilecek.length > 0) {
+                resultsContainer.innerHTML = gosterilecek.map(function(w) {
+                    const typeHtml = w.type ? '<span class="type-tag">' + w.type + '</span>' : '';
+                    const altSatir = w.dogrudan ? '' : '<div class="res-sub">Eş anlamlısı: ' + w.parentWord + '</div>';
+                    const ornek = w.ex ? '<div class="res-ex">' + _vurgula(w.ex, w.en) + '</div>' : '';
+                    return '<div class="search-result-card"><div class="res-header"><strong>' + w.en + '</strong> ' +
+                           '<button class="speak-btn" data-w="' + w.en + '" title="Seslendir">🔊</button> ' +
+                           typeHtml + ' (' + w.tr + ') <span class="level-tag">#' + w.level + '</span></div>' +
+                           altSatir + ornek + '</div>';
+                }).join('') +
+                (liste.length > gosterilecek.length
+                    ? '<div class="search-result-card" style="border-left-color:#e4e6eb; color:#606770; font-size:13px;">… ' + (liste.length - gosterilecek.length) + ' sonuç daha var, aramayı daralt.</div>'
+                    : '');
                 resultsContainer.style.display = "block";
             } else {
                 resultsContainer.innerHTML = '<div class="search-result-card" style="border-left-color: #e4e6eb;">Sözlükte bulunamadı...</div>';
@@ -7326,6 +7351,8 @@
         function hideGameArea() {
             const g = document.getElementById('game-area');
             if (g) g.style.display = 'none';
+            const a = document.getElementById('game-again-btn');
+            if (a) a.style.display = 'none';
         }
 
         // Alt cubuk: gunluk gorev bittiyse test butonlari acilir ve orada kalir.
@@ -7756,6 +7783,7 @@
             document.getElementById('next-btn').style.display = 'none';
             document.getElementById('review-restart-btn').style.display = 'none';
             document.getElementById('quiz-result-list').style.display = 'none';
+            document.getElementById('game-again-btn').style.display = 'none';
             document.getElementById('game-area').style.display = 'block';
             renderGame();
         }
@@ -7824,6 +7852,7 @@
                              '<div class="fb-meaning">' + (enIyi ? 'Neredeyse hi\u00e7 hata yok!' : GAME_PAIRS + ' \u00e7iftin hepsini buldun') + '</div>';
             _animate(host.querySelector('.fb-badge'), 'anim-pop');
             document.getElementById('game-area').style.display = 'none';
+            document.getElementById('game-again-btn').style.display = 'block';
             refreshBottomBar();
             celebrate();
             playFanfare();
@@ -7842,6 +7871,7 @@
             startGame();
         });
         document.getElementById('home-game-btn').addEventListener('click', startGame);
+        document.getElementById('game-again-btn').addEventListener('click', startGame);
 
         // Sag alttaki "Alistirma" butonu: yukari dogru menu acar
         document.getElementById('practice-fab').addEventListener('click', function(ev){
