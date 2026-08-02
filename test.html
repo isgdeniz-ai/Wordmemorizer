@@ -8156,9 +8156,9 @@
             const map = {
                 'auth/invalid-email': 'Geçersiz e-posta adresi.',
                 'auth/user-not-found': 'Bu e-posta ile kayıtlı bir hesap bulunamadı.',
-                'auth/wrong-password': 'Şifre hatalı.',
-                'auth/invalid-credential': 'E-posta veya şifre hatalı.',
-                'auth/email-already-in-use': 'Bu e-posta ile zaten bir hesap var. Giriş yapmayı dene.',
+                'auth/wrong-password': 'Şifre hatalı. Daha önce Google ile giriş yaptıysan, şifren kaldırılmış olabilir — "Google ile devam et" seçeneğini kullan ya da "Şifremi unuttum" ile yeni şifre belirle.',
+                'auth/invalid-credential': 'E-posta veya şifre hatalı. Daha önce Google ile giriş yaptıysan, şifren kaldırılmış olabilir — "Google ile devam et" seçeneğini kullan ya da "Şifremi unuttum" ile yeni şifre belirle.',
+                'auth/email-already-in-use': 'Bu e-posta ile zaten bir hesap var. "Google ile devam et" ile ya da giriş yaparak devam et.',
                 'auth/weak-password': 'Şifre en az 6 karakter olmalı.',
                 'auth/popup-closed-by-user': 'Google penceresi kapatıldı, tekrar dene.',
                 'auth/network-request-failed': 'İnternet bağlantısı sorunu. Tekrar dene.',
@@ -8309,10 +8309,21 @@
         function closeAccount() { document.getElementById('account-panel').style.display = 'none'; }
 
         function updateWarnBanner() {
-            const banner = document.getElementById('account-warn-banner');
-            if (!banner) return;
             const loggedIn = window.__fb && window.__fb.auth.currentUser;
-            banner.style.display = (!fbInitializing && !loggedIn && appState) ? 'block' : 'none';
+            const banner = document.getElementById('account-warn-banner');
+            if (banner) {
+                banner.style.display = (!fbInitializing && !loggedIn && appState) ? 'block' : 'none';
+            }
+            const link = document.getElementById('welcome-account-link');
+            if (link && !fbInitializing) {
+                if (loggedIn) {
+                    link.textContent = '✓ Giriş yapıldı: ' + (loggedIn.email || 'hesabın');
+                    link.style.color = '#31a24c';
+                } else {
+                    link.textContent = 'Zaten hesabın var mı? Giriş yap';
+                    link.style.color = '#1877f2';
+                }
+            }
         }
 
         document.getElementById('account-badge').addEventListener('click', openAccount);
