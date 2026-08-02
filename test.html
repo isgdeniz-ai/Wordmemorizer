@@ -8162,7 +8162,8 @@
                 'auth/weak-password': 'Şifre en az 6 karakter olmalı.',
                 'auth/popup-closed-by-user': 'Google penceresi kapatıldı, tekrar dene.',
                 'auth/network-request-failed': 'İnternet bağlantısı sorunu. Tekrar dene.',
-                'auth/too-many-requests': 'Çok fazla deneme yapıldı. Biraz sonra tekrar dene.'
+                'auth/too-many-requests': 'Çok fazla deneme yapıldı. Biraz sonra tekrar dene.',
+                'auth/unauthorized-domain': 'Bu site Firebase\u2019de henüz yetkili domain listesinde değil. Authentication > Settings > Authorized domains\u2019a eklenmesi gerekiyor.'
             };
             return map[code] || 'Bir hata oluştu, tekrar dene.';
         }
@@ -8288,11 +8289,16 @@
             } catch (e) { console.error('Bulut kayit hatasi:', e); }
         }
 
+        let accountWasLoggedIn = false; // onceki bilinen giris durumu; basarili giristen sonra paneli otomatik kapatmak icin
+
         window.onFirebaseAuthChange = async function(user) {
             fbInitializing = false;
+            const justLoggedIn = !accountWasLoggedIn && !!user;
             if (user) { await reconcileCloudState(user); }
             renderAccountPanel();
             updateWarnBanner();
+            accountWasLoggedIn = !!user;
+            if (justLoggedIn) { setTimeout(closeAccount, 1200); }
         };
 
         function openAccount() {
