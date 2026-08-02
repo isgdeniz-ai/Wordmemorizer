@@ -174,7 +174,9 @@
         .account-msg { display: none; background: #eafbe7; border-left: 4px solid #31a24c; color: #1e5a2c; font-size: 13px; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; line-height: 1.4; }
         .account-logged-in { text-align: center; }
         .account-avatar { width: 64px; height: 64px; border-radius: 50%; background: #e8f4fd; color: #1877f2; font-size: 26px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
-        .account-email { font-size: 15px; font-weight: 700; color: #1c1e21; margin-bottom: 4px; word-break: break-all; }
+        .account-name { font-size: 19px; font-weight: 800; color: #1c1e21; margin-bottom: 3px; }
+        .account-email { font-size: 13px; font-weight: 500; color: #8a8d91; margin-bottom: 4px; word-break: break-all; }
+        .account-name-edit { font-size: 12px; color: #1877f2; font-weight: 600; cursor: pointer; margin-bottom: 14px; }
         .account-sync-note { font-size: 12px; color: #606770; margin-bottom: 18px; }
         .account-forgot { text-align: right; font-size: 12px; color: #1877f2; font-weight: 600; cursor: pointer; margin: -4px 0 14px; }
         #stats-btn { cursor: pointer; }
@@ -461,7 +463,7 @@
         import {
             getAuth, GoogleAuthProvider, signInWithPopup,
             createUserWithEmailAndPassword, signInWithEmailAndPassword,
-            signOut, onAuthStateChanged, sendPasswordResetEmail
+            signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile
         } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
@@ -489,6 +491,7 @@
             signInWithEmailAndPassword: signInWithEmailAndPassword,
             signOut: signOut,
             sendPasswordResetEmail: sendPasswordResetEmail,
+            updateProfile: updateProfile,
             doc: doc,
             getDoc: getDoc,
             setDoc: setDoc
@@ -8150,6 +8153,19 @@
         let fbInitializing = true;
         let accountPendingMsg = null;     // { type: 'ok'|'err', text }
         let accountEmailDraft = '';
+        let accountNameDraft = '';
+        let accountEditingName = false;
+
+        // Kullaniciyi cagirirken kullanilacak isim: once belirlenen ad, yoksa e-postanin @ oncesi
+        function friendlyName(user) {
+            if (!user) return '';
+            const dn = (user.displayName || '').trim();
+            if (dn) return dn.split(' ')[0];
+            const email = user.email || '';
+            const local = email.split('@')[0] || '';
+            if (!local) return 'dostum';
+            return local.charAt(0).toUpperCase() + local.slice(1);
+        }
 
         function translateFbError(e) {
             const code = (e && e.code) || '';
@@ -8183,12 +8199,19 @@
                 : '<div id="account-error" class="account-error"></div><div id="account-msg" class="account-msg"></div>';
             const user = window.__fb && window.__fb.auth.currentUser;
             if (user) {
-                const initial = (user.email || '?').charAt(0).toUpperCase();
+                const shownName = friendlyName(user);
+                const initial = (shownName || '?').charAt(0).toUpperCase();
+                const nameBlock = accountEditingName
+                    ? '<input type="text" id="account-name-input" placeholder="İsmin" value="' + (user.displayName || '').replace(/"/g, '&quot;') + '" style="text-align:center;">' +
+                      '<button class="primary-btn" style="margin-bottom:10px;" onclick="handleSaveName()">İsmi kaydet</button>'
+                    : '<div class="account-name">' + shownName + '</div>' +
+                      '<div class="account-email">' + (user.email || '') + '</div>' +
+                      '<div class="account-name-edit" onclick="startEditName()">İsmi değiştir</div>';
                 body.innerHTML =
                     msgHtml +
                     '<div class="account-logged-in">' +
                         '<div class="account-avatar">' + initial + '</div>' +
-                        '<div class="account-email">' + (user.email || '') + '</div>' +
+                        nameBlock +
                         '<div class="account-sync-note">İlerlemen bu hesaba kayıtlı ve yedekleniyor.</div>' +
                         '<button class="primary-btn" style="background-color:#6c757d;" onclick="handleSignOut()">Çıkış yap</button>' +
                     '</div>';
@@ -8200,6 +8223,7 @@
                 msgHtml +
                 '<button class="google-btn" onclick="handleGoogleSignIn()">🔵 Google ile devam et</button>' +
                 '<div class="account-divider">veya</div>' +
+                (isSignup ? '<input type="text" id="account-name-input" placeholder="İsmin" autocomplete="given-name" value="' + accountNameDraft.replace(/"/g, '&quot;') + '" oninput="accountNameDraft=this.value">' : '') +
                 '<input type="email" id="account-email-input" placeholder="E-posta" autocomplete="email" value="' + accountEmailDraft.replace(/"/g, '&quot;') + '" oninput="accountEmailDraft=this.value">' +
                 '<input type="password" id="account-pass-input" placeholder="Şifre" autocomplete="' + (isSignup ? 'new-password' : 'current-password') + '">' +
                 (isSignup ? '' : '<div class="account-forgot" onclick="handlePasswordReset()">Şifremi unuttum</div>') +
@@ -8230,10 +8254,32 @@
             if (!email || !pass) { showAccountError('E-posta ve şifre gerekli.'); return; }
             try {
                 if (accountMode === 'signup') {
-                    await window.__fb.createUserWithEmailAndPassword(window.__fb.auth, email, pass);
+                    const nameEl = document.getElementById('account-name-input');
+                    const name = nameEl ? nameEl.value.trim() : '';
+                    if (!name) { showAccountError('Sana nasıl hitap edelim? Lütfen bir isim gir.'); return; }
+                    const cred = await window.__fb.createUserWithEmailAndPassword(window.__fb.auth, email, pass);
+                    await window.__fb.updateProfile(cred.user, { displayName: name });
+                    accountNameDraft = '';
+                    renderAccountPanel();
+                    updateWarnBanner();
                 } else {
                     await window.__fb.signInWithEmailAndPassword(window.__fb.auth, email, pass);
                 }
+            } catch (e) { showAccountError(translateFbError(e)); }
+        }
+
+        function startEditName() { accountEditingName = true; renderAccountPanel(); }
+
+        async function handleSaveName() {
+            if (!window.__fb || !window.__fb.auth.currentUser) return;
+            const nameEl = document.getElementById('account-name-input');
+            const name = nameEl ? nameEl.value.trim() : '';
+            if (!name) { showAccountError('İsim boş olamaz.'); return; }
+            try {
+                await window.__fb.updateProfile(window.__fb.auth.currentUser, { displayName: name });
+                accountEditingName = false;
+                showAccountMsg('İsmin güncellendi.');
+                updateWarnBanner();
             } catch (e) { showAccountError(translateFbError(e)); }
         }
 
@@ -8303,6 +8349,7 @@
 
         function openAccount() {
             accountMode = 'signin';
+            accountEditingName = false;
             renderAccountPanel();
             document.getElementById('account-panel').style.display = 'flex';
         }
@@ -8317,7 +8364,7 @@
             const link = document.getElementById('welcome-account-link');
             if (link && !fbInitializing) {
                 if (loggedIn) {
-                    link.textContent = '✓ Giriş yapıldı: ' + (loggedIn.email || 'hesabın');
+                    link.textContent = 'Hoş geldin, ' + friendlyName(loggedIn) + ' 👋';
                     link.style.color = '#31a24c';
                 } else {
                     link.textContent = 'Zaten hesabın var mı? Giriş yap';
