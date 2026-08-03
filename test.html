@@ -235,6 +235,17 @@
         .rep-meta { font-size: 11px; color: #8a8d91; margin-bottom: 8px; }
         .rep-action { font-size: 12px; font-weight: 700; color: #31a24c; cursor: pointer; padding: 5px 0; }
         .rep-action.undo { color: #8a8d91; }
+        .count-bubble { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; background: #e41e3f; color: #fff; font-size: 11px; font-weight: 800; border-radius: 10px; margin-left: 3px; }
+        .count-bubble.zero { background: #8a8d91; }
+        .welcome-admin-badge { display: none; align-items: center; justify-content: center; gap: 4px; font-size: 13px; font-weight: 700; color: #b26a00; background: #fff3e0; border: 2px solid #ffd699; border-radius: 10px; padding: 9px; margin-bottom: 16px; cursor: pointer; }
+        #header-admin-badge { display: none; cursor: pointer; }
+        .rep-check { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: #4b4f56; cursor: pointer; padding: 4px 0; }
+        .rep-check .consent-box { width: 19px; height: 19px; font-size: 12px; }
+        .rep-check.on { color: #31a24c; }
+        .rep-check.on .consent-box { background: #31a24c; border-color: #31a24c; color: #fff; }
+        .admin-save-wrap { position: sticky; bottom: 0; background: #fff; padding-top: 10px; margin-top: 4px; }
+        .admin-save-btn { width: 100%; padding: 13px; font-size: 15px; font-weight: 700; border: none; border-radius: 12px; background: #31a24c; color: #fff; cursor: pointer; }
+        .admin-save-btn:disabled { background: #e4e6eb; color: #8a8d91; cursor: default; }
         #stats-btn { cursor: pointer; }
         /* --- Cevap geri bildirimi: dikey ve net duzen --- */
         #english-word.fb { flex-direction: column; gap: 8px; margin-bottom: 16px; }
@@ -347,6 +358,7 @@
         <div id="welcome-screen">
             <h1 class="welcome-title">Word Memorizer</h1>
             <div class="welcome-account-link" id="welcome-account-link">🔐 Giriş yap / Kayıt ol</div>
+            <div class="welcome-admin-badge" id="welcome-admin-badge">⚑ Bildirimler <span class="count-bubble" id="welcome-admin-count">0</span></div>
             <button id="install-btn">📲 Uygulamayı telefona yükle</button>
             
             <div class="search-container">
@@ -405,6 +417,7 @@
                 <div class="badge" id="level-badge">Kelime Modu</div>
                 <div class="badge" id="stats-btn" title="İstatistik">📊 İstatistik</div>
                 <div class="badge" id="account-badge" title="Hesap">👤</div>
+                <div class="badge" id="header-admin-badge" title="Bildirimler">⚑ <span class="count-bubble" id="header-admin-count">0</span></div>
                 <div class="badge" id="sound-btn" title="Ses aç/kapat">🔊</div>
                 <div id="progress" class="badge">0 / 0</div>
             </header>
@@ -8470,6 +8483,8 @@
             if (user) { await reconcileCloudState(user); }
             renderAccountPanel();
             updateWarnBanner();
+            updateAdminBadges();
+            if (isAdmin()) { loadReports(); }
             accountWasLoggedIn = !!user;
             if (justLoggedIn) {
                 const gate = document.getElementById('gate-screen');
@@ -8643,6 +8658,31 @@
             return d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
         }
 
+        let adminPending = {};        // id -> yeni cozuldu durumu (henuz kaydedilmemis)
+        let adminUnresolved = 0;      // rozetlerde gosterilen bekleyen sayisi
+
+        function updateAdminBadges() {
+            const admin = isAdmin();
+            const wb = document.getElementById('welcome-admin-badge');
+            const hb = document.getElementById('header-admin-badge');
+            if (wb) wb.style.display = admin ? 'flex' : 'none';
+            if (hb) hb.style.display = admin ? 'block' : 'none';
+            if (!admin) return;
+            const wc = document.getElementById('welcome-admin-count');
+            const hc = document.getElementById('header-admin-count');
+            [wc, hc].forEach(function(el) {
+                if (!el) return;
+                el.textContent = adminUnresolved;
+                if (adminUnresolved > 0) el.classList.remove('zero');
+                else el.classList.add('zero');
+            });
+        }
+
+        function countUnresolved() {
+            adminUnresolved = adminReports.filter(function(r) { return !r.resolved; }).length;
+            updateAdminBadges();
+        }
+
         function renderAdminPanel() {
             const body = document.getElementById('admin-body');
             if (!body) return;
@@ -8652,15 +8692,28 @@
                     '<button class="' + (adminFilter === 'all' ? 'on' : '') + '" onclick="setAdminFilter(\'all\')">Tümü</button>' +
                 '</div>';
             if (adminLoading) { body.innerHTML = filterBar + '<div class="stat-empty">Yükleniyor...</div>'; return; }
-            const list = adminReports.filter(function(r) { return adminFilter === 'all' || !r.resolved; });
+            const list = adminReports.filter(function(r) {
+                if (adminFilter === 'all') return true;
+                // Bekleyen listesinde, bu oturumda isaretlenenler de kaydedilene kadar gorunur kalsin
+                return !r.resolved;
+            });
+            const degisiklikSayisi = Object.keys(adminPending).length;
+            const saveBar =
+                '<div class="admin-save-wrap">' +
+                    '<button class="admin-save-btn" ' + (degisiklikSayisi ? '' : 'disabled') + ' onclick="saveAdminChanges()">' +
+                        (degisiklikSayisi ? 'Kaydet (' + degisiklikSayisi + ' değişiklik)' : 'Kaydet') +
+                    '</button>' +
+                '</div>';
             if (!list.length) {
                 body.innerHTML = filterBar + '<div class="stat-empty">' +
-                    (adminFilter === 'open' ? 'Bekleyen bildirim yok. 👍' : 'Hiç bildirim yok.') + '</div>';
+                    (adminFilter === 'open' ? 'Bekleyen bildirim yok. 👍' : 'Hiç bildirim yok.') + '</div>' +
+                    (degisiklikSayisi ? saveBar : '');
                 return;
             }
             body.innerHTML = filterBar + list.map(function(r) {
                 const who = r.email ? r.email : 'misafir';
-                return '<div class="rep-item' + (r.resolved ? ' done' : '') + '">' +
+                const isSel = (r.id in adminPending) ? adminPending[r.id] : !!r.resolved;
+                return '<div class="rep-item' + (isSel ? ' done' : '') + '">' +
                     '<div class="rep-top">' +
                         '<span class="rep-word">' + (r.word || '-') + '</span>' +
                         '<span class="rep-lvl">' + (r.level || '?') + '</span>' +
@@ -8668,14 +8721,55 @@
                     '<div class="rep-reason">' + reasonLabel(r.reason) + '</div>' +
                     (r.note ? '<div class="rep-note">' + r.note + '</div>' : '') +
                     '<div class="rep-meta">' + who + ' · ' + timeAgo(r.createdAt) + '</div>' +
-                    '<div class="rep-action' + (r.resolved ? ' undo' : '') + '" onclick="toggleResolved(\'' + r.id + '\')">' +
-                        (r.resolved ? '↩ Geri al' : '✓ Çözüldü olarak işaretle') +
+                    '<div class="rep-check' + (isSel ? ' on' : '') + '" onclick="toggleResolved(\'' + r.id + '\')">' +
+                        '<div class="consent-box">✓</div> Çözüldü' +
                     '</div>' +
                 '</div>';
-            }).join('');
+            }).join('') + saveBar;
         }
 
         function setAdminFilter(f) { adminFilter = f; renderAdminPanel(); }
+
+        // Isaretleme yalnizca yerelde tutulur; Kaydet'e basilinca sunucuya yazilir
+        function toggleResolved(id) {
+            const rep = adminReports.filter(function(r) { return r.id === id; })[0];
+            if (!rep) return;
+            const mevcut = (id in adminPending) ? adminPending[id] : !!rep.resolved;
+            const yeni = !mevcut;
+            if (yeni === !!rep.resolved) { delete adminPending[id]; }
+            else { adminPending[id] = yeni; }
+            renderAdminPanel();
+        }
+
+        async function saveAdminChanges() {
+            if (!window.__fb || !isAdmin()) return;
+            const ids = Object.keys(adminPending);
+            if (!ids.length) return;
+            const btn = document.querySelector('.admin-save-btn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Kaydediliyor...'; }
+            try {
+                for (let i = 0; i < ids.length; i++) {
+                    const id = ids[i];
+                    await window.__fb.updateDoc(window.__fb.doc(window.__fb.db, 'reports', id), { resolved: adminPending[id] });
+                    const rep = adminReports.filter(function(r) { return r.id === id; })[0];
+                    if (rep) rep.resolved = adminPending[id];
+                }
+                adminPending = {};
+                countUnresolved();
+                renderAdminPanel();
+            } catch (e) {
+                console.error('Kaydedilemedi:', e);
+                renderAdminPanel();
+                const body = document.getElementById('admin-body');
+                if (body) {
+                    const err = document.createElement('div');
+                    err.className = 'account-error';
+                    err.style.display = 'block';
+                    err.textContent = 'Kaydedilemedi. Bağlantını ve Firestore kurallarını kontrol et.';
+                    body.insertBefore(err, body.firstChild);
+                }
+            }
+        }
 
         async function loadReports() {
             if (!window.__fb || !isAdmin()) return;
@@ -8702,26 +8796,14 @@
                 return;
             }
             adminLoading = false;
+            countUnresolved();
             renderAdminPanel();
-        }
-
-        async function toggleResolved(id) {
-            if (!window.__fb || !isAdmin()) return;
-            const rep = adminReports.filter(function(r) { return r.id === id; })[0];
-            if (!rep) return;
-            const yeni = !rep.resolved;
-            try {
-                await window.__fb.updateDoc(window.__fb.doc(window.__fb.db, 'reports', id), { resolved: yeni });
-                rep.resolved = yeni;
-                renderAdminPanel();
-            } catch (e) {
-                console.error('Guncellenemedi:', e);
-            }
         }
 
         function openAdmin() {
             document.getElementById('admin-panel').style.display = 'flex';
             adminFilter = 'open';
+            adminPending = {};
             loadReports();
         }
         function closeAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
@@ -8804,6 +8886,7 @@
                     note: note,
                     uid: user ? user.uid : null,
                     email: user ? (user.email || null) : null,
+                    resolved: false,
                     createdAt: Date.now()
                 });
                 reportSending = false;
@@ -8828,6 +8911,8 @@
             if (ev.target.id === 'policy-panel') closePolicy();
         });
         document.getElementById('admin-close').addEventListener('click', closeAdmin);
+        document.getElementById('welcome-admin-badge').addEventListener('click', openAdmin);
+        document.getElementById('header-admin-badge').addEventListener('click', openAdmin);
         document.getElementById('admin-panel').addEventListener('click', function(ev) {
             if (ev.target.id === 'admin-panel') closeAdmin();
         });
