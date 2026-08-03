@@ -8444,8 +8444,8 @@
             }
         };
 
-        function openAccount() {
-            accountMode = 'signin';
+        function openAccount(mode) {
+            accountMode = (mode === 'signup') ? 'signup' : 'signin';
             accountEditingName = false;
             consentTerms = false;
             consentKvkk = false;
@@ -8472,13 +8472,13 @@
             }
         }
 
-        document.getElementById('account-badge').addEventListener('click', openAccount);
+        document.getElementById('account-badge').addEventListener('click', function() { openAccount('signin'); });
         document.getElementById('account-close').addEventListener('click', closeAccount);
         document.getElementById('account-panel').addEventListener('click', function(ev) {
             if (ev.target.id === 'account-panel') closeAccount();
         });
-        document.getElementById('welcome-account-link').addEventListener('click', openAccount);
-        document.getElementById('warn-banner-link').addEventListener('click', openAccount);
+        document.getElementById('welcome-account-link').addEventListener('click', function() { openAccount('signin'); });
+        document.getElementById('warn-banner-link').addEventListener('click', function() { openAccount('signup'); });
 
         // --- Giris kapisi (gate) ---
         const GUEST_KEY = 'wm_guest_mode';
