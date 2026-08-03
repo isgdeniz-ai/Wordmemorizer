@@ -328,7 +328,7 @@
         <!-- 1. GİRİŞ EKRANI VE SÖZLÜK ARAMASI -->
         <div id="welcome-screen">
             <h1 class="welcome-title">Word Memorizer</h1>
-            <div class="welcome-account-link" id="welcome-account-link">Zaten hesabın var mı? Giriş yap</div>
+            <div class="welcome-account-link" id="welcome-account-link">🔐 Giriş yap / Kayıt ol</div>
             <button id="install-btn">📲 Uygulamayı telefona yükle</button>
             
             <div class="search-container">
@@ -8308,7 +8308,7 @@
             const isSignup = accountMode === 'signup';
             body.innerHTML =
                 msgHtml +
-                (isSignup ? consentHtml() : '') +
+                consentHtml() +
                 '<button class="google-btn" onclick="handleGoogleSignIn()">🔵 Google ile devam et</button>' +
                 '<div class="account-divider">veya</div>' +
                 (isSignup ? '<input type="text" id="account-name-input" placeholder="İsmin" autocomplete="given-name" value="' + accountNameDraft.replace(/"/g, '&quot;') + '" oninput="accountNameDraft=this.value">' : '') +
@@ -8327,7 +8327,7 @@
 
         async function handleGoogleSignIn() {
             if (!window.__fb) return;
-            if (accountMode === 'signup' && !consentOk()) {
+            if (!consentOk()) {
                 showAccountError('Devam etmek için Gizlilik Politikası ve KVKK Aydınlatma Metni kutularını işaretle.');
                 return;
             }
@@ -8344,9 +8344,9 @@
             const email = emailEl ? emailEl.value.trim() : '';
             const pass = passEl ? passEl.value : '';
             if (!email || !pass) { showAccountError('E-posta ve şifre gerekli.'); return; }
+            if (!consentOk()) { showAccountError('Devam etmek için Gizlilik Politikası ve KVKK Aydınlatma Metni kutularını işaretle.'); return; }
             try {
                 if (accountMode === 'signup') {
-                    if (!consentOk()) { showAccountError('Devam etmek için Gizlilik Politikası ve KVKK Aydınlatma Metni kutularını işaretle.'); return; }
                     const nameEl = document.getElementById('account-name-input');
                     const name = nameEl ? nameEl.value.trim() : '';
                     if (!name) { showAccountError('Sana nasıl hitap edelim? Lütfen bir isim gir.'); return; }
@@ -8447,6 +8447,8 @@
         function openAccount() {
             accountMode = 'signin';
             accountEditingName = false;
+            consentTerms = false;
+            consentKvkk = false;
             renderAccountPanel();
             document.getElementById('account-panel').style.display = 'flex';
         }
@@ -8464,7 +8466,7 @@
                     link.textContent = 'Hoş geldin, ' + friendlyName(loggedIn) + ' 👋';
                     link.style.color = '#31a24c';
                 } else {
-                    link.textContent = 'Zaten hesabın var mı? Giriş yap';
+                    link.textContent = '🔐 Giriş yap / Kayıt ol';
                     link.style.color = '#1877f2';
                 }
             }
@@ -8682,6 +8684,8 @@
         document.getElementById('gate-signup-btn').addEventListener('click', function() {
             accountMode = 'signup';
             accountEditingName = false;
+            consentTerms = false;
+            consentKvkk = false;
             renderAccountPanel();
             document.getElementById('account-panel').style.display = 'flex';
         });
