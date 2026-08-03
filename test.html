@@ -217,6 +217,24 @@
         .policy-text ul { margin: 0 0 10px; padding-left: 20px; }
         .policy-text li { margin-bottom: 5px; }
         .policy-draft { background: #fff8e1; border-left: 4px solid #f5a623; color: #6b5108; font-size: 12px; padding: 9px 11px; border-radius: 7px; margin-bottom: 14px; line-height: 1.45; }
+
+        /* YÖNETİCİ PANELİ */
+        .admin-btn { width: 100%; padding: 13px; font-size: 14px; font-weight: 700; background: #fff3e0; color: #b26a00; border: 2px solid #ffd699; border-radius: 12px; cursor: pointer; margin-bottom: 12px; }
+        #admin-panel { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: flex-start; justify-content: center; z-index: 1050; padding: 16px; overflow-y: auto; }
+        .admin-card { background: #fff; border-radius: 16px; width: 100%; max-width: 560px; margin: 24px auto; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .admin-filter { display: flex; gap: 8px; margin-bottom: 14px; }
+        .admin-filter button { flex: 1; padding: 9px; font-size: 13px; font-weight: 700; border: 2px solid #e4e6eb; background: #fff; color: #606770; border-radius: 9px; cursor: pointer; }
+        .admin-filter button.on { border-color: #1877f2; background: #e8f4fd; color: #1877f2; }
+        .rep-item { border: 1px solid #e4e6eb; border-radius: 11px; padding: 12px; margin-bottom: 10px; }
+        .rep-item.done { opacity: 0.55; background: #f7f8fa; }
+        .rep-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+        .rep-word { font-size: 15px; font-weight: 800; color: #1c1e21; }
+        .rep-lvl { font-size: 11px; font-weight: 700; color: #1877f2; background: #e8f4fd; padding: 2px 7px; border-radius: 20px; }
+        .rep-reason { font-size: 13px; font-weight: 600; color: #e41e3f; margin-bottom: 5px; }
+        .rep-note { font-size: 13px; color: #3a3b3c; line-height: 1.5; background: #f7f8fa; border-radius: 7px; padding: 8px 10px; margin-bottom: 6px; white-space: pre-wrap; }
+        .rep-meta { font-size: 11px; color: #8a8d91; margin-bottom: 8px; }
+        .rep-action { font-size: 12px; font-weight: 700; color: #31a24c; cursor: pointer; padding: 5px 0; }
+        .rep-action.undo { color: #8a8d91; }
         #stats-btn { cursor: pointer; }
         /* --- Cevap geri bildirimi: dikey ve net duzen --- */
         #english-word.fb { flex-direction: column; gap: 8px; margin-bottom: 16px; }
@@ -500,6 +518,16 @@
             </div>
         </div>
 
+        <div id="admin-panel">
+            <div class="admin-card">
+                <div class="account-head">
+                    <span>⚑ Bildirimler</span>
+                    <button id="admin-close" class="account-close">✕</button>
+                </div>
+                <div id="admin-body"></div>
+            </div>
+        </div>
+
         <!-- 3. SEVİYE BELİRLEME TESTİ EKRANI -->
         <div id="placement-test-screen">
             <header>
@@ -537,7 +565,7 @@
             createUserWithEmailAndPassword, signInWithEmailAndPassword,
             signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile
         } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyADXePsyOkHyoBbjY6nznBcx5tGbk_76rI",
@@ -568,7 +596,12 @@
             getDoc: getDoc,
             setDoc: setDoc,
             collection: collection,
-            addDoc: addDoc
+            addDoc: addDoc,
+            query: query,
+            orderBy: orderBy,
+            limit: limit,
+            getDocs: getDocs,
+            updateDoc: updateDoc
         };
 
         onAuthStateChanged(fbAuth, function(user) {
@@ -8299,6 +8332,7 @@
                     '<div class="account-logged-in">' +
                         '<div class="account-avatar">' + initial + '</div>' +
                         nameBlock +
+                        (isAdmin() ? '<button class="admin-btn" onclick="openAdmin()">⚑ Bildirimleri Gör</button>' : '') +
                         '<div class="account-sync-note">İlerlemen bu hesaba kayıtlı ve yedekleniyor.</div>' +
                         '<button class="primary-btn" style="background-color:#6c757d;" onclick="handleSignOut()">Çıkış yap</button>' +
                     '</div>';
@@ -8577,6 +8611,121 @@
             '</div>';
         }
 
+        // --- Yonetici paneli (sadece admin hesabi gorur) ---
+        const ADMIN_EMAIL = 'isg.deniz@gmail.com';
+        let adminReports = [];
+        let adminFilter = 'open';     // 'open' | 'all'
+        let adminLoading = false;
+
+        function isAdmin() {
+            const u = window.__fb && window.__fb.auth.currentUser;
+            return !!(u && (u.email || '').toLowerCase() === ADMIN_EMAIL);
+        }
+
+        function reasonLabel(id) {
+            for (let i = 0; i < REPORT_REASONS.length; i++) {
+                if (REPORT_REASONS[i].id === id) return REPORT_REASONS[i].label;
+            }
+            return id || '-';
+        }
+
+        function timeAgo(ts) {
+            if (!ts) return '';
+            const diff = Date.now() - ts;
+            const dk = Math.floor(diff / 60000);
+            if (dk < 1) return 'az önce';
+            if (dk < 60) return dk + ' dakika önce';
+            const sa = Math.floor(dk / 60);
+            if (sa < 24) return sa + ' saat önce';
+            const gun = Math.floor(sa / 24);
+            if (gun < 30) return gun + ' gün önce';
+            const d = new Date(ts);
+            return d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+        }
+
+        function renderAdminPanel() {
+            const body = document.getElementById('admin-body');
+            if (!body) return;
+            const filterBar =
+                '<div class="admin-filter">' +
+                    '<button class="' + (adminFilter === 'open' ? 'on' : '') + '" onclick="setAdminFilter(\'open\')">Bekleyen</button>' +
+                    '<button class="' + (adminFilter === 'all' ? 'on' : '') + '" onclick="setAdminFilter(\'all\')">Tümü</button>' +
+                '</div>';
+            if (adminLoading) { body.innerHTML = filterBar + '<div class="stat-empty">Yükleniyor...</div>'; return; }
+            const list = adminReports.filter(function(r) { return adminFilter === 'all' || !r.resolved; });
+            if (!list.length) {
+                body.innerHTML = filterBar + '<div class="stat-empty">' +
+                    (adminFilter === 'open' ? 'Bekleyen bildirim yok. 👍' : 'Hiç bildirim yok.') + '</div>';
+                return;
+            }
+            body.innerHTML = filterBar + list.map(function(r) {
+                const who = r.email ? r.email : 'misafir';
+                return '<div class="rep-item' + (r.resolved ? ' done' : '') + '">' +
+                    '<div class="rep-top">' +
+                        '<span class="rep-word">' + (r.word || '-') + '</span>' +
+                        '<span class="rep-lvl">' + (r.level || '?') + '</span>' +
+                    '</div>' +
+                    '<div class="rep-reason">' + reasonLabel(r.reason) + '</div>' +
+                    (r.note ? '<div class="rep-note">' + r.note + '</div>' : '') +
+                    '<div class="rep-meta">' + who + ' · ' + timeAgo(r.createdAt) + '</div>' +
+                    '<div class="rep-action' + (r.resolved ? ' undo' : '') + '" onclick="toggleResolved(\'' + r.id + '\')">' +
+                        (r.resolved ? '↩ Geri al' : '✓ Çözüldü olarak işaretle') +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        function setAdminFilter(f) { adminFilter = f; renderAdminPanel(); }
+
+        async function loadReports() {
+            if (!window.__fb || !isAdmin()) return;
+            adminLoading = true;
+            renderAdminPanel();
+            try {
+                const q = window.__fb.query(
+                    window.__fb.collection(window.__fb.db, 'reports'),
+                    window.__fb.orderBy('createdAt', 'desc'),
+                    window.__fb.limit(200)
+                );
+                const snap = await window.__fb.getDocs(q);
+                adminReports = [];
+                snap.forEach(function(d) {
+                    const data = d.data();
+                    data.id = d.id;
+                    adminReports.push(data);
+                });
+            } catch (e) {
+                console.error('Bildirimler alinamadi:', e);
+                adminLoading = false;
+                document.getElementById('admin-body').innerHTML =
+                    '<div class="account-error" style="display:block;">Bildirimler alınamadı. Firestore kurallarının güncel olduğundan emin ol.</div>';
+                return;
+            }
+            adminLoading = false;
+            renderAdminPanel();
+        }
+
+        async function toggleResolved(id) {
+            if (!window.__fb || !isAdmin()) return;
+            const rep = adminReports.filter(function(r) { return r.id === id; })[0];
+            if (!rep) return;
+            const yeni = !rep.resolved;
+            try {
+                await window.__fb.updateDoc(window.__fb.doc(window.__fb.db, 'reports', id), { resolved: yeni });
+                rep.resolved = yeni;
+                renderAdminPanel();
+            } catch (e) {
+                console.error('Guncellenemedi:', e);
+            }
+        }
+
+        function openAdmin() {
+            document.getElementById('admin-panel').style.display = 'flex';
+            adminFilter = 'open';
+            loadReports();
+        }
+        function closeAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
+
         // --- Hata Bildir ---
         let reportCurrentWord = null;
         let reportReason = null;
@@ -8677,6 +8826,10 @@
         document.getElementById('policy-close').addEventListener('click', closePolicy);
         document.getElementById('policy-panel').addEventListener('click', function(ev) {
             if (ev.target.id === 'policy-panel') closePolicy();
+        });
+        document.getElementById('admin-close').addEventListener('click', closeAdmin);
+        document.getElementById('admin-panel').addEventListener('click', function(ev) {
+            if (ev.target.id === 'admin-panel') closeAdmin();
         });
         document.getElementById('gate-privacy-link').addEventListener('click', function() { openPolicy('privacy'); });
         document.getElementById('gate-kvkk-link').addEventListener('click', function() { openPolicy('kvkk'); });
