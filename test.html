@@ -179,6 +179,14 @@
         .account-name-edit { font-size: 12px; color: #1877f2; font-weight: 600; cursor: pointer; margin-bottom: 14px; }
         .account-sync-note { font-size: 12px; color: #606770; margin-bottom: 18px; }
         .account-forgot { text-align: right; font-size: 12px; color: #1877f2; font-weight: 600; cursor: pointer; margin: -4px 0 14px; }
+        .danger-link { font-size: 12.5px; color: #e41e3f; font-weight: 600; cursor: pointer; margin-top: 18px; padding: 6px; }
+        .danger-box { background: #fbe9e9; border: 1px solid #f5c2c7; border-radius: 12px; padding: 15px; text-align: left; }
+        .danger-box h4 { margin: 0 0 9px; font-size: 16px; color: #8a1327; }
+        .danger-box p { margin: 0 0 9px; font-size: 13px; color: #6b1220; line-height: 1.55; }
+        .danger-box ul { margin: 0 0 12px; padding-left: 19px; font-size: 13px; color: #6b1220; line-height: 1.6; }
+        .danger-btn { width: 100%; padding: 13px; font-size: 15px; font-weight: 700; border: none; border-radius: 12px; background: #e41e3f; color: #fff; cursor: pointer; margin-bottom: 9px; }
+        .danger-btn:disabled { background: #e4a3ac; cursor: default; }
+        .cancel-btn { width: 100%; padding: 13px; font-size: 15px; font-weight: 700; border: 2px solid #e4e6eb; border-radius: 12px; background: #fff; color: #1c1e21; cursor: pointer; }
 
         /* HATA BİLDİR */
         #report-link { display: none; text-align: center; font-size: 12px; color: #8a8d91; font-weight: 600; cursor: pointer; margin-top: 14px; padding: 6px; }
@@ -576,9 +584,10 @@
         import {
             getAuth, GoogleAuthProvider, signInWithPopup,
             createUserWithEmailAndPassword, signInWithEmailAndPassword,
-            signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile
+            signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile,
+            deleteUser, reauthenticateWithPopup, reauthenticateWithCredential, EmailAuthProvider
         } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, limit, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, query, orderBy, limit, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyADXePsyOkHyoBbjY6nznBcx5tGbk_76rI",
@@ -605,6 +614,11 @@
             signOut: signOut,
             sendPasswordResetEmail: sendPasswordResetEmail,
             updateProfile: updateProfile,
+            deleteUser: deleteUser,
+            reauthenticateWithPopup: reauthenticateWithPopup,
+            reauthenticateWithCredential: reauthenticateWithCredential,
+            EmailAuthProvider: EmailAuthProvider,
+            deleteDoc: deleteDoc,
             doc: doc,
             getDoc: getDoc,
             setDoc: setDoc,
@@ -8334,6 +8348,40 @@
             if (user) {
                 const shownName = friendlyName(user);
                 const initial = (shownName || '?').charAt(0).toUpperCase();
+
+                // Adim 1: silme onayi
+                if (accountDeleteStep === 1) {
+                    body.innerHTML = msgHtml +
+                        '<div class="danger-box">' +
+                            '<h4>⚠️ Hesabını silmek üzeresin</h4>' +
+                            '<p>Bu işlem <b>geri alınamaz.</b> Silinecekler:</p>' +
+                            '<ul>' +
+                                '<li>Hesabın ve giriş bilgilerin</li>' +
+                                '<li>Buluttaki tüm çalışma ilerlemen</li>' +
+                                '<li>Bu cihazdaki kayıtlı ilerlemen</li>' +
+                            '</ul>' +
+                            '<p>Silme sonrası uygulamayı misafir olarak ya da yeni bir hesapla sıfırdan kullanmaya devam edebilirsin.</p>' +
+                            '<button class="danger-btn" id="del-go" onclick="doDeleteAccount()">Evet, hesabımı sil</button>' +
+                            '<button class="cancel-btn" onclick="cancelDelete()">Vazgeç</button>' +
+                        '</div>';
+                    accountPendingMsg = null;
+                    return;
+                }
+
+                // Adim 2: oturum eski, sifreyle kimlik dogrulama gerekiyor
+                if (accountDeleteStep === 2) {
+                    body.innerHTML = msgHtml +
+                        '<div class="danger-box">' +
+                            '<h4>Kimliğini doğrula</h4>' +
+                            '<p>Güvenlik için, hesabı silmeden önce şifreni tekrar girmen gerekiyor.</p>' +
+                            '<input type="password" id="del-pass" placeholder="Şifren" autocomplete="current-password">' +
+                            '<button class="danger-btn" onclick="doDeleteAccount(true)">Doğrula ve sil</button>' +
+                            '<button class="cancel-btn" onclick="cancelDelete()">Vazgeç</button>' +
+                        '</div>';
+                    accountPendingMsg = null;
+                    return;
+                }
+
                 const nameBlock = accountEditingName
                     ? '<input type="text" id="account-name-input" placeholder="İsmin" value="' + (user.displayName || '').replace(/"/g, '&quot;') + '" style="text-align:center;">' +
                       '<button class="primary-btn" style="margin-bottom:10px;" onclick="handleSaveName()">İsmi kaydet</button>'
@@ -8348,6 +8396,7 @@
                         (isAdmin() ? '<button class="admin-btn" onclick="openAdmin()">⚑ Bildirimleri Gör</button>' : '') +
                         '<div class="account-sync-note">İlerlemen bu hesaba kayıtlı ve yedekleniyor.</div>' +
                         '<button class="primary-btn" style="background-color:#6c757d;" onclick="handleSignOut()">Çıkış yap</button>' +
+                        '<div class="danger-link" onclick="startDeleteAccount()">Hesabımı ve tüm verilerimi sil</div>' +
                     '</div>';
                 accountPendingMsg = null;
                 return;
@@ -8496,6 +8545,8 @@
         function openAccount(mode) {
             accountMode = (mode === 'signup') ? 'signup' : 'signin';
             accountEditingName = false;
+            accountDeleteStep = 0;
+            accountDeleteBusy = false;
             consentTerms = false;
             consentKvkk = false;
             renderAccountPanel();
@@ -8624,6 +8675,90 @@
                     '<div><u onclick="event.stopPropagation();openPolicy(\'kvkk\')">KVKK Aydınlatma Metni</u>\u2019ni okudum.</div>' +
                 '</div>' +
             '</div>';
+        }
+
+        // --- Hesap silme ---
+        let accountDeleteStep = 0;   // 0: kapali, 1: onay, 2: sifre dogrulama
+        let accountDeleteBusy = false;
+
+        function startDeleteAccount() { accountDeleteStep = 1; renderAccountPanel(); }
+        function cancelDelete() { accountDeleteStep = 0; accountDeleteBusy = false; renderAccountPanel(); }
+
+        function userUsesPassword(user) {
+            const list = (user && user.providerData) || [];
+            for (let i = 0; i < list.length; i++) {
+                if (list[i].providerId === 'password') return true;
+            }
+            return false;
+        }
+
+        async function doDeleteAccount(withPassword) {
+            if (accountDeleteBusy) return;
+            if (!window.__fb) return;
+            const user = window.__fb.auth.currentUser;
+            if (!user) return;
+
+            accountDeleteBusy = true;
+            const btn = document.querySelector('.danger-btn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Siliniyor...'; }
+
+            try {
+                // Gerekiyorsa once kimligi tazele
+                if (withPassword) {
+                    const passEl = document.getElementById('del-pass');
+                    const pass = passEl ? passEl.value : '';
+                    if (!pass) {
+                        accountDeleteBusy = false;
+                        showAccountError('Şifreni girmen gerekiyor.');
+                        return;
+                    }
+                    const cred = window.__fb.EmailAuthProvider.credential(user.email, pass);
+                    await window.__fb.reauthenticateWithCredential(user, cred);
+                }
+
+                // 1) Buluttaki ilerlemeyi sil (auth kullanicisi silinmeden ONCE, yoksa kurallar engeller)
+                try {
+                    await window.__fb.deleteDoc(window.__fb.doc(window.__fb.db, 'progress', user.uid));
+                } catch (e) { console.error('Bulut verisi silinemedi:', e); }
+
+                // 2) Hesabi sil
+                await window.__fb.deleteUser(user);
+
+                // 3) Cihazdaki verileri temizle
+                try {
+                    localStorage.removeItem(STORAGE_KEY);
+                    localStorage.removeItem(GUEST_KEY);
+                } catch (e) {}
+
+                alert('Hesabın ve tüm verilerin silindi.');
+                location.reload();
+            } catch (e) {
+                accountDeleteBusy = false;
+                const code = (e && e.code) || '';
+                if (code === 'auth/requires-recent-login') {
+                    // Oturum eski: Google ise pencereyle, sifre ise form ile tazele
+                    if (userUsesPassword(user)) {
+                        accountDeleteStep = 2;
+                        renderAccountPanel();
+                        showAccountError('Güvenlik için şifreni tekrar girmen gerekiyor.');
+                    } else {
+                        try {
+                            const provider = new window.__fb.GoogleAuthProvider();
+                            await window.__fb.reauthenticateWithPopup(user, provider);
+                            accountDeleteBusy = false;
+                            await doDeleteAccount();
+                            return;
+                        } catch (e2) {
+                            renderAccountPanel();
+                            showAccountError(translateFbError(e2));
+                        }
+                    }
+                } else {
+                    console.error('Hesap silinemedi:', e);
+                    renderAccountPanel();
+                    showAccountError(translateFbError(e));
+                }
+            }
         }
 
         // --- Yonetici paneli (sadece admin hesabi gorur) ---
