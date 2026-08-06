@@ -200,17 +200,37 @@
         #report-note:focus { border-color: #1877f2; background: #fff; }
 
         /* GİRİŞ KAPISI (gate) */
-        #gate-screen { display: none; flex-direction: column; justify-content: center; min-height: 100vh; padding: 28px 22px; text-align: center; }
-        .gate-sub { font-size: 14px; color: #606770; line-height: 1.5; margin: 0 0 30px; }
-        .gate-btn { width: 100%; padding: 16px; font-size: 16px; font-weight: 700; border-radius: 12px; cursor: pointer; border: none; margin-bottom: 12px; }
-        .gate-btn.main { background: #1877f2; color: #fff; }
+        #gate-screen { display: none; flex-direction: column; justify-content: center; min-height: 100vh; padding: 24px 20px; text-align: center; }
+        .gate-hero { margin-bottom: 30px; }
+        .gate-logo { width: 62px; height: 62px; border-radius: 16px; box-shadow: 0 6px 20px rgba(24,119,242,0.18); margin-bottom: 16px; }
+        .gate-title { font-size: 30px; font-weight: 800; color: #1c1e21; letter-spacing: -0.8px; line-height: 1.15; margin: 0; }
+        .gate-domain { font-size: 12px; font-weight: 600; color: #8a8d91; letter-spacing: 1.4px; text-transform: uppercase; margin-top: 5px; }
+
+        /* Canli kelime karti — uygulamanin kendi icerigini gosterir */
+        .gate-card { position: relative; overflow: hidden; background: #fff; border: 1px solid #e7eaef; border-radius: 16px; padding: 30px 16px 16px; margin-top: 24px; box-shadow: 0 5px 20px rgba(24,119,242,0.07); }
+        .gate-card::after { content: ''; position: absolute; top: 0; left: -60%; width: 45%; height: 100%; background: linear-gradient(100deg, transparent, rgba(245,196,81,0.4), transparent); transform: skewX(-18deg); opacity: 0; pointer-events: none; }
+        .gate-card.shine::after { animation: gateShine 950ms ease-out; }
+        @keyframes gateShine { 0% { left: -60%; opacity: 1; } 100% { left: 115%; opacity: 0; } }
+        .gate-card-lvl { position: absolute; top: 12px; right: 13px; font-size: 10.5px; font-weight: 800; color: #1877f2; background: #e8f4fd; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.4px; }
+        .gate-card-en { font-size: 25px; font-weight: 800; color: #1c1e21; letter-spacing: -0.4px; transition: opacity 260ms ease; }
+        .gate-card-tr { font-size: 14px; color: #606770; margin-top: 3px; transition: opacity 260ms ease; }
+        .gate-card.fading .gate-card-en, .gate-card.fading .gate-card-tr { opacity: 0; }
+
+        .gate-btn { width: 100%; padding: 16px; font-size: 16px; font-weight: 700; border-radius: 13px; cursor: pointer; border: none; }
+        .gate-btn.main { background: #1877f2; color: #fff; box-shadow: 0 4px 14px rgba(24,119,242,0.28); }
+        .gate-btn.main:active { background: #1568d8; }
         .gate-btn.guest { background: #fff; color: #1c1e21; border: 2px solid #e4e6eb; }
-        .gate-note { font-size: 12px; color: #8a8d91; line-height: 1.5; margin-top: 6px; }
-        .gate-legal { font-size: 12px; color: #8a8d91; margin-top: 26px; line-height: 1.7; }
-        #gate-install-btn { display: none; width: 100%; margin-top: 18px; padding: 14px; font-size: 15px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: 2px solid #1877f2; border-radius: 12px; cursor: pointer; }
+        .gate-btn.guest:active { background: #f5f6f7; }
+        .gate-cap { font-size: 11.5px; color: #8a8d91; line-height: 1.45; margin: 7px 0 16px; }
+        .gate-legal { font-size: 11.5px; color: #a3a6ab; margin-top: 24px; line-height: 1.7; }
+        .gate-legal span { color: #8a8d91; font-weight: 600; cursor: pointer; }
+        #gate-install-btn { display: none; width: 100%; margin-top: 6px; padding: 13px; font-size: 14px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: none; border-radius: 12px; cursor: pointer; }
         #gate-install-btn:active { background: #d5e9fb; }
-        #gate-ios-hint { display: none; margin-top: 18px; padding: 12px 14px; font-size: 12.5px; line-height: 1.55; color: #1c4a7a; background: #e8f4fd; border: 1px solid #b9dcfa; border-radius: 12px; text-align: left; }
-        .gate-legal span { color: #1877f2; font-weight: 600; cursor: pointer; }
+        #gate-ios-hint { display: none; margin-top: 6px; padding: 12px 14px; font-size: 12.5px; line-height: 1.55; color: #1c4a7a; background: #e8f4fd; border-radius: 12px; text-align: left; }
+        @media (prefers-reduced-motion: reduce) {
+            .gate-card.shine::after { animation: none; }
+            .gate-card-en, .gate-card-tr { transition: none; }
+        }
 
         /* ONAY KUTULARI */
         .consent-row { display: flex; align-items: flex-start; gap: 9px; font-size: 12.5px; color: #4b4f56; line-height: 1.45; margin-bottom: 9px; text-align: left; cursor: pointer; }
@@ -355,11 +375,20 @@
         
         <!-- 0. GİRİŞ KAPISI -->
         <div id="gate-screen">
-            <h1 class="welcome-title">Word Memorizer</h1>
-            <p class="gate-sub">Günde birkaç dakikayla İngilizce kelime dağarcığını kalıcı olarak büyüt.</p>
-            <button class="gate-btn main" id="gate-signup-btn">Üyelik Oluştur / Giriş Yap</button>
-            <button class="gate-btn guest" id="gate-guest-btn">Misafir Olarak Devam Et</button>
-            <div class="gate-note">Üyelikte ilerlemen yedeklenir, telefon değişse bile kaybolmaz. Misafirde ise yalnızca bu cihazda saklanır.</div>
+            <div class="gate-hero">
+                <img class="gate-logo" src="icon-192.png" alt="" onerror="this.style.display='none'">
+                <h1 class="gate-title">Word Memorizer</h1>
+                <div class="gate-domain">glizwor.com</div>
+                <div class="gate-card" id="gate-card">
+                    <div class="gate-card-lvl" id="gate-card-lvl">B1</div>
+                    <div class="gate-card-en" id="gate-card-en">journey</div>
+                    <div class="gate-card-tr" id="gate-card-tr">seyahat/yolculuk</div>
+                </div>
+            </div>
+            <button class="gate-btn main" id="gate-signup-btn">Üyelik oluştur / Giriş yap</button>
+            <div class="gate-cap">İlerlemen yedeklenir, telefon değişse de kaybolmaz</div>
+            <button class="gate-btn guest" id="gate-guest-btn">Misafir olarak devam et</button>
+            <div class="gate-cap">İlerlemen yalnızca bu cihazda saklanır</div>
             <button id="gate-install-btn">📲 Uygulamayı telefona yükle</button>
             <div id="gate-ios-hint">📲 Ana ekrana eklemek için: alttaki <b>Paylaş</b> simgesine <span style="font-size:15px;">&#x2191;</span> dokun, ardından <b>Ana Ekrana Ekle</b> seçeneğini seç.</div>
             <div class="gate-legal">
@@ -8591,8 +8620,10 @@
         function showGate() {
             document.getElementById('gate-screen').style.display = 'flex';
             document.getElementById('welcome-screen').style.display = 'none';
+            startGateWords();
         }
         function leaveGate() {
+            stopGateWords();
             document.getElementById('gate-screen').style.display = 'none';
             document.getElementById('welcome-screen').style.display = 'block';
             restoreWelcomeDefaults();
@@ -9114,6 +9145,50 @@
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('sw.js').catch(function() {});
             });
+        }
+
+        // --- Kapi ekranindaki canli kelime karti ---
+        let gateWordTimer = null;
+        let gateWordPool = null;
+
+        function buildGateWordPool() {
+            if (gateWordPool) return gateWordPool;
+            gateWordPool = wordDatabase.filter(function(w) {
+                return w.en && w.tr && w.en.length >= 4 && w.en.length <= 9 &&
+                       w.en.indexOf(' ') === -1 && w.tr.length <= 34;
+            });
+            return gateWordPool;
+        }
+
+        function showGateWord(w) {
+            const card = document.getElementById('gate-card');
+            const en = document.getElementById('gate-card-en');
+            const tr = document.getElementById('gate-card-tr');
+            const lvl = document.getElementById('gate-card-lvl');
+            if (!card || !en || !tr || !lvl) return;
+            card.classList.add('fading');
+            setTimeout(function() {
+                en.textContent = w.en;
+                tr.textContent = w.tr;
+                lvl.textContent = w.level;
+                card.classList.remove('fading');
+                card.classList.remove('shine');
+                void card.offsetWidth;      // animasyonu yeniden tetiklemek icin
+                card.classList.add('shine');
+            }, 260);
+        }
+
+        function startGateWords() {
+            const pool = buildGateWordPool();
+            if (!pool.length || gateWordTimer) return;
+            showGateWord(pool[Math.floor(Math.random() * pool.length)]);
+            gateWordTimer = setInterval(function() {
+                showGateWord(pool[Math.floor(Math.random() * pool.length)]);
+            }, 2800);
+        }
+
+        function stopGateWords() {
+            if (gateWordTimer) { clearInterval(gateWordTimer); gateWordTimer = null; }
         }
 
         // --- PWA: "telefona yukle" istemi ---
