@@ -207,6 +207,9 @@
         .gate-btn.guest { background: #fff; color: #1c1e21; border: 2px solid #e4e6eb; }
         .gate-note { font-size: 12px; color: #8a8d91; line-height: 1.5; margin-top: 6px; }
         .gate-legal { font-size: 12px; color: #8a8d91; margin-top: 26px; line-height: 1.7; }
+        #gate-install-btn { display: none; width: 100%; margin-top: 18px; padding: 14px; font-size: 15px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: 2px solid #1877f2; border-radius: 12px; cursor: pointer; }
+        #gate-install-btn:active { background: #d5e9fb; }
+        #gate-ios-hint { display: none; margin-top: 18px; padding: 12px 14px; font-size: 12.5px; line-height: 1.55; color: #1c4a7a; background: #e8f4fd; border: 1px solid #b9dcfa; border-radius: 12px; text-align: left; }
         .gate-legal span { color: #1877f2; font-weight: 600; cursor: pointer; }
 
         /* ONAY KUTULARI */
@@ -357,6 +360,8 @@
             <button class="gate-btn main" id="gate-signup-btn">Üyelik Oluştur / Giriş Yap</button>
             <button class="gate-btn guest" id="gate-guest-btn">Misafir Olarak Devam Et</button>
             <div class="gate-note">Üyelikte ilerlemen yedeklenir, telefon değişse bile kaybolmaz. Misafirde ise yalnızca bu cihazda saklanır.</div>
+            <button id="gate-install-btn">📲 Uygulamayı telefona yükle</button>
+            <div id="gate-ios-hint">📲 Ana ekrana eklemek için: alttaki <b>Paylaş</b> simgesine <span style="font-size:15px;">&#x2191;</span> dokun, ardından <b>Ana Ekrana Ekle</b> seçeneğini seç.</div>
             <div class="gate-legal">
                 <span id="gate-privacy-link">Gizlilik Politikası</span> · <span id="gate-kvkk-link">KVKK Aydınlatma Metni</span>
             </div>
@@ -9114,25 +9119,53 @@
         // --- PWA: "telefona yukle" istemi ---
         let deferredInstall = null;
         const installBtn = document.getElementById('install-btn');
+        const gateInstallBtn = document.getElementById('gate-install-btn');
+        const gateIosHint = document.getElementById('gate-ios-hint');
+
+        function isStandalone() {
+            return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+                   window.navigator.standalone === true;
+        }
+        function isIOS() {
+            const ua = navigator.userAgent || '';
+            const iOSKlasik = /iPad|iPhone|iPod/.test(ua);
+            // iPadOS 13+ kendini Mac gibi tanitiyor; dokunmatik varsa iPad'dir
+            const iPadYeni = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+            return iOSKlasik || iPadYeni;
+        }
+
+        function showInstallUI(goster) {
+            [installBtn, gateInstallBtn].forEach(function(b) {
+                if (b) b.style.display = goster ? 'block' : 'none';
+            });
+        }
+
         window.addEventListener('beforeinstallprompt', function(e) {
             e.preventDefault();
             deferredInstall = e;
-            if (installBtn) installBtn.style.display = 'block';
+            showInstallUI(true);
         });
-        if (installBtn) {
-            installBtn.addEventListener('click', function() {
-                if (!deferredInstall) return;
-                deferredInstall.prompt();
-                deferredInstall.userChoice.then(function() {
-                    deferredInstall = null;
-                    installBtn.style.display = 'none';
-                });
-            });
+
+        async function promptInstall() {
+            if (!deferredInstall) return;
+            deferredInstall.prompt();
+            try { await deferredInstall.userChoice; } catch (e) {}
+            deferredInstall = null;
+            showInstallUI(false);
         }
+        if (installBtn) installBtn.addEventListener('click', promptInstall);
+        if (gateInstallBtn) gateInstallBtn.addEventListener('click', promptInstall);
+
         window.addEventListener('appinstalled', function() {
             deferredInstall = null;
-            if (installBtn) installBtn.style.display = 'none';
+            showInstallUI(false);
+            if (gateIosHint) gateIosHint.style.display = 'none';
         });
+
+        // iOS'ta beforeinstallprompt yok; zaten kurulu degilse elle ekleme talimatini goster
+        if (gateIosHint && isIOS() && !isStandalone()) {
+            gateIosHint.style.display = 'block';
+        }
 
         // Acilista: kayitli ayarlari yansit ve hangi ekranin gosterilecegine karar ver
         decideStartScreen();
