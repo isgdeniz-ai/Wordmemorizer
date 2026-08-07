@@ -8520,6 +8520,21 @@
         async function handleSignOut() {
             if (!window.__fb) return;
             try { await window.__fb.signOut(window.__fb.auth); } catch (e) {}
+            // Cikistan sonra kullanici giris kapisina doner: misafir isareti kalkar,
+            // kapi isareti konur (uygulama yeniden acilsa da kapi gelir), panel kapanir.
+            try {
+                localStorage.removeItem(GUEST_KEY);
+                localStorage.setItem(FORCE_GATE_KEY, '1');
+            } catch (e) {}
+            accountMode = 'signin';
+            accountEditingName = false;
+            accountDeleteStep = 0;
+            accountDeleteBusy = false;
+            accountPendingMsg = null;
+            consentTerms = false;
+            consentKvkk = false;
+            closeAccount();
+            showGate();
         }
 
         async function reconcileCloudState(user) {
@@ -8570,6 +8585,7 @@
             if (isAdmin()) { loadReports(); }
             accountWasLoggedIn = !!user;
             if (justLoggedIn) {
+                try { localStorage.removeItem(FORCE_GATE_KEY); } catch (e) {}
                 const gate = document.getElementById('gate-screen');
                 if (gate && gate.style.display !== 'none') { leaveGate(); }
                 setTimeout(closeAccount, 1200);
@@ -8616,10 +8632,15 @@
 
         // --- Giris kapisi (gate) ---
         const GUEST_KEY = 'wm_guest_mode';
+        const FORCE_GATE_KEY = 'wm_force_gate';   // cikis yapildiysa kapiyi tekrar goster
 
         function showGate() {
             document.getElementById('gate-screen').style.display = 'flex';
-            document.getElementById('welcome-screen').style.display = 'none';
+            // Kapi acilinca uygulamanin diger ekranlari tamamen gizlensin
+            ['welcome-screen', 'main-app', 'placement-test-screen', 'test-result-screen'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
             startGateWords();
         }
         function leaveGate() {
@@ -8629,10 +8650,17 @@
             restoreWelcomeDefaults();
         }
         function continueAsGuest() {
-            try { localStorage.setItem(GUEST_KEY, '1'); } catch (e) {}
+            try {
+                localStorage.setItem(GUEST_KEY, '1');
+                localStorage.removeItem(FORCE_GATE_KEY);
+            } catch (e) {}
             leaveGate();
         }
         function decideStartScreen() {
+            // Cikis yapilmissa, cihazda ilerleme kayitli olsa bile kapiyi tekrar goster
+            let forceGate = false;
+            try { forceGate = localStorage.getItem(FORCE_GATE_KEY) === '1'; } catch (e) {}
+            if (forceGate) { showGate(); return; }
             // Daha once kullanmis (ilerlemesi var) ya da misafir secmisse kapiyi atla
             let guest = false;
             try { guest = localStorage.getItem(GUEST_KEY) === '1'; } catch (e) {}
@@ -8805,6 +8833,7 @@
                 try {
                     localStorage.removeItem(STORAGE_KEY);
                     localStorage.removeItem(GUEST_KEY);
+                    localStorage.removeItem(FORCE_GATE_KEY);
                 } catch (e) {}
 
                 alert('Hesabın ve tüm verilerin silindi.');
