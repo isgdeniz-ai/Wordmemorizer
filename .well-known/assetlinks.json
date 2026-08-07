@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.glizwor.wordmemorizer",
+        "sha256_cert_fingerprints": ["8B:6D:EA:34:FC:1F:24:A0:B7:BC:0C:EE:EA:DB:8C:12:F2:CF:29:87:33:30:A8:8D:98:47:83:FC:D1:EC:7C:5A"]
+      }
+    }]
