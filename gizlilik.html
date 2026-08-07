@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gizlilik Politikası — Word Memorizer</title>
-<meta name="description" content="Word Memorizer gizlilik politikası: hangi verileri neden topluyoruz, neleri hiç toplamıyoruz.">
+<title>Gizlilik Politikası ve KVKK Aydınlatma Metni — Word Memorizer</title>
+<meta name="description" content="Word Memorizer gizlilik politikası ve KVKK aydınlatma metni: hangi verileri neden topluyoruz, neleri hiç toplamıyoruz.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
@@ -12,6 +12,7 @@
   :root{
     --ink:#131A2B;
     --paper:#F6F8FC;
+    --card:#FFFFFF;
     --blue:#2F5FE0;
     --blue-deep:#13224A;
     --gold:#C9922B;
@@ -26,7 +27,7 @@
   }
   .wrap{max-width:720px;margin:0 auto;padding:0 20px 72px;}
 
-  header{padding:38px 0 26px;border-bottom:1px solid var(--rule);}
+  header{padding:38px 0 24px;}
   .lockup{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
   .lockup img{width:42px;height:42px;border-radius:10px;display:block;}
   .lockup .name{font-family:"Newsreader",Georgia,serif;font-size:1.35rem;font-weight:600;letter-spacing:-.01em;}
@@ -34,9 +35,23 @@
   h1{font-family:"Newsreader",Georgia,serif;font-weight:400;font-size:2rem;line-height:1.2;letter-spacing:-.015em;margin:28px 0 10px;}
   .updated{color:var(--muted);font-size:.86rem;margin:0;}
 
+  nav.tabs{
+    position:sticky;top:0;z-index:5;background:var(--paper);
+    padding:14px 0 12px;border-bottom:1px solid var(--rule);display:flex;gap:8px;flex-wrap:wrap;
+  }
+  nav.tabs button{
+    font:inherit;font-weight:500;font-size:.88rem;
+    padding:9px 15px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--rule);background:var(--card);color:var(--muted);
+    transition:background .18s,color .18s,border-color .18s;
+  }
+  nav.tabs button[aria-selected="true"]{background:var(--blue-deep);border-color:var(--blue-deep);color:#fff;}
+  nav.tabs button:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+
   .lede{font-size:1.06rem;color:var(--blue-deep);margin:30px 0 0;}
 
-  .doc{padding:6px 0 0 26px;border-left:2px solid var(--gold);margin-top:34px;}
+  .doc{display:none;padding:6px 0 0 26px;border-left:2px solid var(--gold);margin-top:32px;}
+  .doc.active{display:block;}
   .doc h2{
     font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:1.26rem;line-height:1.3;
     margin:38px 0 10px;color:var(--blue-deep);position:relative;
@@ -46,15 +61,18 @@
     content:attr(data-n);position:absolute;left:-26px;transform:translateX(-100%);
     font-family:"Karla",sans-serif;font-size:.78rem;font-weight:700;color:var(--gold);top:.4em;
   }
+  .doc h3{font-size:.98rem;font-weight:700;color:var(--blue-deep);margin:22px 0 8px;}
   .doc p{margin:0 0 15px;}
   .doc ul{margin:0 0 15px;padding-left:0;list-style:none;}
   .doc li{margin-bottom:12px;padding-left:16px;border-left:2px solid var(--rule);}
+  .doc ul.plain li{border-left:none;padding-left:20px;position:relative;margin-bottom:8px;}
+  .doc ul.plain li::before{content:"—";position:absolute;left:0;color:var(--gold);}
   .doc li b{color:var(--blue-deep);}
   .doc a{color:var(--blue);text-decoration:underline;text-underline-offset:2px;}
 
   footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--rule);color:var(--muted);font-size:.9rem;}
   footer a{color:var(--blue);}
-  .back{display:inline-block;margin-top:18px;padding:11px 20px;border-radius:999px;background:var(--blue-deep);color:#fff;text-decoration:none;font-weight:500;font-size:.92rem;}
+  .back{display:inline-block;margin-top:8px;padding:11px 20px;border-radius:999px;background:var(--blue-deep);color:#fff;text-decoration:none;font-weight:500;font-size:.92rem;}
   .back:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
 </style>
 </head>
@@ -63,19 +81,25 @@
 
   <header>
     <a class="lockup" href="/">
-      <img src="/icons/icon-192.png" alt="">
+      <img src="/icon-192.png" alt="">
       <span>
         <span class="name">Word Memorizer</span>
         <span class="dom">glizwor.com</span>
       </span>
     </a>
-    <h1>Gizlilik Politikası</h1>
+    <h1 id="pageTitle">Gizlilik Politikası</h1>
     <p class="updated">Son güncelleme: 5 Ağustos 2026</p>
   </header>
 
-  <p class="lede">Word Memorizer bir eğitim uygulamasıdır; veri şirketi değildir. Gelir modelimiz kullanıcı verisi üzerine kurulu değildir. Bu politika, hangi verileri neden topladığımızı ve neleri hiç toplamadığımızı açıkça anlatır.</p>
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-gizlilik" data-title="Gizlilik Politikası" aria-controls="doc-gizlilik" aria-selected="true">Gizlilik Politikası</button>
+    <button role="tab" id="tab-kvkk" data-title="KVKK Aydınlatma Metni" aria-controls="doc-kvkk" aria-selected="false">KVKK Aydınlatma Metni</button>
+  </nav>
 
-  <section class="doc">
+  <!-- ===================== GİZLİLİK POLİTİKASI ===================== -->
+  <section class="doc active" id="doc-gizlilik" role="tabpanel" aria-labelledby="tab-gizlilik">
+
+    <p class="lede">Word Memorizer bir eğitim uygulamasıdır; veri şirketi değildir. Gelir modelimiz kullanıcı verisi üzerine kurulu değildir. Bu politika, hangi verileri neden topladığımızı ve neleri hiç toplamadığımızı açıkça anlatır.</p>
 
     <h2 data-n="1">Taahhütlerimiz</h2>
     <ul>
@@ -121,11 +145,82 @@
 
   </section>
 
+  <!-- ===================== KVKK AYDINLATMA METNİ ===================== -->
+  <section class="doc" id="doc-kvkk" role="tabpanel" aria-labelledby="tab-kvkk">
+
+    <h2 data-n="1">Veri sorumlusu</h2>
+    <p>Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, Word Memorizer (Uygulama) kullanıcılarının kişisel verilerinin nasıl işlendiğini açıklamak amacıyla hazırlanmıştır.</p>
+    <p>Veri sorumlusu: Word Memorizer<br>
+    İletişim: <a href="mailto:info@glizwor.com">info@glizwor.com</a></p>
+
+    <h2 data-n="2">Üyelik zorunlu değildir</h2>
+    <p>Uygulamayı misafir olarak kullanabilirsin. Bu durumda hiçbir kişisel verin tarafımıza iletilmez; çalışma ilerlemen yalnızca kendi cihazının hafızasında saklanır. Cihazını değiştirirsen ya da uygulama verisini silersen ilerlemen geri getirilemez.</p>
+    <p>Aşağıdaki hükümler yalnızca üyelik oluşturmayı tercih eden kullanıcılar için geçerlidir.</p>
+
+    <h2 data-n="3">İşlenen kişisel veriler</h2>
+    <ul>
+      <li><b>Kimlik:</b> Belirlediğin ya da Google hesabından gelen ad — uygulama içinde sana hitap etmek için.</li>
+      <li><b>İletişim:</b> E-posta adresin — hesabını tanımlamak ve şifre sıfırlama için.</li>
+      <li><b>Kullanım:</b> Çalıştığın kelimeler, günlük hedefin, seviye seçimin ve doğru-yanlış geçmişin — ilerlemeni yedeklemek ve tekrar algoritmasını çalıştırmak için.</li>
+      <li><b>Bildirim:</b> Hata bildirdiğinde kelime, sorun türü, notun ve e-postan — içerik hatalarını düzeltmek için.</li>
+    </ul>
+    <h3>Şifreler hakkında</h3>
+    <p>E-posta ile kayıt olursan şifren doğrudan Google Firebase Authentication altyapısına iletilir. Şifren bizim tarafımızdan görülemez, saklanmaz ve hiçbir sistemimize kaydedilmez.</p>
+    <h3>Toplamadığımız veriler</h3>
+    <p>Konum, telefon numarası, kimlik numarası, cihaz rehberi, fotoğraflar, ödeme bilgisi ve reklam kimliği toplanmaz.</p>
+
+    <h2 data-n="4">İşleme amacı ve hukuki sebep</h2>
+    <p>Kişisel verilerin; hesabının oluşturulması, ilerlemenin yedeklenmesi ve farklı cihazlardan erişimin sağlanması amacıyla, KVKK m.5/2-c (sözleşmenin kurulması ve ifasıyla doğrudan ilgili olması) hukuki sebebine dayanılarak işlenir.</p>
+    <p>Hata bildirimlerin, KVKK m.5/2-f (meşru menfaat) kapsamında, uygulama içeriğinin düzeltilmesi amacıyla işlenir.</p>
+
+    <h2 data-n="5">Verilerin saklandığı yer ve yurt dışına aktarım</h2>
+    <p>Veriler, Google tarafından sağlanan Firebase altyapısında saklanır. Bu nedenle kişisel verilerin yurt dışında bulunan sunuculara aktarılmaktadır.</p>
+    <p>Veriler aktarım sırasında (SSL/TLS) ve sunucuda şifreli olarak tutulur. Üyelik oluştururken verdiğin onay bu aktarımı da kapsamaktadır. Bunun dışında verilerin hiçbir üçüncü kişiye satılmaz, kiralanmaz veya pazarlama amacıyla paylaşılmaz.</p>
+
+    <h2 data-n="6">Kimlerin erişimi var</h2>
+    <p>Çalışma ilerlemene yalnızca sen erişebilirsin; veri tabanı kuralları her kaydın yalnızca sahibi tarafından okunmasına izin verecek şekilde yapılandırılmıştır. Hata bildirimlerin, içerik düzeltmesi yapılabilmesi için uygulama ekibi tarafından incelenir.</p>
+
+    <h2 data-n="7">Saklama süresi</h2>
+    <p>Verilerin, hesabın aktif olduğu sürece saklanır. Hesabını sildiğinde hesabına bağlı tüm ilerleme verisi kalıcı olarak silinir. Hata bildirimleri, ilgili içerik düzeltildikten sonra kişisel bağlantısı kaldırılarak saklanabilir.</p>
+
+    <h2 data-n="8">KVKK m.11 kapsamındaki haklarınız</h2>
+    <ul class="plain">
+      <li>Kişisel verilerinin işlenip işlenmediğini öğrenme,</li>
+      <li>İşlenmişse buna ilişkin bilgi talep etme,</li>
+      <li>İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme,</li>
+      <li>Yurt içinde veya yurt dışında verilerinin aktarıldığı üçüncü kişileri bilme,</li>
+      <li>Eksik veya yanlış işlenmiş verilerin düzeltilmesini isteme,</li>
+      <li>Verilerinin silinmesini veya yok edilmesini isteme,</li>
+      <li>Bu işlemlerin, verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme,</li>
+      <li>İşlenen verilerin münhasıran otomatik sistemlerle analiz edilmesi suretiyle aleyhine bir sonuç çıkmasına itiraz etme,</li>
+      <li>Kanuna aykırı işleme sebebiyle zarara uğraman hâlinde zararın giderilmesini talep etme.</li>
+    </ul>
+    <h3>Başvuru</h3>
+    <p>Taleplerini <a href="mailto:info@glizwor.com">info@glizwor.com</a> adresine iletebilirsin. Başvurular, KVKK m.13 uyarınca en geç 30 gün içinde ücretsiz olarak sonuçlandırılır.</p>
+
+  </section>
+
   <footer>
-    <p>KVKK Aydınlatma Metni uygulama içinden görüntülenebilir.</p>
+    <p>Sorularınız için: <a href="mailto:info@glizwor.com">info@glizwor.com</a></p>
     <a class="back" href="/">← Uygulamaya dön</a>
   </footer>
 
 </div>
+
+<script>
+  const tabs = document.querySelectorAll('nav.tabs button');
+  const title = document.getElementById('pageTitle');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => {
+        const on = t === tab;
+        t.setAttribute('aria-selected', on);
+        document.getElementById(t.getAttribute('aria-controls')).classList.toggle('active', on);
+        if (on) title.textContent = t.dataset.title;
+      });
+      window.scrollTo({top:0});
+    });
+  });
+</script>
 </body>
 </html>
