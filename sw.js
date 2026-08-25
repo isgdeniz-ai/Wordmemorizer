@@ -1,7 +1,7 @@
 // Word Memorizer - service worker
 // HTML icin "once ag, olmazsa onbellek" (guncellemeler hemen gelsin)
 // Diger dosyalar icin "once onbellek" (hizli acilsin)
-const CACHE = 'wordmem-v78';
+const CACHE = 'wordmem-v80';
 const ASSETS = [
   './',
   './index.html',
