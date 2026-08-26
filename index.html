@@ -384,7 +384,7 @@
         .sc-min { font-size:12px; color:#606770; }
 
         /* seviye rozetleri */
-        .lv { font-size:11px; font-weight:800; border-radius:6px; padding:3px 8px; letter-spacing:.3px; }
+        .lv { font-size:11px; font-weight:800; border-radius:6px; padding:3px 8px; letter-spacing:.3px; white-space:nowrap; }
         .lv-A1 { color:#1d7a3e; background:#e5f6ea; }
         .lv-A2 { color:#0a7f7f; background:#e0f5f5; }
         .lv-B1 { color:#1877f2; background:#e8f4fd; }
@@ -395,14 +395,14 @@
         #reader-body { font-size:17px; line-height:1.9; color:#1c1e21; flex:1; }
         #reader-body p { margin-bottom:15px; }
         .rs { transition:background .15s; border-radius:4px; padding:1px 0; }
-        .rs.on { background:#fff7e6; box-shadow:0 0 0 3px #fff7e6; }
+        .rs.on { background:#ffe6a8; box-shadow:0 0 0 4px #ffe6a8; }
         .rw { cursor:pointer; border-bottom:1px dotted #c0c6d0; }
         .rw:active { background:#e8f4fd; }
         .rw.pick { background:#1877f2; color:#fff; border-radius:4px; border-bottom:none; box-shadow:0 0 0 2px #1877f2; }
         /* cumle yapisi dilimleri */
-        .sl-s { background:linear-gradient(transparent 52%, #bcd8f7 52%); border-bottom:none; }
-        .sl-c { background:linear-gradient(transparent 52%, #b3e7c4 52%); border-bottom:none; }
-        .sl-o { background:linear-gradient(transparent 52%, #f7d6a2 52%); border-bottom:none; }
+        .sl-s { background:linear-gradient(transparent 50%, #9cc6f2 50%); border-bottom:none; }
+        .sl-c { background:linear-gradient(transparent 50%, #94dfae 50%); border-bottom:none; }
+        .sl-o { background:linear-gradient(transparent 50%, #f0bd6d 50%); border-bottom:none; }
 
         .reader-nav { display:flex; gap:10px; margin-top:20px; padding-top:16px; border-top:1px solid #e4e6eb; }
         .reader-nav button { flex:1; padding:13px; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; background:#f0f2f5; color:#1c1e21; }
@@ -8496,6 +8496,10 @@
         }
 
         // --- ekran ------------------------------------------------------
+        // Hikaye bandi kumulatif gosterilir: B1 hikayesi A1-B1 araligini kapsar
+        const BANT_ETIKET = { 'A1': 'A1', 'A2': 'A1-A2', 'B1': 'A1-B1', 'B2': 'A1-B2', 'C1': 'A1-C1' };
+        function bantEtiketi(b) { return BANT_ETIKET[b] || b; }
+
         function openStories() {
             document.getElementById('welcome-screen').style.display = 'none';
             document.getElementById('story-screen').style.display = 'flex';
@@ -8507,7 +8511,7 @@
                 '<div class="story-card" onclick="openStory(' + i + ')">' +
                 '<h3>' + st.title + '</h3>' +
                 '<div class="sc-sub">' + st.sub + '</div>' +
-                '<div class="sc-meta"><span class="lv lv-' + st.band + '">' + st.band + '</span>' +
+                '<div class="sc-meta"><span class="lv lv-' + st.band + '">' + bantEtiketi(st.band) + '</span>' +
                 '<span class="sc-min">' + st.min + ' dk okuma \u00b7 ' + st.pages.length + ' sayfa</span></div>' +
                 '</div>').join('') +
                 '<div style="margin-top:16px;font-size:12px;color:#8a8d91;line-height:1.6;">' +
@@ -8529,7 +8533,7 @@
         function renderPage() {
             const st = rdStory, pg = st.pages[rdPage];
             document.getElementById('reader-head').textContent =
-                st.sub + '  \u00b7  ' + st.band + ' seviyesi';
+                st.sub + '  \u00b7  ' + bantEtiketi(st.band) + ' seviyesi';
             let html = '<p>';
             pg.forEach((sent, si) => {
                 html += '<span class="rs" id="rs-' + si + '">';
