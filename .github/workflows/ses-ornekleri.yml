@@ -111,3 +111,4 @@ jobs:
           git add ses-ornek
           git commit -m "Ses ornekleri uretildi" || echo "degisiklik yok"
           git push
+ 
