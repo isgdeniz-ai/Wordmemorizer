@@ -1,6 +1,6 @@
-name: Ses Ã–rnekleri Ãœret
+name: Ses Örnekleri Üret
 
-# Elle Ã§alÄ±ÅŸtÄ±rÄ±lÄ±r: Actions sekmesi -> bu iÅŸ akÄ±ÅŸÄ± -> Run workflow
+# Elle çalıştırılır: Actions sekmesi -> bu iş akışı -> Run workflow
 on:
   workflow_dispatch:
 
@@ -15,7 +15,7 @@ jobs:
       - name: Google kimlik bilgisini yaz
         run: echo '${{ secrets.GCP_TTS_KEY }}' > /tmp/gcp-key.json
 
-      - name: EriÅŸim jetonu al
+      - name: Erişim jetonu al
         id: token
         run: |
           python3 - <<'PY' >> $GITHUB_OUTPUT
@@ -51,7 +51,7 @@ jobs:
           print("jeton=" + jeton)
           PY
 
-      - name: Ã–rnek sesleri Ã¼ret
+      - name: Örnek sesleri üret
         env:
           JETON: ${{ steps.token.outputs.jeton }}
         run: |
@@ -104,23 +104,23 @@ jobs:
           # dinleme sayfasi
           html = ["<!DOCTYPE html><html lang='tr'><head><meta charset='utf-8'>",
                   "<meta name='viewport' content='width=device-width,initial-scale=1'>",
-                  "<title>Ses Ã–rnekleri</title><style>",
+                  "<title>Ses Örnekleri</title><style>",
                   "body{font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px 18px;background:#f6f8fc;color:#1c1e21}",
                   "h1{font-size:1.4rem;margin:0 0 6px}p.alt{color:#5c6780;font-size:.9rem;margin:0 0 22px}",
                   ".k{background:#fff;border:1px solid #e4e6eb;border-radius:12px;padding:14px 16px;margin-bottom:12px}",
                   ".k b{font-size:1rem}.k span{font-size:.8rem;color:#8a8d91;margin-left:8px}",
                   "audio{width:100%;margin-top:10px}",
-                  "</style></head><body><h1>Ses Ã–rnekleri</h1>",
-                  "<p class='alt'>WaveNet Â· en-US Â· Hepsini dinleyip anlatÄ±cÄ±, Mia ve Bay Vance iÃ§in birer ses seÃ§.</p>"]
+                  "</style></head><body><h1>Ses Örnekleri</h1>",
+                  "<p class='alt'>WaveNet · en-US · Hepsini dinleyip anlatıcı, Mia ve Bay Vance için birer ses seç.</p>"]
           for dosya, ses, cinsiyet in satirlar:
-              html.append(f"<div class='k'><b>{ses.split('-')[-1]}</b><span>{cinsiyet} Â· {ses}</span>"
+              html.append(f"<div class='k'><b>{ses.split('-')[-1]}</b><span>{cinsiyet} · {ses}</span>"
                           f"<audio controls preload='none' src='{dosya}.mp3'></audio></div>")
           html.append("</body></html>")
           open("ses-ornek/index.html", "w", encoding="utf-8").write("\n".join(html))
           print("\nToplam karakter:", len(METIN) * len(SESLER))
           PY
 
-      - name: Depoya iÅŸle
+      - name: Depoya işle
         run: |
           git config user.name  "ses-botu"
           git config user.email "actions@github.com"
