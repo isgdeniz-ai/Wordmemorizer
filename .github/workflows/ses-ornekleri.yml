@@ -1,8 +1,11 @@
 name: Ses Örnekleri Üret
 
-# Elle çalıştırılır: Actions sekmesi -> bu iş akışı -> Run workflow
 on:
   workflow_dispatch:
+
+# depoya mp3 yazabilmek icin gerekli
+permissions:
+  contents: write
 
 jobs:
   ornekler:
@@ -12,53 +15,35 @@ jobs:
       - name: Depoyu al
         uses: actions/checkout@v4
 
-      - name: Google kimlik bilgisini yaz
-        run: echo '${{ secrets.GCP_TTS_KEY }}' > /tmp/gcp-key.json
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Erişim jetonu al
-        id: token
+      - name: Kutuphaneleri kur
+        run: pip install --quiet google-auth requests
+
+      - name: Kimlik dosyasini yaz
+        env:
+          ANAHTAR: ${{ secrets.GCP_TTS_KEY }}
         run: |
-          python3 - <<'PY' >> $GITHUB_OUTPUT
-          import json, time, base64, urllib.request, subprocess, sys
-          k = json.load(open('/tmp/gcp-key.json'))
-
-          def b64(d):
-              return base64.urlsafe_b64encode(d).decode().rstrip('=')
-
-          simdi = int(time.time())
-          basl = b64(json.dumps({"alg": "RS256", "typ": "JWT"}).encode())
-          govde = b64(json.dumps({
-              "iss": k["client_email"],
-              "scope": "https://www.googleapis.com/auth/cloud-platform",
-              "aud": "https://oauth2.googleapis.com/token",
-              "iat": simdi, "exp": simdi + 3600
-          }).encode())
-
-          open('/tmp/imzalanacak.txt', 'w').write(basl + '.' + govde)
-          open('/tmp/ozel.pem', 'w').write(k["private_key"])
-          subprocess.run(
-              "openssl dgst -sha256 -sign /tmp/ozel.pem -out /tmp/imza.bin /tmp/imzalanacak.txt",
-              shell=True, check=True)
-          imza = b64(open('/tmp/imza.bin', 'rb').read())
-          jwt = basl + '.' + govde + '.' + imza
-
-          veri = urllib.parse.urlencode({
-              "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-              "assertion": jwt
-          }).encode()
-          y = urllib.request.urlopen("https://oauth2.googleapis.com/token", veri)
-          jeton = json.load(y)["access_token"]
-          print("jeton=" + jeton)
-          PY
+          printf '%s' "$ANAHTAR" > /tmp/gcp-key.json
+          python3 -c "import json;d=json.load(open('/tmp/gcp-key.json'));print('kimlik OK:',d['client_email'])"
 
       - name: Örnek sesleri üret
-        env:
-          JETON: ${{ steps.token.outputs.jeton }}
         run: |
           python3 - <<'PY'
-          import json, os, base64, urllib.request
+          import json, os, base64, requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
 
-          JETON = os.environ["JETON"]
+          kimlik = service_account.Credentials.from_service_account_file(
+              '/tmp/gcp-key.json',
+              scopes=['https://www.googleapis.com/auth/cloud-platform'])
+          kimlik.refresh(Request())
+          JETON = kimlik.token
+          print('jeton alindi')
+
           METIN = ("A year had passed since Sam's first day in the city. "
                    "He was not the same nervous young man anymore.")
 
@@ -76,48 +61,47 @@ jobs:
           ]
 
           os.makedirs("ses-ornek", exist_ok=True)
-          satirlar = []
+          basarili = []
 
           for dosya, ses, cinsiyet in SESLER:
-              govde = json.dumps({
-                  "input": {"text": METIN},
-                  "voice": {"languageCode": "en-US", "name": ses},
-                  "audioConfig": {
-                      "audioEncoding": "MP3",
-                      "speakingRate": 0.92,
-                      "pitch": 0.0,
-                      "sampleRateHertz": 24000
-                  }
-              }).encode()
-
-              istek = urllib.request.Request(
+              r = requests.post(
                   "https://texttospeech.googleapis.com/v1/text:synthesize",
-                  data=govde,
                   headers={"Authorization": "Bearer " + JETON,
-                           "Content-Type": "application/json; charset=utf-8"})
-              cevap = json.load(urllib.request.urlopen(istek))
-              mp3 = base64.b64decode(cevap["audioContent"])
+                           "Content-Type": "application/json; charset=utf-8"},
+                  json={
+                      "input": {"text": METIN},
+                      "voice": {"languageCode": "en-US", "name": ses},
+                      "audioConfig": {"audioEncoding": "MP3",
+                                      "speakingRate": 0.92,
+                                      "sampleRateHertz": 24000}
+                  }, timeout=60)
+              if r.status_code != 200:
+                  print(f"  HATA {ses}: {r.status_code} {r.text[:300]}")
+                  continue
+              mp3 = base64.b64decode(r.json()["audioContent"])
               open(f"ses-ornek/{dosya}.mp3", "wb").write(mp3)
-              print(f"  uretildi: {dosya}.mp3  ({ses}, {cinsiyet}, {len(mp3)//1024} KB)")
-              satirlar.append((dosya, ses, cinsiyet))
+              print(f"  uretildi: {dosya}.mp3  ({cinsiyet}, {len(mp3)//1024} KB)")
+              basarili.append((dosya, ses, cinsiyet))
 
-          # dinleme sayfasi
+          if not basarili:
+              raise SystemExit("Hicbir ses uretilemedi")
+
           html = ["<!DOCTYPE html><html lang='tr'><head><meta charset='utf-8'>",
                   "<meta name='viewport' content='width=device-width,initial-scale=1'>",
                   "<title>Ses Örnekleri</title><style>",
                   "body{font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px 18px;background:#f6f8fc;color:#1c1e21}",
                   "h1{font-size:1.4rem;margin:0 0 6px}p.alt{color:#5c6780;font-size:.9rem;margin:0 0 22px}",
                   ".k{background:#fff;border:1px solid #e4e6eb;border-radius:12px;padding:14px 16px;margin-bottom:12px}",
-                  ".k b{font-size:1rem}.k span{font-size:.8rem;color:#8a8d91;margin-left:8px}",
+                  ".k b{font-size:1.05rem}.k span{font-size:.8rem;color:#8a8d91;margin-left:8px}",
                   "audio{width:100%;margin-top:10px}",
                   "</style></head><body><h1>Ses Örnekleri</h1>",
                   "<p class='alt'>WaveNet · en-US · Hepsini dinleyip anlatıcı, Mia ve Bay Vance için birer ses seç.</p>"]
-          for dosya, ses, cinsiyet in satirlar:
+          for dosya, ses, cinsiyet in basarili:
               html.append(f"<div class='k'><b>{ses.split('-')[-1]}</b><span>{cinsiyet} · {ses}</span>"
                           f"<audio controls preload='none' src='{dosya}.mp3'></audio></div>")
           html.append("</body></html>")
           open("ses-ornek/index.html", "w", encoding="utf-8").write("\n".join(html))
-          print("\nToplam karakter:", len(METIN) * len(SESLER))
+          print("\nToplam karakter:", len(METIN) * len(basarili))
           PY
 
       - name: Depoya işle
