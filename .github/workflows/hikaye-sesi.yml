@@ -1,1 +1,153 @@
+name: Hikaye Sesi Üret
+
+on:
+  workflow_dispatch:
+    inputs:
+      hikaye:
+        description: 'Hangi hikaye? (kimlik, örn. nightshift). Boş bırakırsan tümü.'
+        required: false
+        default: 'nightshift'
+
+permissions:
+  contents: write
+
+jobs:
+  seslendir:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Kutuphaneleri kur
+        run: pip install --quiet google-auth requests
+
+      - name: Kimlik dosyasini yaz
+        env:
+          ANAHTAR: ${{ secrets.GCP_TTS_KEY }}
+        run: printf '%s' "$ANAHTAR" > /tmp/gcp-key.json
+
+      - name: Sesleri uret
+        env:
+          HIKAYE: ${{ inputs.hikaye }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, base64, struct, subprocess, requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          # ---------- karakter -> ses
+          SESLER = {
+              "anlatici": "en-US-Studio-Q",
+              "mia":      "en-US-News-L",
+              "vance":    "en-US-Chirp3-HD-Algieba",
+          }
+          HIZ      = 0.92     # okuma hizi
+          ARA_MS   = 380      # cumleler arasi sessizlik
+          ORNEKLEM = 24000    # Hz
+
+          kimlik = service_account.Credentials.from_service_account_file(
+              '/tmp/gcp-key.json',
+              scopes=['https://www.googleapis.com/auth/cloud-platform'])
+          kimlik.refresh(Request())
+          BAS = {"Authorization": "Bearer " + kimlik.token,
+                 "Content-Type": "application/json; charset=utf-8"}
+
+          # ---------- index.html icindeki STORY_DATA'yi cikar
+          ham = open('index.html', encoding='utf-8', errors='replace').read()
+          i = ham.find('const STORY_DATA = ')
+          if i < 0:
+              raise SystemExit('index.html icinde STORY_DATA bulunamadi')
+          j = ham.find('\n', i)
+          govde = ham[i + len('const STORY_DATA = '):j].rstrip().rstrip(';')
+          VERI = json.loads(govde)
+          print('hikaye sayisi:', len(VERI['stories']))
+
+          istenen = (os.environ.get('HIKAYE') or '').strip()
+          hedefler = [s for s in VERI['stories']
+                      if not istenen or s['id'] == istenen]
+          if not hedefler:
+              raise SystemExit(f"'{istenen}' adli hikaye yok")
+
+          os.makedirs('ses', exist_ok=True)
+
+          def pcm_uret(metin, ses_adi):
+              """Tek cumleyi ham PCM olarak dondurur."""
+              def cagir(ayar):
+                  return requests.post(
+                      "https://texttospeech.googleapis.com/v1/text:synthesize",
+                      headers=BAS,
+                      json={"input": {"text": metin},
+                            "voice": {"languageCode": "en-US", "name": ses_adi},
+                            "audioConfig": ayar}, timeout=120)
+              ayar = {"audioEncoding": "LINEAR16",
+                      "sampleRateHertz": ORNEKLEM,
+                      "speakingRate": HIZ}
+              r = cagir(ayar)
+              if r.status_code != 200:
+                  ayar.pop("speakingRate", None)      # bazi sesler hiz kabul etmez
+                  r = cagir(ayar)
+              if r.status_code != 200:
+                  raise SystemExit(f"TTS hatasi ({ses_adi}): {r.status_code} {r.text[:300]}")
+              wav = base64.b64decode(r.json()["audioContent"])
+              # WAV basligini atla: 'data' parcasini bul
+              k = wav.find(b'data')
+              return wav[k + 8:] if k > 0 else wav[44:]
+
+          for st in hedefler:
+              kimlik_h = st['id']
+              print(f"\n=== {st['title']} ({kimlik_h}) ===")
+              pcm = bytearray()
+              sessizlik = b'\x00\x00' * int(ORNEKLEM * ARA_MS / 1000)
+              harita = []        # [sayfa, cumle, baslangic_sn, bitis_sn]
+              harf = 0
+
+              for pi, sayfa in enumerate(st['pages']):
+                  for si, cumle in enumerate(sayfa):
+                      metin = ''.join(t['t'] for t in cumle['en']).strip()
+                      if not metin:
+                          continue
+                      kim = cumle.get('s') or 'anlatici'
+                      ses_adi = SESLER.get(kim, SESLER['anlatici'])
+                      bas_sn = len(pcm) / 2 / ORNEKLEM
+                      pcm += pcm_uret(metin, ses_adi)
+                      bit_sn = len(pcm) / 2 / ORNEKLEM
+                      pcm += sessizlik
+                      harita.append([pi, si, round(bas_sn, 3), round(bit_sn, 3)])
+                      harf += len(metin)
+                  print(f"  sayfa {pi+1}: {len(sayfa)} cumle")
+
+              # ---------- WAV yaz, mp3'e cevir
+              gecici = f'/tmp/{kimlik_h}.wav'
+              with open(gecici, 'wb') as f:
+                  n = len(pcm)
+                  f.write(b'RIFF' + struct.pack('<I', 36 + n) + b'WAVEfmt ')
+                  f.write(struct.pack('<IHHIIHH', 16, 1, 1, ORNEKLEM,
+                                      ORNEKLEM * 2, 2, 16))
+                  f.write(b'data' + struct.pack('<I', n) + bytes(pcm))
+
+              mp3 = f'ses/{kimlik_h}.mp3'
+              subprocess.run(['ffmpeg', '-y', '-loglevel', 'error',
+                              '-i', gecici, '-codec:a', 'libmp3lame',
+                              '-b:a', '48k', '-ac', '1', mp3], check=True)
+
+              json.dump({"id": kimlik_h, "sure": round(len(pcm)/2/ORNEKLEM, 2),
+                         "harita": harita},
+                        open(f'ses/{kimlik_h}.json', 'w'), separators=(',', ':'))
+
+              boyut = os.path.getsize(mp3) // 1024
+              print(f"  -> {mp3}  {boyut} KB  ·  {len(harita)} cumle  ·  {harf} harf")
+
+      - name: Depoya isle
+        run: |
+          git config user.name  "ses-botu"
+          git config user.email "actions@github.com"
+          git add ses
+          git commit -m "Hikaye sesi uretildi" || echo "degisiklik yok"
+          git push
 
