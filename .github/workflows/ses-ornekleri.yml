@@ -3,7 +3,6 @@ name: Ses Örnekleri Üret
 on:
   workflow_dispatch:
 
-# depoya mp3 yazabilmek icin gerekli
 permissions:
   contents: write
 
@@ -30,10 +29,10 @@ jobs:
           printf '%s' "$ANAHTAR" > /tmp/gcp-key.json
           python3 -c "import json;d=json.load(open('/tmp/gcp-key.json'));print('kimlik OK:',d['client_email'])"
 
-      - name: Örnek sesleri üret
+      - name: Sesleri listele ve ornekleri uret
         run: |
           python3 - <<'PY'
-          import json, os, base64, requests
+          import json, os, base64, re, requests
           from google.oauth2 import service_account
           from google.auth.transport.requests import Request
 
@@ -41,67 +40,122 @@ jobs:
               '/tmp/gcp-key.json',
               scopes=['https://www.googleapis.com/auth/cloud-platform'])
           kimlik.refresh(Request())
-          JETON = kimlik.token
-          print('jeton alindi')
+          BAS = {"Authorization": "Bearer " + kimlik.token,
+                 "Content-Type": "application/json; charset=utf-8"}
+
+          # ---- 1) hesapta gercekten hangi sesler var, API'den sor
+          r = requests.get("https://texttospeech.googleapis.com/v1/voices?languageCode=en-US",
+                           headers=BAS, timeout=60)
+          r.raise_for_status()
+          hepsi = r.json().get("voices", [])
+          print(f"en-US ses sayisi: {len(hepsi)}\n")
+
+          def kademe(ad):
+              for k in ("Studio", "Chirp3-HD", "Chirp3", "Chirp", "Neural2",
+                        "Polyglot", "News", "Journey", "Wavenet", "Standard"):
+                  if k.lower() in ad.lower():
+                      return k
+              return "Diger"
+
+          gruplar = {}
+          for v in hepsi:
+              gruplar.setdefault(kademe(v["name"]), []).append(v)
+          for k in sorted(gruplar):
+              adlar = ", ".join(x["name"].split("-", 2)[-1] for x in gruplar[k])
+              print(f"  {k:10s} ({len(gruplar[k])}): {adlar}")
+          print()
+
+          # ---- 2) hangi kademeden kac ornek alalim
+          # Studio ve Chirp3 en dogal olanlar; Wavenet zaten dinlendi
+          KOTA = {"Studio": 6, "Chirp3-HD": 8, "Chirp3": 8, "Chirp": 6,
+                  "Journey": 6, "News": 4, "Neural2": 8, "Polyglot": 2,
+                  "Wavenet": 0, "Standard": 0, "Diger": 0}
+
+          secilen = []
+          for k, liste in gruplar.items():
+              for v in sorted(liste, key=lambda x: x["name"])[:KOTA.get(k, 0)]:
+                  secilen.append((k, v["name"], v.get("ssmlGender", "?")))
 
           METIN = ("A year had passed since Sam's first day in the city. "
                    "He was not the same nervous young man anymore.")
 
-          SESLER = [
-              ("wavenet-a", "en-US-Wavenet-A", "erkek"),
-              ("wavenet-b", "en-US-Wavenet-B", "erkek"),
-              ("wavenet-c", "en-US-Wavenet-C", "kadin"),
-              ("wavenet-d", "en-US-Wavenet-D", "erkek"),
-              ("wavenet-e", "en-US-Wavenet-E", "kadin"),
-              ("wavenet-f", "en-US-Wavenet-F", "kadin"),
-              ("wavenet-g", "en-US-Wavenet-G", "kadin"),
-              ("wavenet-h", "en-US-Wavenet-H", "kadin"),
-              ("wavenet-i", "en-US-Wavenet-I", "erkek"),
-              ("wavenet-j", "en-US-Wavenet-J", "erkek"),
-          ]
-
           os.makedirs("ses-ornek", exist_ok=True)
           basarili = []
+          toplam_harf = 0
 
-          for dosya, ses, cinsiyet in SESLER:
+          def uret(dosya, ses, perde, etiket):
+              global toplam_harf
+              ayar = {"audioEncoding": "MP3", "speakingRate": 0.92}
+              if perde:
+                  ayar["pitch"] = perde
               r = requests.post(
                   "https://texttospeech.googleapis.com/v1/text:synthesize",
-                  headers={"Authorization": "Bearer " + JETON,
-                           "Content-Type": "application/json; charset=utf-8"},
-                  json={
-                      "input": {"text": METIN},
-                      "voice": {"languageCode": "en-US", "name": ses},
-                      "audioConfig": {"audioEncoding": "MP3",
-                                      "speakingRate": 0.92,
-                                      "sampleRateHertz": 24000}
-                  }, timeout=60)
+                  headers=BAS,
+                  json={"input": {"text": METIN},
+                        "voice": {"languageCode": "en-US", "name": ses},
+                        "audioConfig": ayar}, timeout=90)
               if r.status_code != 200:
-                  print(f"  HATA {ses}: {r.status_code} {r.text[:300]}")
-                  continue
+                  # perde desteklenmiyorsa perdesiz dene
+                  if perde:
+                      ayar.pop("pitch")
+                      r = requests.post(
+                          "https://texttospeech.googleapis.com/v1/text:synthesize",
+                          headers=BAS,
+                          json={"input": {"text": METIN},
+                                "voice": {"languageCode": "en-US", "name": ses},
+                                "audioConfig": ayar}, timeout=90)
+                  if r.status_code != 200:
+                      print(f"  HATA {ses}: {r.status_code} {r.text[:160]}")
+                      return False
               mp3 = base64.b64decode(r.json()["audioContent"])
               open(f"ses-ornek/{dosya}.mp3", "wb").write(mp3)
-              print(f"  uretildi: {dosya}.mp3  ({cinsiyet}, {len(mp3)//1024} KB)")
-              basarili.append((dosya, ses, cinsiyet))
+              toplam_harf += len(METIN)
+              basarili.append((dosya, ses, etiket))
+              print(f"  {dosya}.mp3  ({len(mp3)//1024} KB)")
+              return True
+
+          # ---- 3) her kademeden ornekler
+          for k, ses, cins in secilen:
+              kisa = re.sub(r'[^a-z0-9]+', '-', ses.lower()).strip('-')
+              uret(kisa, ses, None, f"{k} · {cins.lower()}")
+
+          # ---- 4) "yasli adam" icin perde denemeleri
+          # en kalin erkek sesleri secilip perde dusurulur
+          erkekler = [v["name"] for v in hepsi
+                      if v.get("ssmlGender") == "MALE"
+                      and kademe(v["name"]) in ("Studio", "Chirp3-HD", "Chirp3", "Neural2")]
+          for ses in sorted(erkekler)[:2]:
+              for perde in (-4.0, -7.0):
+                  kisa = re.sub(r'[^a-z0-9]+', '-', ses.lower()).strip('-') + f"-perde{int(perde)}"
+                  uret(kisa, ses, perde, f"{ses.split('-',2)[-1]} · perde {perde:+.0f} (yasli)")
 
           if not basarili:
               raise SystemExit("Hicbir ses uretilemedi")
 
-          html = ["<!DOCTYPE html><html lang='tr'><head><meta charset='utf-8'>",
-                  "<meta name='viewport' content='width=device-width,initial-scale=1'>",
-                  "<title>Ses Örnekleri</title><style>",
-                  "body{font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px 18px;background:#f6f8fc;color:#1c1e21}",
-                  "h1{font-size:1.4rem;margin:0 0 6px}p.alt{color:#5c6780;font-size:.9rem;margin:0 0 22px}",
-                  ".k{background:#fff;border:1px solid #e4e6eb;border-radius:12px;padding:14px 16px;margin-bottom:12px}",
-                  ".k b{font-size:1.05rem}.k span{font-size:.8rem;color:#8a8d91;margin-left:8px}",
-                  "audio{width:100%;margin-top:10px}",
-                  "</style></head><body><h1>Ses Örnekleri</h1>",
-                  "<p class='alt'>WaveNet · en-US · Hepsini dinleyip anlatıcı, Mia ve Bay Vance için birer ses seç.</p>"]
-          for dosya, ses, cinsiyet in basarili:
-              html.append(f"<div class='k'><b>{ses.split('-')[-1]}</b><span>{cinsiyet} · {ses}</span>"
-                          f"<audio controls preload='none' src='{dosya}.mp3'></audio></div>")
-          html.append("</body></html>")
-          open("ses-ornek/index.html", "w", encoding="utf-8").write("\n".join(html))
-          print("\nToplam karakter:", len(METIN) * len(basarili))
+          # ---- 5) dinleme sayfasi
+          h = ["<!DOCTYPE html><html lang='tr'><head><meta charset='utf-8'>",
+               "<meta name='viewport' content='width=device-width,initial-scale=1'>",
+               "<title>Ses Örnekleri</title><style>",
+               "body{font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px 18px;background:#f6f8fc;color:#1c1e21}",
+               "h1{font-size:1.4rem;margin:0 0 6px}p.alt{color:#5c6780;font-size:.9rem;margin:0 0 22px;line-height:1.5}",
+               "h2{font-size:.78rem;letter-spacing:1.1px;text-transform:uppercase;color:#8a8d91;margin:24px 0 10px}",
+               ".k{background:#fff;border:1px solid #e4e6eb;border-radius:12px;padding:13px 15px;margin-bottom:10px}",
+               ".k b{font-size:1rem}.k span{font-size:.78rem;color:#8a8d91;margin-left:8px}",
+               "audio{width:100%;margin-top:9px}",
+               "</style></head><body><h1>Ses Örnekleri</h1>",
+               "<p class='alt'>Hepsini dinleyip anlatıcı, Mia ve Bay Vance için birer ses seç. "
+               "Sonunda perdesi düşürülmüş (yaşlı) denemeler var.</p>"]
+          son = None
+          for dosya, ses, etiket in basarili:
+              grup = etiket.split(" · ")[0]
+              if grup != son:
+                  h.append(f"<h2>{grup}</h2>"); son = grup
+              h.append(f"<div class='k'><b>{ses.split('-',2)[-1]}</b><span>{etiket}</span>"
+                       f"<audio controls preload='none' src='{dosya}.mp3'></audio></div>")
+          h.append("</body></html>")
+          open("ses-ornek/index.html", "w", encoding="utf-8").write("\n".join(h))
+
+          print(f"\nToplam ornek: {len(basarili)}   harf: {toplam_harf}")
           PY
 
       - name: Depoya işle
@@ -109,6 +163,5 @@ jobs:
           git config user.name  "ses-botu"
           git config user.email "actions@github.com"
           git add ses-ornek
-          git commit -m "Ses ornekleri uretildi" || echo "degisiklik yok"
+          git commit -m "Ses ornekleri: tum kademeler" || echo "degisiklik yok"
           git push
- 
