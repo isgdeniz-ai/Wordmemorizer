@@ -24,6 +24,12 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: ffmpeg kur
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -1
+
       - name: Kutuphaneleri kur
         run: pip install --quiet google-auth requests
 
@@ -95,7 +101,6 @@ jobs:
               if r.status_code != 200:
                   raise SystemExit(f"TTS hatasi ({ses_adi}): {r.status_code} {r.text[:300]}")
               wav = base64.b64decode(r.json()["audioContent"])
-              # WAV basligini atla: 'data' parcasini bul
               k = wav.find(b'data')
               return wav[k + 8:] if k > 0 else wav[44:]
 
@@ -104,7 +109,7 @@ jobs:
               print(f"\n=== {st['title']} ({kimlik_h}) ===")
               pcm = bytearray()
               sessizlik = b'\x00\x00' * int(ORNEKLEM * ARA_MS / 1000)
-              harita = []        # [sayfa, cumle, baslangic_sn, bitis_sn]
+              harita = []
               harf = 0
 
               for pi, sayfa in enumerate(st['pages']):
@@ -122,7 +127,6 @@ jobs:
                       harf += len(metin)
                   print(f"  sayfa {pi+1}: {len(sayfa)} cumle")
 
-              # ---------- WAV yaz, mp3'e cevir
               gecici = f'/tmp/{kimlik_h}.wav'
               with open(gecici, 'wb') as f:
                   n = len(pcm)
@@ -142,6 +146,7 @@ jobs:
 
               boyut = os.path.getsize(mp3) // 1024
               print(f"  -> {mp3}  {boyut} KB  ·  {len(harita)} cumle  ·  {harf} harf")
+          PY
 
       - name: Depoya isle
         run: |
@@ -150,4 +155,3 @@ jobs:
           git add ses
           git commit -m "Hikaye sesi uretildi" || echo "degisiklik yok"
           git push
-
