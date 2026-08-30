@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       hikaye:
-        description: 'Hangi hikaye? (kimlik, örn. nightshift). Boş bırakırsan tümü.'
+        description: 'Hangi hikaye? (kimlik, örn. ai-podcast). Boş bırakırsan tümü.'
         required: false
-        default: 'nightshift'
+        default: ''
 
 permissions:
   contents: write
@@ -43,19 +43,46 @@ jobs:
           HIKAYE: ${{ inputs.hikaye }}
         run: |
           python3 - <<'PY'
-          import json, os, re, base64, struct, subprocess, requests
+          import json, os, base64, struct, subprocess, requests
           from google.oauth2 import service_account
           from google.auth.transport.requests import Request
 
-          # ---------- karakter -> ses
+          # ============================================================
+          # KARAKTER SESLERI
+          #   Sabit ad yazabilirsin:  "en-US-Studio-Q"
+          #   Ya da otomatik sec:     ("Chirp3-HD", "FEMALE", 0)
+          #     -> hesapta bulunan Chirp3-HD kadin seslerinden 0. sirada olan
+          #   Otomatik secim, ses adlari degisse bile calismaya devam eder.
+          # ============================================================
           SESLER = {
+              # hikaye anlaticilari
               "anlatici": "en-US-Studio-Q",
-              "mia":      "en-US-News-L",
+              "mia":      ("Chirp3-HD", "FEMALE", 0),
               "vance":    "en-US-Chirp3-HD-Algieba",
+
+              # yapay zeka sohbeti
+              "emma":     ("Chirp3-HD", "FEMALE", 1),
+              "sam":      ("Chirp3-HD", "MALE",   0),
+
+              # ingilizce ogrenme sohbeti
+              "alex":     ("Chirp3-HD", "MALE",   1),
+              "sarah":    ("Chirp3-HD", "FEMALE", 2),
+              "david":    "en-US-Chirp3-HD-Algieba",
+
+              # iliskiler sohbeti
+              "rachel":   ("Chirp3-HD", "FEMALE", 1),
+              "maya":     ("Chirp3-HD", "FEMALE", 3),
+              "leo":      "en-US-Chirp3-HD-Algieba",
+
+              # gramer sohbeti
+              "mark":     ("Chirp3-HD", "MALE",   1),
+              "laura":    ("Chirp3-HD", "FEMALE", 0),
           }
-          HIZ      = 0.92     # okuma hizi
-          ARA_MS   = 380      # cumleler arasi sessizlik
-          ORNEKLEM = 24000    # Hz
+
+          ARA_MS      = 240    # cumleler arasi kisa nefes
+          KONUSMA_MS  = 380    # konusmaci degisince
+          ORNEKLEM    = 24000
+          BITRATE     = "96k"
 
           kimlik = service_account.Credentials.from_service_account_file(
               '/tmp/gcp-key.json',
@@ -64,26 +91,48 @@ jobs:
           BAS = {"Authorization": "Bearer " + kimlik.token,
                  "Content-Type": "application/json; charset=utf-8"}
 
-          # ---------- index.html icindeki STORY_DATA'yi cikar
+          # ---------- hesaptaki gercek ses listesi
+          r = requests.get("https://texttospeech.googleapis.com/v1/voices?languageCode=en-US",
+                           headers=BAS, timeout=60)
+          r.raise_for_status()
+          MEVCUT = r.json().get("voices", [])
+
+          def havuz(kademe, cinsiyet):
+              return sorted([v["name"] for v in MEVCUT
+                             if kademe.lower() in v["name"].lower()
+                             and v.get("ssmlGender") == cinsiyet])
+
+          def coz(deger):
+              if isinstance(deger, str):
+                  return deger
+              kademe, cinsiyet, sira = deger
+              liste = havuz(kademe, cinsiyet)
+              if not liste:
+                  return "en-US-Studio-Q" if cinsiyet == "MALE" else "en-US-News-L"
+              return liste[sira % len(liste)]
+
+          COZUM = {k: coz(v) for k, v in SESLER.items()}
+          print("Ses dagilimi:")
+          for k, v in COZUM.items():
+              print(f"  {k:10s} -> {v}")
+          print()
+
+          # ---------- STORY_DATA
           ham = open('index.html', encoding='utf-8', errors='replace').read()
           i = ham.find('const STORY_DATA = ')
           if i < 0:
               raise SystemExit('index.html icinde STORY_DATA bulunamadi')
           j = ham.find('\n', i)
-          govde = ham[i + len('const STORY_DATA = '):j].rstrip().rstrip(';')
-          VERI = json.loads(govde)
-          print('hikaye sayisi:', len(VERI['stories']))
+          VERI = json.loads(ham[i + len('const STORY_DATA = '):j].rstrip().rstrip(';'))
 
           istenen = (os.environ.get('HIKAYE') or '').strip()
-          hedefler = [s for s in VERI['stories']
-                      if not istenen or s['id'] == istenen]
+          hedefler = [s for s in VERI['stories'] if not istenen or s['id'] == istenen]
           if not hedefler:
               raise SystemExit(f"'{istenen}' adli hikaye yok")
 
           os.makedirs('ses', exist_ok=True)
 
           def pcm_uret(metin, ses_adi):
-              """Tek cumleyi ham PCM olarak dondurur."""
               def cagir(ayar):
                   return requests.post(
                       "https://texttospeech.googleapis.com/v1/text:synthesize",
@@ -91,13 +140,12 @@ jobs:
                       json={"input": {"text": metin},
                             "voice": {"languageCode": "en-US", "name": ses_adi},
                             "audioConfig": ayar}, timeout=120)
-              ayar = {"audioEncoding": "LINEAR16",
-                      "sampleRateHertz": ORNEKLEM,
-                      "speakingRate": HIZ}
+              # Chirp3-HD hiz/perde kabul etmez; once hizli dene, olmazsa sade gonder
+              ayar = {"audioEncoding": "LINEAR16", "sampleRateHertz": ORNEKLEM,
+                      "speakingRate": 0.95}
               r = cagir(ayar)
               if r.status_code != 200:
-                  ayar.pop("speakingRate", None)      # bazi sesler hiz kabul etmez
-                  r = cagir(ayar)
+                  r = cagir({"audioEncoding": "LINEAR16", "sampleRateHertz": ORNEKLEM})
               if r.status_code != 200:
                   raise SystemExit(f"TTS hatasi ({ses_adi}): {r.status_code} {r.text[:300]}")
               wav = base64.b64decode(r.json()["audioContent"])
@@ -105,12 +153,12 @@ jobs:
               return wav[k + 8:] if k > 0 else wav[44:]
 
           for st in hedefler:
-              kimlik_h = st['id']
-              print(f"\n=== {st['title']} ({kimlik_h}) ===")
+              kid = st['id']
+              print(f"=== {st['title']} ({kid}) ===")
               pcm = bytearray()
-              sessizlik = b'\x00\x00' * int(ORNEKLEM * ARA_MS / 1000)
-              harita = []
-              harf = 0
+              kisa = b'\x00\x00' * int(ORNEKLEM * ARA_MS / 1000)
+              uzun = b'\x00\x00' * int(ORNEKLEM * KONUSMA_MS / 1000)
+              harita, harf, onceki = [], 0, None
 
               for pi, sayfa in enumerate(st['pages']):
                   for si, cumle in enumerate(sayfa):
@@ -118,34 +166,31 @@ jobs:
                       if not metin:
                           continue
                       kim = cumle.get('s') or 'anlatici'
-                      ses_adi = SESLER.get(kim, SESLER['anlatici'])
-                      bas_sn = len(pcm) / 2 / ORNEKLEM
-                      pcm += pcm_uret(metin, ses_adi)
-                      bit_sn = len(pcm) / 2 / ORNEKLEM
-                      pcm += sessizlik
-                      harita.append([pi, si, round(bas_sn, 3), round(bit_sn, 3)])
+                      if onceki is not None and kim != onceki:
+                          pcm += uzun
+                      onceki = kim
+                      bas = len(pcm) / 2 / ORNEKLEM
+                      pcm += pcm_uret(metin, COZUM.get(kim, COZUM['anlatici']))
+                      bit = len(pcm) / 2 / ORNEKLEM
+                      pcm += kisa
+                      harita.append([pi, si, round(bas, 3), round(bit, 3)])
                       harf += len(metin)
-                  print(f"  sayfa {pi+1}: {len(sayfa)} cumle")
 
-              gecici = f'/tmp/{kimlik_h}.wav'
+              gecici = f'/tmp/{kid}.wav'
               with open(gecici, 'wb') as f:
                   n = len(pcm)
                   f.write(b'RIFF' + struct.pack('<I', 36 + n) + b'WAVEfmt ')
-                  f.write(struct.pack('<IHHIIHH', 16, 1, 1, ORNEKLEM,
-                                      ORNEKLEM * 2, 2, 16))
+                  f.write(struct.pack('<IHHIIHH', 16, 1, 1, ORNEKLEM, ORNEKLEM * 2, 2, 16))
                   f.write(b'data' + struct.pack('<I', n) + bytes(pcm))
 
-              mp3 = f'ses/{kimlik_h}.mp3'
-              subprocess.run(['ffmpeg', '-y', '-loglevel', 'error',
-                              '-i', gecici, '-codec:a', 'libmp3lame',
-                              '-b:a', '48k', '-ac', '1', mp3], check=True)
-
-              json.dump({"id": kimlik_h, "sure": round(len(pcm)/2/ORNEKLEM, 2),
-                         "harita": harita},
-                        open(f'ses/{kimlik_h}.json', 'w'), separators=(',', ':'))
-
-              boyut = os.path.getsize(mp3) // 1024
-              print(f"  -> {mp3}  {boyut} KB  ·  {len(harita)} cumle  ·  {harf} harf")
+              mp3 = f'ses/{kid}.mp3'
+              subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', gecici,
+                              '-codec:a', 'libmp3lame', '-b:a', BITRATE, '-ac', '1', mp3],
+                             check=True)
+              json.dump({"id": kid, "sure": round(len(pcm)/2/ORNEKLEM, 2), "harita": harita},
+                        open(f'ses/{kid}.json', 'w'), separators=(',', ':'))
+              print(f"  -> {mp3}  {os.path.getsize(mp3)//1024} KB  ·  "
+                    f"{len(harita)} cumle  ·  {harf} harf\n")
           PY
 
       - name: Depoya isle
@@ -153,5 +198,6 @@ jobs:
           git config user.name  "ses-botu"
           git config user.email "actions@github.com"
           git add ses
-          git commit -m "Hikaye sesi uretildi" || echo "degisiklik yok"
+          git commit -m "Hikaye sesi uretildi (Chirp3-HD)" || echo "degisiklik yok"
           git push
+
