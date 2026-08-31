@@ -1,22 +1,22 @@
-name: OpenAI Ses Denemesi
+name: OpenAI Ses Örnekleri
 
 on:
   workflow_dispatch:
     inputs:
-      hikaye:
-        description: 'Hangi hikaye? (örn. ai-podcast, nightshift, cry-wolf)'
-        required: false
-        default: 'ai-podcast'
       uslup:
         description: 'Anlatım üslubu (instructions)'
         required: false
         default: 'Warm, natural podcast delivery. Relaxed pace, clear pronunciation for English learners. Sound like a real person talking, not reading.'
+      metin:
+        description: 'Örnek cümle'
+        required: false
+        default: "A year had passed since Sam's first day in the city. He was not the same nervous young man anymore."
 
 permissions:
   contents: write
 
 jobs:
-  deneme:
+  ornekler:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,134 +28,91 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: ffmpeg kur
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
-
       - name: Kutuphaneleri kur
         run: pip install --quiet requests
 
-      - name: Sesleri uret
+      - name: Ornekleri uret
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
-          HIKAYE: ${{ inputs.hikaye }}
           USLUP: ${{ inputs.uslup }}
+          METIN: ${{ inputs.metin }}
         run: |
           python3 - <<'PY'
-          import json, os, struct, subprocess, requests
+          import os, requests
 
           ANAHTAR = os.environ.get('OPENAI_KEY', '').strip()
           if not ANAHTAR:
-              raise SystemExit("OPENAI_API_KEY deposu bos. Settings > Secrets > Actions'a ekle.")
-
-          MODEL  = "gpt-4o-mini-tts"
-          # Karakter -> OpenAI sesi. marin/cedar kalite icin onerilenler.
-          SESLER = {
-              "anlatici": "cedar",
-              "mia":      "coral",   "vance": "onyx",
-              "emma":     "marin",   "sam":   "cedar",
-              "alex":     "ash",     "sarah": "coral",  "david": "onyx",
-              "rachel":   "shimmer", "maya":  "coral",  "leo":   "ash",
-              "mark":     "cedar",   "laura": "marin",
-          }
-          ARA_MS, KONUSMA_MS, ORNEKLEM = 240, 380, 24000
-
-          kid   = (os.environ.get('HIKAYE') or 'ai-podcast').strip()
+              raise SystemExit("OPENAI_API_KEY bos.")
+          MODEL = "gpt-4o-mini-tts"
           USLUP = os.environ.get('USLUP') or 'Natural, warm narration.'
+          METIN = os.environ.get('METIN') or "This is how the story will sound."
 
-          ham = open('index.html', encoding='utf-8', errors='replace').read()
-          i = ham.find('const STORY_DATA = ')
-          j = ham.find('\n', i)
-          VERI = json.loads(ham[i + len('const STORY_DATA = '):j].rstrip().rstrip(';'))
-          st = next((s for s in VERI['stories'] if s['id'] == kid), None)
-          if not st:
-              raise SystemExit(f"'{kid}' bulunamadi. Mevcutlar: "
-                               + ", ".join(s['id'] for s in VERI['stories']))
-          print(f"=== {st['title']} ({kid}) ===")
+          # OpenAI'nin belgelenmis sesleri; marin ve cedar kalite icin onerilenler
+          SESLER = [
+              ("marin",   "kadin",  "kalite icin onerilen"),
+              ("cedar",   "erkek",  "kalite icin onerilen"),
+              ("alloy",   "notr",   ""),
+              ("ash",     "erkek",  ""),
+              ("ballad",  "erkek",  "anlatici tonu"),
+              ("coral",   "kadin",  ""),
+              ("echo",    "erkek",  ""),
+              ("fable",   "notr",   "hikaye anlaticisi"),
+              ("nova",    "kadin",  ""),
+              ("onyx",    "erkek",  "derin"),
+              ("sage",    "kadin",  ""),
+              ("shimmer", "kadin",  ""),
+              ("verse",   "erkek",  ""),
+          ]
 
-          def pcm_uret(metin, ses):
+          os.makedirs('ses-ornek-openai', exist_ok=True)
+          basarili = []
+
+          for ses, cins, not_ in SESLER:
+              yol = f'ses-ornek-openai/{ses}.mp3'
+              if os.path.exists(yol) and os.path.getsize(yol) > 2000:
+                  basarili.append((ses, cins, not_)); print(f"  {ses}: var, atlandi"); continue
               r = requests.post(
                   "https://api.openai.com/v1/audio/speech",
                   headers={"Authorization": "Bearer " + ANAHTAR,
                            "Content-Type": "application/json"},
-                  json={"model": MODEL, "voice": ses, "input": metin,
-                        "instructions": USLUP,
-                        "response_format": "pcm"},   # 24kHz 16-bit mono ham ses
+                  json={"model": MODEL, "voice": ses, "input": METIN,
+                        "instructions": USLUP, "response_format": "mp3"},
                   timeout=120)
               if r.status_code != 200:
-                  raise SystemExit(f"OpenAI hatasi ({ses}): {r.status_code} {r.text[:400]}")
-              return r.content
+                  print(f"  HATA {ses}: {r.status_code} {r.text[:200]}"); continue
+              open(yol, 'wb').write(r.content)
+              basarili.append((ses, cins, not_))
+              print(f"  {ses}.mp3  ({len(r.content)//1024} KB, {cins})")
 
-          pcm = bytearray()
-          kisa = b'\x00\x00' * int(ORNEKLEM * ARA_MS / 1000)
-          uzun = b'\x00\x00' * int(ORNEKLEM * KONUSMA_MS / 1000)
-          harita, harf, onceki = [], 0, None
-          kullanilan = set()
-
-          for pi, sayfa in enumerate(st['pages']):
-              for si, cumle in enumerate(sayfa):
-                  metin = ''.join(t['t'] for t in cumle['en']).strip()
-                  if not metin:
-                      continue
-                  kim = cumle.get('s') or 'anlatici'
-                  ses = SESLER.get(kim, SESLER['anlatici'])
-                  kullanilan.add(f"{kim}={ses}")
-                  if onceki is not None and kim != onceki:
-                      pcm += uzun
-                  onceki = kim
-                  bas = len(pcm) / 2 / ORNEKLEM
-                  pcm += pcm_uret(metin, ses)
-                  bit = len(pcm) / 2 / ORNEKLEM
-                  pcm += kisa
-                  harita.append([pi, si, round(bas, 3), round(bit, 3)])
-                  harf += len(metin)
-              print(f"  sayfa {pi+1}: {len(sayfa)} cumle")
-
-          print("  sesler:", ", ".join(sorted(kullanilan)))
-
-          os.makedirs('ses-deneme', exist_ok=True)
-          gec = '/tmp/openai.wav'
-          with open(gec, 'wb') as f:
-              n = len(pcm)
-              f.write(b'RIFF' + struct.pack('<I', 36 + n) + b'WAVEfmt ')
-              f.write(struct.pack('<IHHIIHH', 16, 1, 1, ORNEKLEM, ORNEKLEM * 2, 2, 16))
-              f.write(b'data' + struct.pack('<I', n) + bytes(pcm))
-          mp3 = f'ses-deneme/{kid}-openai.mp3'
-          subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', gec,
-                          '-codec:a', 'libmp3lame', '-b:a', '96k', '-ac', '1', mp3],
-                         check=True)
-          # zaman haritasi da yazilir: begenilirse dogrudan ses/ klasorune tasinabilir
-          json.dump({"id": kid, "sure": round(len(pcm)/2/ORNEKLEM, 2), "harita": harita},
-                    open(f'ses-deneme/{kid}-openai.json', 'w'), separators=(',', ':'))
-
-          sure = len(pcm) / 2 / ORNEKLEM
-          print(f"\n-> {mp3}  {os.path.getsize(mp3)//1024} KB  ·  {sure:.0f} sn  ·  {harf} harf")
+          if not basarili:
+              raise SystemExit("Hicbir ses uretilemedi")
 
           h = ["<!DOCTYPE html><html lang='tr'><head><meta charset='utf-8'>",
                "<meta name='viewport' content='width=device-width,initial-scale=1'>",
-               "<title>Ses Kar\u015f\u0131la\u015ft\u0131rma</title><style>",
-               "body{font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px 18px;background:#f6f8fc}",
-               "h1{font-size:1.4rem;margin:0 0 6px}p.alt{color:#5c6780;font-size:.9rem;margin:0 0 20px}",
-               ".k{background:#fff;border:1px solid #e4e6eb;border-radius:12px;padding:16px;margin-bottom:14px;",
+               "<title>OpenAI Ses \u00d6rnekleri</title><style>",
+               "body{font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px 18px;background:#f6f8fc;color:#1c1e21}",
+               "h1{font-size:1.4rem;margin:0 0 6px}p.alt{color:#5c6780;font-size:.88rem;margin:0 0 20px;line-height:1.55}",
+               ".k{background:#fff;border:1px solid #e4e6eb;border-radius:12px;padding:13px 15px;margin-bottom:10px;",
                "display:flex;align-items:center;gap:12px}",
-               ".k .ad{flex:1}.k b{display:block;font-size:1rem}.k span{font-size:.8rem;color:#8a8d91}",
-               ".k a{background:#1877f2;color:#fff;text-decoration:none;border-radius:999px;padding:11px 18px;",
-               "font-size:.9rem;font-weight:700}",
-               "</style></head><body><h1>Ses Kar\u015f\u0131la\u015ft\u0131rma</h1>",
-               f"<p class='alt'>{st['title']}</p>",
-               f"<div class='k'><span class='ad'><b>OpenAI</b><span>{MODEL} \u00b7 \u00fcsl\u00fap y\u00f6nergeli</span></span>"
-               f"<a href='/ses-deneme/{kid}-openai.mp3'>Dinle</a></div>",
-               f"<div class='k'><span class='ad'><b>Google Chirp 3 HD</b><span>\u015fu an uygulamada</span></span>"
-               f"<a href='/ses/{kid}.mp3'>Dinle</a></div>",
-               "</body></html>"]
-          open('ses-deneme/index.html', 'w', encoding='utf-8').write("\n".join(h))
+               ".k .ad{flex:1;min-width:0}.k b{display:block;font-size:1rem}",
+               ".k span{font-size:.78rem;color:#8a8d91}",
+               ".k a{flex:0 0 auto;background:#1877f2;color:#fff;text-decoration:none;border-radius:999px;",
+               "padding:11px 18px;font-size:.9rem;font-weight:700}",
+               "</style></head><body><h1>OpenAI Ses \u00d6rnekleri</h1>",
+               f"<p class='alt'>Model: {MODEL}<br>\u00dcsl\u00fap: <i>{USLUP}</i></p>"]
+          for ses, cins, not_ in basarili:
+              etiket = cins + (" \u00b7 " + not_ if not_ else "")
+              h.append(f"<div class='k'><span class='ad'><b>{ses}</b><span>{etiket}</span></span>"
+                       f"<a href='/ses-ornek-openai/{ses}.mp3'>Dinle</a></div>")
+          h.append("</body></html>")
+          open('ses-ornek-openai/index.html', 'w', encoding='utf-8').write("\n".join(h))
+          print(f"\nToplam {len(basarili)} ses \u00b7 {len(METIN)*len(basarili)} karakter")
           PY
 
       - name: Depoya isle
         run: |
           git config user.name  "ses-botu"
           git config user.email "actions@github.com"
-          git add ses-deneme
-          git commit -m "OpenAI ses denemesi" || echo "degisiklik yok"
+          git add ses-ornek-openai
+          git commit -m "OpenAI ses ornekleri" || echo "degisiklik yok"
           git push
