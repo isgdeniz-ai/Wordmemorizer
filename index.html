@@ -483,6 +483,32 @@
         .tr-k2 { background:#e6f6ea; color:#1d7a3e; border:1px solid #c8e8d2; }
         .tr-metin { flex:1; min-width:0; }
 
+        /* oynatici */
+        #player { display:none; align-items:center; gap:10px; margin:0 0 16px;
+                  background:#fff6ea; border:1px solid #f0d9b8; border-radius:14px; padding:10px 12px; }
+        #player.acik { display:flex; }
+        .pl-btn { flex:0 0 auto; width:40px; height:40px; border:none; border-radius:50%;
+                  background:#8a4d00; color:#fff; font-size:15px; cursor:pointer;
+                  display:flex; align-items:center; justify-content:center; }
+        .pl-btn:active { background:#6d3d00; }
+        .pl-orta { flex:1; min-width:0; }
+        .pl-bar { width:100%; height:22px; -webkit-appearance:none; appearance:none; background:none; cursor:pointer; }
+        .pl-bar::-webkit-slider-runnable-track { height:5px; border-radius:3px; background:#f0d9b8; }
+        .pl-bar::-webkit-slider-thumb { -webkit-appearance:none; width:15px; height:15px; margin-top:-5px;
+                  border-radius:50%; background:#8a4d00; }
+        .pl-bar::-moz-range-track { height:5px; border-radius:3px; background:#f0d9b8; }
+        .pl-bar::-moz-range-thumb { width:15px; height:15px; border:none; border-radius:50%; background:#8a4d00; }
+        .pl-sure { display:flex; justify-content:space-between; font-size:11px;
+                   font-weight:700; color:#a98246; margin-top:-2px; }
+        .pl-hiz { flex:0 0 auto; min-width:44px; border:1px solid #e0c69b; background:#fff;
+                  color:#8a4d00; border-radius:999px; padding:8px 10px; font-size:12.5px;
+                  font-weight:800; cursor:pointer; }
+        .pl-hiz:active { background:#fdeed9; }
+        .ws-oynat { display:flex; justify-content:space-between; align-items:center; margin-top:11px;
+                    padding:13px 14px; border-radius:12px; cursor:pointer; font-size:14px; font-weight:800;
+                    background:#fff6ea; border:1px solid #f0d9b8; color:#8a4d00; }
+        .ws-oynat:active { background:#fdeed9; }
+
         /* seslendirme */
         .reader-top { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
         .reader-top .reader-head { flex:1; margin-bottom:0; }
@@ -662,6 +688,14 @@
                     <div class="reader-head" id="reader-head"></div>
                     <button class="oku-btn" id="oku-btn">▶ Dinle</button>
                     <button class="ses-btn" id="ses-btn" title="Ses ayarı">⚙</button>
+                </div>
+                <div id="player">
+                    <button class="pl-btn" id="pl-oynat">▶</button>
+                    <div class="pl-orta">
+                        <input type="range" class="pl-bar" id="pl-bar" min="0" max="1000" value="0">
+                        <div class="pl-sure"><span id="pl-simdi">0:00</span><span id="pl-toplam">0:00</span></div>
+                    </div>
+                    <button class="pl-hiz" id="pl-hiz">1x</button>
                 </div>
                 <div id="reader-body"></div>
                 <div class="reader-nav">
@@ -8724,6 +8758,7 @@
 
         function sesDosyaKontrol(id) {
             sesHarita = null;
+            playerGoster(false);
             if (sesCalar) { try { sesCalar.pause(); } catch (e) {} sesCalar = null; }
             fetch('/ses/' + id + '.json', { cache: 'no-cache' })
                 .then(r => r.ok ? r.json() : null)
@@ -8731,7 +8766,16 @@
                     if (!d || !d.harita) return;
                     sesHarita = d;
                     sesCalar = new Audio('/ses/' + id + '.mp3');
-                    sesCalar.preload = 'none';
+                    sesCalar.preload = 'metadata';
+                    sesCalar.addEventListener('loadedmetadata', playerYenile);
+                    sesCalar.addEventListener('ended', function () {
+                        okuyor = false;
+                        if (sesIzle) { clearInterval(sesIzle); sesIzle = null; }
+                        document.querySelectorAll('.rs.play').forEach(e => e.classList.remove('play'));
+                        playerYenile();
+                    });
+                    playerGoster(true);
+                    playerYenile();
                     okuButonu();
                 })
                 .catch(() => {});
@@ -8743,8 +8787,9 @@
         }
         function mp3Durdur() {
             if (sesIzle) { clearInterval(sesIzle); sesIzle = null; }
-            if (sesCalar) { try { sesCalar.pause(); } catch (e) {} }
+            if (sesCalar) { try { sesCalar.pause(); } catch (e) {} }  // yeri korunur
             document.querySelectorAll('.rs.play').forEach(e => e.classList.remove('play'));
+            playerYenile();
         }
         function mp3SayfaOku() {
             const pg = rdStory.pages[rdPage];
@@ -8797,6 +8842,97 @@
                 }
             }, 80);
             return true;
+        }
+
+        // ---- oynatici ------------------------------------------------------
+        const HIZLAR = [0.75, 1, 1.25, 1.5];
+        let hizIdx = 1, plSuruklen = false;
+
+        function sn(x) {
+            x = Math.max(0, Math.floor(x || 0));
+            return Math.floor(x / 60) + ':' + String(x % 60).padStart(2, '0');
+        }
+        function playerGoster(acik) {
+            const p = document.getElementById('player');
+            const b = document.getElementById('oku-btn');
+            if (p) p.classList.toggle('acik', !!acik);
+            if (b) b.style.display = acik ? 'none' : '';
+        }
+        function playerYenile() {
+            if (!sesCalar) return;
+            const d = sesCalar.duration || (sesHarita ? sesHarita.sure : 0);
+            document.getElementById('pl-toplam').textContent = sn(d);
+            document.getElementById('pl-simdi').textContent = sn(sesCalar.currentTime);
+            if (!plSuruklen && d) {
+                document.getElementById('pl-bar').value = Math.round(sesCalar.currentTime / d * 1000);
+            }
+            document.getElementById('pl-oynat').textContent = sesCalar.paused ? '▶' : '❘❘';
+        }
+        function oynatDurdur() {
+            if (!sesCalar) return;
+            if (sesCalar.paused) {
+                closeSheet();
+                sesCalar.playbackRate = HIZLAR[hizIdx];
+                sesCalar.play().catch(() => {});
+                okuyor = true;
+                sesIzleBaslat();
+            } else {
+                sesCalar.pause();
+                okuyor = false;
+                if (sesIzle) { clearInterval(sesIzle); sesIzle = null; }
+            }
+            playerYenile();
+        }
+        function hizDegistir() {
+            hizIdx = (hizIdx + 1) % HIZLAR.length;
+            const h = HIZLAR[hizIdx];
+            if (sesCalar) sesCalar.playbackRate = h;
+            document.getElementById('pl-hiz').textContent =
+                (h === 1 ? '1' : String(h).replace('.', ',')) + 'x';
+        }
+        // sesin bulundugu cumleyi bul: [sayfa, cumle] ya da null
+        function anlikCumle(t) {
+            if (!sesHarita) return null;
+            for (const x of sesHarita.harita) {
+                if (t >= x[2] - 0.05 && t < x[3] + 0.25) return x;
+            }
+            return null;
+        }
+        function sesIzleBaslat() {
+            if (sesIzle) clearInterval(sesIzle);
+            sesIzle = setInterval(function () {
+                if (!sesCalar) return;
+                playerYenile();
+                if (sesCalar.paused) return;
+                const x = anlikCumle(sesCalar.currentTime);
+                if (!x) return;
+                // ses baska sayfaya gectiyse sayfayi da cevir
+                if (x[0] !== rdPage) { rdPage = x[0]; renderPage(); }
+                document.querySelectorAll('.rs.play').forEach(e => {
+                    if (e.id !== 'rs-' + x[1]) e.classList.remove('play');
+                });
+                const el = document.getElementById('rs-' + x[1]);
+                if (el && !el.classList.contains('play')) {
+                    el.classList.add('play');
+                    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+                }
+            }, 150);
+        }
+        function cumledenOynat(pi, si) {
+            const x = haritaBul(pi, si);
+            if (!x || !sesCalar) return false;
+            closeSheet();
+            sesCalar.currentTime = x[2];
+            sesCalar.playbackRate = HIZLAR[hizIdx];
+            sesCalar.play().catch(() => {});
+            okuyor = true;
+            sesIzleBaslat();
+            playerYenile();
+            return true;
+        }
+        function wsBuradanOynat() {
+            if (!wsSent || !rdStory) return;
+            cumledenOynat(rdPage, rdStory.pages[rdPage].indexOf(wsSent));
         }
 
         // ---- seslendirme -------------------------------------------------
@@ -8854,7 +8990,6 @@
         }
         function sayfayiOku() {
             if (okuyor) { okumayiDurdur(); return; }
-            if (sesHarita && sesCalar && mp3SayfaOku()) return;
             if (!('speechSynthesis' in window)) {
                 alert('Bu cihazın tarayıcısı sesli okumayı desteklemiyor.');
                 return;
@@ -9058,7 +9193,12 @@
         }
 
         function tapWord(si, ti) {
-            if (okuyor) okumayiDurdur();
+            if (sesCalar && !sesCalar.paused) {
+                sesCalar.pause();               // yeri korunur, bastan baslamaz
+                okuyor = false;
+                if (sesIzle) { clearInterval(sesIzle); sesIzle = null; }
+                playerYenile();
+            } else if (okuyor) okumayiDurdur();
             clearMarks();
             const sent = rdStory.pages[rdPage][si];
             const tok = sent.en[ti];
@@ -9110,6 +9250,10 @@
                 h += '</div>';
             }
 
+            if (sesHarita && sesCalar) {
+                h += '<div class="ws-oynat" onclick="wsBuradanOynat()">Buradan oynat ' +
+                     '<span class="chev">▶</span></div>';
+            }
             h += '<div class="ws-row r-tr" onclick="wsToggle(&#39;sent&#39;)">Cümlenin anlamı <span class="chev">' +
                  (wsOpen === 'sent' ? '˅' : '›') + '</span></div>';
             if (wsOpen === 'sent') {
@@ -9243,6 +9387,27 @@
         document.getElementById('home-story-btn').addEventListener('click', openStories);
         document.getElementById('oku-btn').addEventListener('click', sayfayiOku);
         document.getElementById('ses-btn').addEventListener('click', sesAyarlari);
+        document.getElementById('pl-oynat').addEventListener('click', oynatDurdur);
+        document.getElementById('pl-hiz').addEventListener('click', hizDegistir);
+        (function () {
+            const bar = document.getElementById('pl-bar');
+            const bas = () => { plSuruklen = true; };
+            const bit = function () {
+                plSuruklen = false;
+                if (!sesCalar) return;
+                const d = sesCalar.duration || (sesHarita ? sesHarita.sure : 0);
+                if (d) sesCalar.currentTime = bar.value / 1000 * d;
+                playerYenile();
+            };
+            bar.addEventListener('mousedown', bas);
+            bar.addEventListener('touchstart', bas, { passive: true });
+            bar.addEventListener('change', bit);
+            bar.addEventListener('input', function () {
+                if (!sesCalar) return;
+                const d = sesCalar.duration || (sesHarita ? sesHarita.sure : 0);
+                document.getElementById('pl-simdi').textContent = sn(bar.value / 1000 * d);
+            });
+        })();
         document.getElementById('ws-back').addEventListener('click', closeSheet);
         document.getElementById('story-back').addEventListener('click', function () {
             if (document.getElementById('story-reader').style.display !== 'none') {
@@ -9254,10 +9419,18 @@
             } else closeStories();
         });
         document.getElementById('rd-prev').addEventListener('click', function () {
-            if (rdPage > 0) { okumayiDurdur(); closeSheet(); rdPage--; renderPage(); }
+            if (rdPage > 0) {
+                if (!sesCalar) okumayiDurdur();
+                closeSheet(); rdPage--; renderPage();
+                if (sesCalar && !sesCalar.paused) cumledenOynat(rdPage, 0);
+            }
         });
         document.getElementById('rd-next').addEventListener('click', function () {
-            if (rdPage < rdStory.pages.length - 1) { okumayiDurdur(); closeSheet(); rdPage++; renderPage(); }
+            if (rdPage < rdStory.pages.length - 1) {
+                if (!sesCalar) okumayiDurdur();
+                closeSheet(); rdPage++; renderPage();
+                if (sesCalar && !sesCalar.paused) cumledenOynat(rdPage, 0);
+            }
         });
 
         document.getElementById('game-again-btn').addEventListener('click', startGame);
