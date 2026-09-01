@@ -71,6 +71,7 @@ jobs:
               "alex":     "alloy",   "sarah": "coral",  "david": "onyx",
               "rachel":   "coral",   "maya":  "sage",   "leo":   "ash",
               "mark":     "ash",     "laura": "sage",
+              "mayalin":  "sage",    # obezite sohbetindeki uzman
           }
 
           ARA_MS, KONUSMA_MS, ORNEKLEM = 240, 380, 24000
