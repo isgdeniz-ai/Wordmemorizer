@@ -1,0 +1,175 @@
+name: Hikaye Sesi Üret (OpenAI)
+
+on:
+  workflow_dispatch:
+    inputs:
+      hikaye:
+        description: 'Tek bir hikaye kimliği. Boş bırakırsan tümü üretilir.'
+        required: false
+        default: ''
+      yenile:
+        description: 'Var olan sesleri de yeniden üret (evet / hayır)'
+        required: false
+        default: 'hayır'
+      uslup_sohbet:
+        description: 'Sohbetler için üslup'
+        required: false
+        default: 'Friendly and lively podcast conversation. Warm energy, natural rhythm, clear pronunciation for English learners.'
+      uslup_hikaye:
+        description: 'Hikâyeler için üslup'
+        required: false
+        default: 'Calm, warm storytelling. Unhurried pace, gentle expression, clear pronunciation for English learners.'
+
+permissions:
+  contents: write
+
+jobs:
+  seslendir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: ffmpeg kur
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - name: Kutuphaneleri kur
+        run: pip install --quiet requests
+
+      - name: Sesleri uret
+        env:
+          OPENAI_KEY:   ${{ secrets.OPENAI_API_KEY }}
+          HIKAYE:       ${{ inputs.hikaye }}
+          YENILE:       ${{ inputs.yenile }}
+          USLUP_SOHBET: ${{ inputs.uslup_sohbet }}
+          USLUP_HIKAYE: ${{ inputs.uslup_hikaye }}
+        run: |
+          python3 - <<'PY'
+          import json, os, struct, subprocess, time, requests
+
+          ANAHTAR = os.environ.get('OPENAI_KEY', '').strip()
+          if not ANAHTAR:
+              raise SystemExit("OPENAI_API_KEY bos. Settings > Secrets > Actions'a ekle.")
+
+          MODEL = "gpt-4o-mini-tts"
+
+          # ---------------- karakter -> ses
+          SESLER = {
+              "anlatici": "fable",   # hikaye anlaticisi
+              "mia":      "coral",
+              "vance":    "onyx",
+              "emma":     "coral",   "sam":   "ash",
+              "alex":     "alloy",   "sarah": "coral",  "david": "onyx",
+              "rachel":   "coral",   "maya":  "sage",   "leo":   "ash",
+              "mark":     "ash",     "laura": "sage",
+          }
+
+          ARA_MS, KONUSMA_MS, ORNEKLEM = 240, 380, 24000
+          U_SOHBET = os.environ.get('USLUP_SOHBET') or 'Natural podcast conversation.'
+          U_HIKAYE = os.environ.get('USLUP_HIKAYE') or 'Calm, warm storytelling.'
+          YENILE   = (os.environ.get('YENILE') or '').strip().lower() in ('evet', 'yes', 'true', '1')
+          ISTENEN  = (os.environ.get('HIKAYE') or '').strip()
+
+          ham = open('index.html', encoding='utf-8', errors='replace').read()
+          i = ham.find('const STORY_DATA = ')
+          if i < 0:
+              raise SystemExit('index.html icinde STORY_DATA bulunamadi')
+          j = ham.find('\n', i)
+          VERI = json.loads(ham[i + len('const STORY_DATA = '):j].rstrip().rstrip(';'))
+
+          hedefler = [s for s in VERI['stories'] if not ISTENEN or s['id'] == ISTENEN]
+          if not hedefler:
+              raise SystemExit(f"'{ISTENEN}' bulunamadi")
+          os.makedirs('ses', exist_ok=True)
+
+          def pcm_uret(metin, ses, uslup, deneme=0):
+              try:
+                  r = requests.post(
+                      "https://api.openai.com/v1/audio/speech",
+                      headers={"Authorization": "Bearer " + ANAHTAR,
+                               "Content-Type": "application/json"},
+                      json={"model": MODEL, "voice": ses, "input": metin,
+                            "instructions": uslup, "response_format": "pcm"},
+                      timeout=180)
+              except Exception as e:
+                  if deneme < 3:
+                      time.sleep(4); return pcm_uret(metin, ses, uslup, deneme + 1)
+                  raise SystemExit(f"Baglanti hatasi: {e}")
+              if r.status_code == 429 or r.status_code >= 500:
+                  if deneme < 4:
+                      time.sleep(6 * (deneme + 1))
+                      return pcm_uret(metin, ses, uslup, deneme + 1)
+              if r.status_code != 200:
+                  raise SystemExit(f"OpenAI hatasi ({ses}): {r.status_code} {r.text[:400]}")
+              return r.content
+
+          toplam_harf, uretilen, atlanan = 0, 0, 0
+
+          for st in hedefler:
+              kid = st['id']
+              mp3 = f'ses/{kid}.mp3'
+              if os.path.exists(mp3) and os.path.getsize(mp3) > 5000 and not YENILE:
+                  print(f"--- {st['title']}: ses var, atlandi")
+                  atlanan += 1
+                  continue
+
+              uslup = U_SOHBET if st.get('tur') == 'podcast' else U_HIKAYE
+              print(f"=== {st['title']} ({kid}) · {st.get('tur','hikaye')}")
+
+              pcm = bytearray()
+              kisa = b'\x00\x00' * int(ORNEKLEM * ARA_MS / 1000)
+              uzun = b'\x00\x00' * int(ORNEKLEM * KONUSMA_MS / 1000)
+              harita, harf, onceki = [], 0, None
+
+              for pi, sayfa in enumerate(st['pages']):
+                  for si, cumle in enumerate(sayfa):
+                      metin = ''.join(t['t'] for t in cumle['en']).strip()
+                      if not metin:
+                          continue
+                      kim = cumle.get('s') or 'anlatici'
+                      if onceki is not None and kim != onceki:
+                          pcm += uzun
+                      onceki = kim
+                      bas = len(pcm) / 2 / ORNEKLEM
+                      pcm += pcm_uret(metin, SESLER.get(kim, SESLER['anlatici']), uslup)
+                      bit = len(pcm) / 2 / ORNEKLEM
+                      pcm += kisa
+                      harita.append([pi, si, round(bas, 3), round(bit, 3)])
+                      harf += len(metin)
+
+              gec = f'/tmp/{kid}.wav'
+              with open(gec, 'wb') as f:
+                  n = len(pcm)
+                  f.write(b'RIFF' + struct.pack('<I', 36 + n) + b'WAVEfmt ')
+                  f.write(struct.pack('<IHHIIHH', 16, 1, 1, ORNEKLEM, ORNEKLEM * 2, 2, 16))
+                  f.write(b'data' + struct.pack('<I', n) + bytes(pcm))
+              subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', gec,
+                              '-codec:a', 'libmp3lame', '-b:a', '96k', '-ac', '1', mp3],
+                             check=True)
+              json.dump({"id": kid, "sure": round(len(pcm)/2/ORNEKLEM, 2), "harita": harita},
+                        open(f'ses/{kid}.json', 'w'), separators=(',', ':'))
+
+              print(f"    -> {os.path.getsize(mp3)//1024} KB · {len(harita)} cumle · "
+                    f"{harf} harf · {len(pcm)/2/ORNEKLEM:.0f} sn")
+              toplam_harf += harf
+              uretilen += 1
+
+          print(f"\nUretilen: {uretilen}   atlanan: {atlanan}   toplam harf: {toplam_harf}")
+          PY
+
+      - name: Depoya isle
+        run: |
+          git config user.name  "ses-botu"
+          git config user.email "actions@github.com"
+          git add ses
+          git commit -m "Hikaye sesleri (OpenAI)" || echo "degisiklik yok"
+          git push
