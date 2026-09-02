@@ -383,8 +383,11 @@
         /* ===== OKUMA MODULU ===== */
         #story-screen { display:none; flex-direction:column; height:100%; }
         .story-top { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
-        .story-back { background:#f0f2f5; border:none; border-radius:10px; padding:9px 13px; font-size:14px; font-weight:700; color:#606770; cursor:pointer; }
-        .story-back:active { background:#e4e6eb; }
+        .story-back { display:inline-flex; align-items:center; gap:7px; background:#13224A; border:none;
+                      border-radius:999px; padding:10px 17px 10px 14px; font-size:14px; font-weight:800;
+                      color:#fff; cursor:pointer; box-shadow:0 2px 6px rgba(19,34,74,.25); }
+        .story-back:active { background:#0d1836; }
+        .story-back .gb-ok { font-size:17px; line-height:1; margin-top:-1px; }
         .story-top h2 { font-size:19px; font-weight:800; color:#1c1e21; letter-spacing:-.3px; }
 
         /* iki katmanli acilir liste */
@@ -691,7 +694,7 @@
         <!-- OKUMA MODULU -->
         <div id="story-screen">
             <div class="story-top">
-                <button class="story-back" id="story-back">←</button>
+                <button class="story-back" id="story-back"><span class="gb-ok">←</span> Geri</button>
                 <h2 id="story-title">Oku &amp; Dinle</h2>
             </div>
             <div id="story-list"></div>
