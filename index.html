@@ -369,6 +369,17 @@
         #install-btn { display: none; width: 100%; margin-bottom: 18px; padding: 14px; font-size: 15px; font-weight: 700; color: #1877f2; background: #e8f4fd; border: 2px solid #1877f2; border-radius: 12px; cursor: pointer; }
         #install-btn:active { background: #d5e9fb; }
 
+        /* karsilama ekrani duzeni */
+        .nasil-h { display:flex; align-items:center; gap:10px; width:100%; margin-top:22px;
+                   background:#f2f4f8; border:1px solid #e2e6ee; border-radius:12px;
+                   padding:14px 16px; cursor:pointer; text-align:left; font:inherit; }
+        .nasil-h .ok { flex:0 0 auto; color:#98a1b0; font-size:12px; transition:transform .2s; }
+        .nasil-h.acik .ok { transform:rotate(90deg); }
+        .nasil-h .ad { flex:1; font-size:14px; font-weight:800; color:#3c4658; }
+        #nasil-govde { display:none; }
+        #nasil-govde.acik { display:block; }
+        #nasil-govde .info-box { margin-top:10px; }
+
         /* ===== OKUMA MODULU ===== */
         #story-screen { display:none; flex-direction:column; height:100%; }
         .story-top { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
@@ -631,12 +642,6 @@
                 </div>
                 <div id="search-results"></div>
             </div>
-            
-            <div class="info-box">
-                <p style="margin: 0 0 10px;">Word Memorizer, İngilizce kelimeleri kalıcı olarak öğrenmenizi kolaylaştırmak için tasarlandı. Özellikle YDS gibi sınavlara hazırlananlar için birebir; ama kelime dağarcığını güçlendirmek isteyen herkes rahatça kullanabilir. Amaç basit: her kelimeyi, unutmayacak kadar iyi öğrenene dek doğru aralıklarla önünüze getirmek.</p>
-                <p style="margin: 0 0 10px;">Her kelime, aklınızda yer etmesi için birkaç gün boyunca karşınıza çıkar. İlk günlerde seçenekli sorularla tanışır, dördüncü gün kelimeyi kendiniz yazarak pekiştirirsiniz. Bir kelimede zorlanırsanız endişelenmeyin; doğrusu ve örnek cümlesiyle yeniden karşınıza gelir, her tekrarda biraz daha kalıcılaşır.</p>
-                <p style="margin: 0;">Öğrendiklerinizi korumak için haftalık ve aylık kısa tekrarlar da otomatik gelir. Başlamak için tek yapmanız gereken seviyenizi ve günlük hedefinizi seçmek.</p>
-            </div>
 
             <div class="level-form">
                 <label for="current-level">Mevcut Seviyeniz:</label>
@@ -670,9 +675,16 @@
             </div>
 
             <button class="primary-btn" onclick="startApp()">Çalışmaya Başla</button>
-            <button class="primary-btn" style="background-color: #31a24c; margin-top: 12px;" onclick="startPlacementTest()">Seviyemi Belirle (Test)</button>
+            <button id="home-story-btn" class="primary-btn" style="background-color: #e08a1e; margin-top: 12px;">📖 Oku & Dinle</button>
             <button id="home-game-btn" class="primary-btn" style="background-color: #7c4dff; margin-top: 12px;">🧩 Eşleştirme Oyunu</button>
-            <button id="home-story-btn" class="primary-btn" style="background-color: #e08a1e; margin-top: 12px;">📖 Hikaye Oku</button>
+            <button class="primary-btn" style="background-color: #31a24c; margin-top: 12px;" onclick="startPlacementTest()">Seviyemi Belirle (Test)</button>
+
+            <button class="nasil-h" id="nasil-h" onclick="nasilAc()"><span class="ok">❯</span><span class="ad">Nasıl çalışıyor?</span></button>
+            <div id="nasil-govde"><div class="info-box">
+                <p style="margin: 0 0 10px;">Word Memorizer, İngilizce kelimeleri kalıcı olarak öğrenmenizi kolaylaştırmak için tasarlandı. Özellikle YDS gibi sınavlara hazırlananlar için birebir; ama kelime dağarcığını güçlendirmek isteyen herkes rahatça kullanabilir. Amaç basit: her kelimeyi, unutmayacak kadar iyi öğrenene dek doğru aralıklarla önünüze getirmek.</p>
+                <p style="margin: 0 0 10px;">Her kelime, aklınızda yer etmesi için birkaç gün boyunca karşınıza çıkar. İlk günlerde seçenekli sorularla tanışır, dördüncü gün kelimeyi kendiniz yazarak pekiştirirsiniz. Bir kelimede zorlanırsanız endişelenmeyin; doğrusu ve örnek cümlesiyle yeniden karşınıza gelir, her tekrarda biraz daha kalıcılaşır.</p>
+                <p style="margin: 0;">Öğrendiklerinizi korumak için haftalık ve aylık kısa tekrarlar da otomatik gelir. Başlamak için tek yapmanız gereken seviyenizi ve günlük hedefinizi seçmek.</p>
+            </div></div>
         </div>
 
 
@@ -680,7 +692,7 @@
         <div id="story-screen">
             <div class="story-top">
                 <button class="story-back" id="story-back">←</button>
-                <h2 id="story-title">Hikayeler</h2>
+                <h2 id="story-title">Oku &amp; Dinle</h2>
             </div>
             <div id="story-list"></div>
             <div id="story-reader" style="display:none; flex-direction:column; flex:1;">
@@ -9052,11 +9064,19 @@
         }
         function wsSpeakWord() { if (wsWord) seslendir(wsWord.t); }
 
+        function nasilAc() {
+            const g = document.getElementById('nasil-govde');
+            const h = document.getElementById('nasil-h');
+            if (!g || !h) return;
+            const acik = g.classList.toggle('acik');
+            h.classList.toggle('acik', acik);
+        }
+
         function openStories() {
             document.getElementById('welcome-screen').style.display = 'none';
             document.getElementById('story-screen').style.display = 'flex';
             document.getElementById('story-reader').style.display = 'none';
-            document.getElementById('story-title').textContent = 'Hikayeler';
+            document.getElementById('story-title').textContent = 'Oku & Dinle';
             const el = document.getElementById('story-list');
             el.style.display = 'block';
             // Ana kategoriler ve icindeki alt basliklar
@@ -9456,7 +9476,7 @@
                 closeSheet();
                 document.getElementById('story-reader').style.display = 'none';
                 document.getElementById('story-list').style.display = 'block';
-                document.getElementById('story-title').textContent = 'Hikayeler';
+                document.getElementById('story-title').textContent = 'Oku & Dinle';
             } else closeStories();
         });
         document.getElementById('rd-prev').addEventListener('click', function () {
