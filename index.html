@@ -370,11 +370,19 @@
         .pz-bilgi { font-size: 11.5px; color: #8a8f98; font-weight: 700; text-align: center; margin-bottom: 8px; }
         .pz-bilgi b { color: #6b3fd4; }
 
-        .pz-btnlar { display: flex; gap: 7px; width: 100%; margin: 0 0 8px; }
-        .pz-mini { flex: 1; padding: 8px 4px; border-radius: 9px; border: 1px solid #d6d9de;
-                   background: #fff; font-size: 12px; font-weight: 700; color: #3c4658;
-                   cursor: pointer; font-family: inherit; line-height: 1.25; }
-        .pz-mini:disabled { opacity: .42; cursor: default; }
+        .pz-btnlar { display: flex; gap: 9px; width: 100%; margin: 2px 0 10px; }
+        .pz-mini { flex: 1; padding: 11px 6px; border-radius: 12px; border: 2px solid transparent;
+                   font-size: 13.5px; font-weight: 800; cursor: pointer; font-family: inherit;
+                   line-height: 1.3; box-shadow: 0 2px 5px rgba(0,0,0,.13);
+                   transition: transform .12s, box-shadow .12s; }
+        .pz-mini:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,.13); }
+        .pz-mini .pz-m-ust { display: block; font-size: 14.5px; }
+        .pz-mini .pz-m-alt { display: block; font-size: 11px; font-weight: 700; opacity: .85; margin-top: 2px; }
+        /* Harf Al: dikkat ceken sari, cunku puan maliyeti var */
+        .pz-mini.pz-harf { background: #f5b301; border-color: #d99a00; color: #3a2a00; }
+        /* Pas: sakin mor, bedelsiz gecis */
+        .pz-mini.pz-pas  { background: #6b3fd4; border-color: #5730b3; color: #fff; }
+        .pz-mini:disabled { opacity: .4; cursor: default; box-shadow: none; }
 
         /* Bulmaca acikken sayfa yuksekligini kisan sadelestirmeler */
         body.pz-mod #main-app > header { margin-bottom: 4px; }
@@ -9029,9 +9037,12 @@
                 '<div class="pz-mask">' + pzMask(o.w.en, o.acik) + '</div>' +
                 '<div class="pz-bilgi">' + toplam + ' harf \u00b7 do\u011fru cevap <b>' + odul + ' puan</b></div>' +
                 '<div class="pz-btnlar">' +
-                  '<button class="pz-mini" onclick="pzHarfAl()"' + (alinabilir ? '' : ' disabled') + '>' +
-                    '\ud83d\udca1 Harf Al<br>puan ' + odul + ' \u2192 ' + sonraki + '</button>' +
-                  '<button class="pz-mini" onclick="pzPas()">\u23ed Pas<br>sonraki harfe ge\u00e7</button>' +
+                  '<button class="pz-mini pz-harf" onclick="pzHarfAl()"' + (alinabilir ? '' : ' disabled') + '>' +
+                    '<span class="pz-m-ust">\ud83d\udca1 Harf Al</span>' +
+                    '<span class="pz-m-alt">puan ' + odul + ' \u2192 ' + sonraki + '</span></button>' +
+                  '<button class="pz-mini pz-pas" onclick="pzPas()">' +
+                    '<span class="pz-m-ust">\u23ed Pas</span>' +
+                    '<span class="pz-m-alt">sonraki harfe ge\u00e7</span></button>' +
                 '</div>';
 
             document.getElementById('typing-section').style.display = 'block';
