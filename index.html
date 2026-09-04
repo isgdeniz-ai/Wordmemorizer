@@ -420,6 +420,9 @@
         .cw-ip .cw-ip-no { flex:0 0 auto; font-weight:800; color:#6b3fd4; }
         .cw-ip.bitti .cw-ip-no { color:#31a24c; }
         .cw-ip .cw-ip-uz { font-size:11px; color:#8a8f98; font-weight:700; }
+        /* Ornek cumlede aranan anlami tasiyan ifade */
+        .cw-vurgu { color:#6b3fd4; font-weight:800; }
+        .cw-ip.bitti .cw-vurgu { color:#1e5a2c; }
 
         /* Cevap satiri ekranin altina sabitlenir ki klavye acikken kaybolmasin */
         .cw-cevap { position:sticky; bottom:0; background:#fff; padding:9px 0 4px;
@@ -9258,9 +9261,23 @@
                     .join(' ').trim();
             }
             if (u.length >= 18) return u;
+            // Ornek cumlede hedef ifade bosluga cevrilmez, VURGULANIR.
+            // Bosluk birakmak Turkcede cok fazla kelimeye uyabiliyor;
+            // ifadeyi gostermek hangi anlamin arandigini netlestirir.
             const ex = w.exTr || '';
-            if (ex.indexOf('{') >= 0) return ex.replace(/\{[^}]*\}/g, '_____');
+            if (ex.indexOf('{') >= 0) {
+                return ex.replace(/\{([^}]*)\}/g, '<span class="cw-vurgu">$1</span>');
+            }
             return w.tr || '';
+        }
+
+        // Ipucu cevabi ele veriyor mu? Turkceye gecmis alinti kelimelerde
+        // ("Pop muzik seviyor" -> pop) vurgulanan ifade cevabi gosterebiliyor.
+        // Bu kelimeler bulmaca havuzuna hic alinmaz.
+        function cwSizdirirMi(w) {
+            const duz = cwIpucu(w).replace(/<[^>]*>/g, '').toLowerCase();
+            const kel = (w.en || '').toLowerCase();
+            return duz.indexOf(kel.slice(0, Math.min(4, kel.length))) >= 0;
         }
 
         // Seviyeye gore kelime havuzu. Seviye yukseldikce ust bantlara kayar.
@@ -9277,7 +9294,7 @@
             const izin = sirali.slice(i1 + kaydir, i2 + 1);
             return wordDatabase.filter(function (w) {
                 return izin.indexOf(w.level) >= 0 && /^[a-zA-Z]{3,8}$/.test(w.en || '') && w.tr;
-            });
+            }).filter(function (w) { return !cwSizdirirMi(w); });
         }
 
         function cwAnahtar(r, c) { return r + ',' + c; }
