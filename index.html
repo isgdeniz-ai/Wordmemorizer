@@ -388,7 +388,53 @@
         body.pz-mod #main-app > header { margin-bottom: 4px; }
         body.pz-mod #check-btn { margin-top: 4px; }
 
-        /* ===== EGLENCE SECIMI ===== */
+        /* ===== KELIME BULMACASI (kutucuk doldurma) ===== */
+        #cw-screen { display:none; flex-direction:column; height:100%; }
+        .cw-ust { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+        .cw-ust h2 { font-size:18px; font-weight:800; color:#1c1e21; letter-spacing:-.3px; }
+        .cw-durum { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+        .cw-rozet { background:#eef1f6; border-radius:20px; padding:5px 11px;
+                    font-size:12px; font-weight:800; color:#3c4658; }
+        .cw-rozet.vurgu { background:#6b3fd4; color:#fff; }
+
+        /* Izgara: sutun sayisina gore hucre boyu JS'te hesaplanir */
+        .cw-izgara-sar { overflow-x:auto; padding:2px 0 6px; }
+        .cw-izgara { display:grid; gap:2px; margin:0 auto; }
+        .cw-h { position:relative; background:#fff; border:1.5px solid #c9cfda; border-radius:4px;
+                display:flex; align-items:center; justify-content:center;
+                font-weight:800; color:#1c1e21; text-transform:uppercase; }
+        .cw-h.bos { background:transparent; border:none; }
+        .cw-h.aktif { background:#fff5da; border-color:#f5b301; }
+        .cw-h.bitti { background:#eafbe7; border-color:#31a24c; color:#1e5a2c; }
+        .cw-h .cw-no { position:absolute; top:0px; left:2px; font-size:8px;
+                       font-weight:700; color:#8a8f98; line-height:1.1; }
+
+        .cw-ipuclari { margin-top:6px; }
+        .cw-ip-baslik { font-size:12px; font-weight:800; color:#8a8f98;
+                        letter-spacing:.05em; margin:10px 0 5px; }
+        .cw-ip { display:flex; gap:8px; width:100%; text-align:left; background:#fff;
+                 border:1px solid #e2e6ee; border-radius:10px; padding:9px 11px; margin-bottom:6px;
+                 cursor:pointer; font-family:inherit; font-size:13px; color:#3c4658; line-height:1.4; }
+        .cw-ip.aktif { border-color:#f5b301; background:#fff9e9; }
+        .cw-ip.bitti { border-color:#31a24c; background:#f2fbf2; color:#1e5a2c; }
+        .cw-ip .cw-ip-no { flex:0 0 auto; font-weight:800; color:#6b3fd4; }
+        .cw-ip.bitti .cw-ip-no { color:#31a24c; }
+        .cw-ip .cw-ip-uz { font-size:11px; color:#8a8f98; font-weight:700; }
+
+        /* Cevap satiri ekranin altina sabitlenir ki klavye acikken kaybolmasin */
+        .cw-cevap { position:sticky; bottom:0; background:#fff; padding:9px 0 4px;
+                    border-top:1px solid #e6e9f0; margin-top:8px; }
+        .cw-cevap-ip { font-size:12.5px; color:#606770; font-weight:600; margin-bottom:6px; }
+        .cw-cevap-sat { display:flex; gap:7px; }
+        .cw-cevap-sat input { flex:1; padding:11px 12px; border:2px solid #d6d9de; border-radius:10px;
+                              font-size:15px; font-family:inherit; text-transform:uppercase; }
+        .cw-cevap-sat input:focus { outline:none; border-color:#6b3fd4; }
+        .cw-cevap-sat button { flex:0 0 auto; padding:11px 16px; border:none; border-radius:10px;
+                               background:#6b3fd4; color:#fff; font-size:14px; font-weight:800;
+                               font-family:inherit; cursor:pointer; }
+        .cw-bitis { text-align:center; padding:18px 6px; }
+        .cw-bitis .cw-b-ust { font-size:20px; font-weight:800; color:#1e5a2c; margin-bottom:6px; }
+        .cw-bitis .cw-b-alt { font-size:14px; color:#606770; margin-bottom:14px; }
         #fun-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 900;
                        display: none; align-items: center; justify-content: center; padding: 22px; }
         #fun-overlay.acik { display: flex; }
@@ -819,6 +865,19 @@
         </div>
 
         <!-- OKUMA MODULU -->
+        <div id="cw-screen">
+            <div class="cw-ust">
+                <button class="story-back" id="cw-back"><span class="gb-ok">←</span> Geri</button>
+                <h2 id="cw-title">Kelime Bulmacası</h2>
+            </div>
+            <div class="cw-durum">
+                <span class="cw-rozet vurgu" id="cw-seviye">Seviye 1</span>
+                <span class="cw-rozet" id="cw-bolum">Bulmaca 1 / 5</span>
+                <span class="cw-rozet" id="cw-kalan">0 / 10 kelime</span>
+            </div>
+            <div id="cw-govde"></div>
+        </div>
+
         <div id="story-screen">
             <div class="story-top">
                 <button class="story-back" id="story-back"><span class="gb-ok">←</span> Geri</button>
@@ -944,6 +1003,11 @@
                     <span class="fs-ikon">🔎</span>
                     <span><span class="fs-ad">Kelime Bulmaca</span>
                     <span class="fs-alt">A'dan Z'ye çemberde süreye karşı yarış</span></span>
+                </button>
+                <button class="fun-sec" id="fun-cw">
+                    <span class="fs-ikon">⬛</span>
+                    <span><span class="fs-ad">Kelime Bulmacası</span>
+                    <span class="fs-alt">Kutucukları doldur — seviyeli, 10 kelimelik bulmacalar</span></span>
                 </button>
                 <button class="fun-kapat" id="fun-close">Kapat</button>
             </div>
@@ -9150,7 +9214,337 @@
             playFanfare();
         }
 
-        // ---- Eglence secim ekrani: iki oyun tek kapi altinda ----
+        // ==========================================
+        // KELIME BULMACASI (kutucuk doldurma)
+        // Her seviye 5 bulmaca, her bulmaca 10 kesisen kelime.
+        // Ipucu olarak dogrudan Turkce karsilik degil, ANLAM/tanim verilir.
+        // Gun motoruna dokunmaz; ilerleme ayri bir anahtarda saklanir.
+        // ==========================================
+        const CW_KEY = 'wm_cw_v1';
+        const CW_BULMACA = 5;    // her seviyede kac bulmaca
+        const CW_KELIME  = 10;   // her bulmacada kac kelime
+
+        let cwSeviye = 1, cwBolum = 0, cwAktifP = null, cwSecili = null;
+
+        function cwDurumYukle() {
+            try {
+                const raw = localStorage.getItem(CW_KEY);
+                const o = raw ? JSON.parse(raw) : null;
+                if (o && typeof o.seviye === 'number') return o;
+            } catch (e) {}
+            return { seviye: 1, bolum: 0 };
+        }
+        function cwDurumKaydet() {
+            try { localStorage.setItem(CW_KEY, JSON.stringify({ seviye: cwSeviye, bolum: cwBolum })); } catch (e) {}
+        }
+
+        // Ipucu: once usage'dan tanim, olmazsa ornek cumleden bosluk doldurma.
+        // Cevabi sizdirabilecek cumlecikler tumuyle atilir: tirnak icinde
+        // Ingilizce ornek gecenler ve kelimenin kokunu barindiranlar.
+        function cwIpucu(w) {
+            const kel = (w.en || '').toLowerCase();
+            const kok = kel.slice(0, Math.min(4, kel.length));
+            let u = (w.usage || '').trim();
+            if (u) {
+                const cumleler = [];
+                u.split(';').forEach(function (p) {
+                    p.split(/(?<=\.)\s+/).forEach(function (c) { cumleler.push(c.trim()); });
+                });
+                u = cumleler
+                    .filter(function (s) { return s.length > 0; })
+                    .filter(function (s) { return s.indexOf("'") < 0; })
+                    .filter(function (s) { return s.toLowerCase().indexOf(kok) < 0; })
+                    .filter(function (s) { return /^[A-ZÇĞİÖŞÜ]/.test(s); })
+                    .join(' ').trim();
+            }
+            if (u.length >= 18) return u;
+            const ex = w.exTr || '';
+            if (ex.indexOf('{') >= 0) return ex.replace(/\{[^}]*\}/g, '_____');
+            return w.tr || '';
+        }
+
+        // Seviyeye gore kelime havuzu. Seviye yukseldikce ust bantlara kayar.
+        function cwHavuz() {
+            const sirali = ['A1', 'A2', 'B1', 'B2', 'C1'];
+            const cur = (document.getElementById('current-level') || {}).value || 'A1';
+            const tgt = (document.getElementById('target-level') || {}).value || 'B2';
+            let i1 = sirali.indexOf(cur), i2 = sirali.indexOf(tgt);
+            if (i1 < 0) i1 = 0;
+            if (i2 < 0) i2 = sirali.length - 1;
+            if (i1 > i2) { const t = i1; i1 = i2; i2 = t; }
+            // her 3 seviyede bir alt sinir bir bant yukari kayar
+            const kaydir = Math.min(Math.floor((cwSeviye - 1) / 3), Math.max(0, i2 - i1));
+            const izin = sirali.slice(i1 + kaydir, i2 + 1);
+            return wordDatabase.filter(function (w) {
+                return izin.indexOf(w.level) >= 0 && /^[a-zA-Z]{3,8}$/.test(w.en || '') && w.tr;
+            });
+        }
+
+        function cwAnahtar(r, c) { return r + ',' + c; }
+
+        function cwYerlesirMi(izgara, kelime, r, c, yatay) {
+            const n = kelime.length;
+            let kesisme = 0;
+            if (yatay) {
+                if (izgara[cwAnahtar(r, c - 1)] || izgara[cwAnahtar(r, c + n)]) return -1;
+            } else {
+                if (izgara[cwAnahtar(r - 1, c)] || izgara[cwAnahtar(r + n, c)]) return -1;
+            }
+            for (let i = 0; i < n; i++) {
+                const rr = yatay ? r : r + i, cc = yatay ? c + i : c;
+                const mevcut = izgara[cwAnahtar(rr, cc)];
+                if (mevcut) {
+                    if (mevcut !== kelime[i]) return -1;
+                    kesisme++;
+                } else if (yatay) {
+                    if (izgara[cwAnahtar(rr - 1, cc)] || izgara[cwAnahtar(rr + 1, cc)]) return -1;
+                } else {
+                    if (izgara[cwAnahtar(rr, cc - 1)] || izgara[cwAnahtar(rr, cc + 1)]) return -1;
+                }
+            }
+            return kesisme;
+        }
+
+        // Tek deneme. Kompakt kalmasi icin sinir kutusu buyumesi cezalandirilir.
+        function cwDene(secim, hedef) {
+            const izgara = {}, yerlesen = [];
+            let minR = 0, maxR = 0, minC = 0, maxC = 0;
+            const sirali = secim.slice();
+            const ilk = sirali.shift();
+            const ik = ilk.en.toLowerCase();
+            for (let i = 0; i < ik.length; i++) izgara[cwAnahtar(0, i)] = ik[i];
+            maxC = ik.length - 1;
+            yerlesen.push({ w: ilk, kelime: ik, r: 0, c: 0, yatay: true });
+
+            for (let a = 0; a < sirali.length; a++) {
+                if (yerlesen.length >= hedef) break;
+                const k = sirali[a].en.toLowerCase();
+                let enIyi = null;
+                for (let y = 0; y < yerlesen.length; y++) {
+                    const yer = yerlesen[y];
+                    for (let i = 0; i < k.length; i++) {
+                        for (let j = 0; j < yer.kelime.length; j++) {
+                            if (k[i] !== yer.kelime[j]) continue;
+                            const yatay = !yer.yatay;
+                            const r = yer.yatay ? yer.r - i : yer.r + j;
+                            const c = yer.yatay ? yer.c + j : yer.c - i;
+                            const kes = cwYerlesirMi(izgara, k, r, c, yatay);
+                            if (kes <= 0) continue;
+                            const sonR = yatay ? r : r + k.length - 1;
+                            const sonC = yatay ? c + k.length - 1 : c;
+                            const yR1 = Math.min(minR, r), yR2 = Math.max(maxR, sonR);
+                            const yC1 = Math.min(minC, c), yC2 = Math.max(maxC, sonC);
+                            const buyume = ((yR2 - yR1) - (maxR - minR)) + ((yC2 - yC1) - (maxC - minC));
+                            const enBoy = Math.abs((yR2 - yR1) - (yC2 - yC1));
+                            const skor = kes * 12 - buyume * 6 - enBoy;
+                            if (!enIyi || skor > enIyi.skor) enIyi = { r: r, c: c, yatay: yatay, skor: skor, yR1: yR1, yR2: yR2, yC1: yC1, yC2: yC2 };
+                        }
+                    }
+                }
+                if (enIyi) {
+                    for (let i = 0; i < k.length; i++) {
+                        const rr = enIyi.yatay ? enIyi.r : enIyi.r + i;
+                        const cc = enIyi.yatay ? enIyi.c + i : enIyi.c;
+                        izgara[cwAnahtar(rr, cc)] = k[i];
+                    }
+                    minR = enIyi.yR1; maxR = enIyi.yR2; minC = enIyi.yC1; maxC = enIyi.yC2;
+                    yerlesen.push({ w: sirali[a], kelime: k, r: enIyi.r, c: enIyi.c, yatay: enIyi.yatay });
+                }
+            }
+
+            const satir = maxR - minR + 1, sutun = maxC - minC + 1, hucre = {};
+            Object.keys(izgara).forEach(function (a) {
+                const p = a.split(',');
+                hucre[cwAnahtar(+p[0] - minR, +p[1] - minC)] = izgara[a];
+            });
+            yerlesen.forEach(function (y) { y.r -= minR; y.c -= minC; });
+            yerlesen.sort(function (a, b) { return (a.r - b.r) || (a.c - b.c); });
+            const noHar = {}; let no = 0;
+            yerlesen.forEach(function (y) {
+                const a = cwAnahtar(y.r, y.c);
+                if (!noHar[a]) { no++; noHar[a] = no; }
+                y.no = noHar[a];
+                y.cozuldu = false;
+                y.ipucu = cwIpucu(y.w);
+            });
+            return { satir: satir, sutun: sutun, hucre: hucre, kelimeler: yerlesen };
+        }
+
+        function cwUret() {
+            const havuz = cwHavuz();
+            if (havuz.length < 40) return null;
+            let en = null;
+            for (let t = 0; t < 14; t++) {
+                const secim = _shuffle(havuz).slice(0, CW_KELIME + 14)
+                    .sort(function (a, b) { return b.en.length - a.en.length; });
+                const p = cwDene(secim, CW_KELIME);
+                const boyut = Math.max(p.satir, p.sutun);
+                const puan = p.kelimeler.length * 100 - boyut * 3;
+                if (!en || puan > en.puan) { en = p; en.puan = puan; }
+            }
+            return en;
+        }
+
+        function openCrossword() {
+            const d = cwDurumYukle();
+            cwSeviye = d.seviye; cwBolum = d.bolum;
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('cw-screen').style.display = 'flex';
+            cwBolumBasla();
+        }
+
+        function closeCrossword() {
+            document.getElementById('cw-screen').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'flex';
+        }
+
+        function cwBolumBasla() {
+            cwAktifP = cwUret();
+            cwSecili = null;
+            if (!cwAktifP) {
+                document.getElementById('cw-govde').innerHTML =
+                    '<div class="cw-bitis"><div class="cw-b-alt">Bu seviye i\u00e7in yeterli kelime yok.</div></div>';
+                return;
+            }
+            cwCiz();
+        }
+
+        function cwCiz() {
+            const p = cwAktifP;
+            document.getElementById('cw-seviye').textContent = 'Seviye ' + cwSeviye;
+            document.getElementById('cw-bolum').textContent = 'Bulmaca ' + (cwBolum + 1) + ' / ' + CW_BULMACA;
+            const cozulen = p.kelimeler.filter(function (k) { return k.cozuldu; }).length;
+            document.getElementById('cw-kalan').textContent = cozulen + ' / ' + p.kelimeler.length + ' kelime';
+
+            // hucre boyu: ekrana sigsin diye sutun sayisina gore kucultulur
+            const genislik = Math.min(window.innerWidth - 34, 460);
+            const boy = Math.max(17, Math.min(30, Math.floor((genislik - (p.sutun - 1) * 2) / p.sutun)));
+
+            // hangi hucre hangi kelimeye ait + cozulmus harfler
+            const doluHarf = {}, noHucre = {};
+            p.kelimeler.forEach(function (k) {
+                for (let i = 0; i < k.kelime.length; i++) {
+                    const rr = k.yatay ? k.r : k.r + i, cc = k.yatay ? k.c + i : k.c;
+                    if (k.cozuldu) doluHarf[cwAnahtar(rr, cc)] = k.kelime[i];
+                }
+                noHucre[cwAnahtar(k.r, k.c)] = k.no;
+            });
+
+            let g = '<div class="cw-izgara-sar"><div class="cw-izgara" style="grid-template-columns:repeat(' +
+                    p.sutun + ',' + boy + 'px);width:' + (p.sutun * boy + (p.sutun - 1) * 2) + 'px">';
+            for (let r = 0; r < p.satir; r++) {
+                for (let c = 0; c < p.sutun; c++) {
+                    const a = cwAnahtar(r, c);
+                    if (!p.hucre[a]) { g += '<div class="cw-h bos" style="height:' + boy + 'px"></div>'; continue; }
+                    let sinif = 'cw-h';
+                    if (doluHarf[a]) sinif += ' bitti';
+                    if (cwSecili && cwHucreKelimede(cwSecili, r, c)) sinif += ' aktif';
+                    g += '<div class="' + sinif + '" style="height:' + boy + 'px;font-size:' + Math.round(boy * 0.52) + 'px">' +
+                         (noHucre[a] ? '<span class="cw-no">' + noHucre[a] + '</span>' : '') +
+                         (doluHarf[a] || '') + '</div>';
+                }
+            }
+            g += '</div></div>';
+
+            // ipucu listeleri
+            const yatayK = p.kelimeler.filter(function (k) { return k.yatay; });
+            const dikeyK = p.kelimeler.filter(function (k) { return !k.yatay; });
+            const ipListe = function (baslik, dizi) {
+                if (!dizi.length) return '';
+                let h = '<div class="cw-ip-baslik">' + baslik + '</div>';
+                dizi.forEach(function (k) {
+                    const i = p.kelimeler.indexOf(k);
+                    let s = 'cw-ip';
+                    if (k.cozuldu) s += ' bitti';
+                    else if (cwSecili === k) s += ' aktif';
+                    h += '<button class="' + s + '" onclick="cwSec(' + i + ')">' +
+                         '<span class="cw-ip-no">' + k.no + '</span>' +
+                         '<span>' + k.ipucu + ' <span class="cw-ip-uz">(' + k.kelime.length + ' harf)</span></span>' +
+                         '</button>';
+                });
+                return h;
+            };
+            g += '<div class="cw-ipuclari">' + ipListe('SOLDAN SA\u011eA', yatayK) + ipListe('YUKARIDAN A\u015eA\u011eIYA', dikeyK) + '</div>';
+
+            // cevap satiri
+            if (cwSecili && !cwSecili.cozuldu) {
+                g += '<div class="cw-cevap">' +
+                       '<div class="cw-cevap-ip"><b>' + cwSecili.no + '. ' +
+                         (cwSecili.yatay ? 'Soldan sa\u011fa' : 'Yukar\u0131dan a\u015fa\u011f\u0131ya') + '</b> \u00b7 ' +
+                         cwSecili.ipucu + '</div>' +
+                       '<div class="cw-cevap-sat">' +
+                         '<input type="text" id="cw-input" autocomplete="off" maxlength="' + cwSecili.kelime.length +
+                           '" placeholder="' + cwSecili.kelime.length + ' harfli kelime">' +
+                         '<button onclick="cwKontrol()">Yaz</button>' +
+                       '</div></div>';
+            }
+
+            document.getElementById('cw-govde').innerHTML = g;
+            const inp = document.getElementById('cw-input');
+            if (inp) {
+                inp.addEventListener('keypress', function (e) { if (e.key === 'Enter') cwKontrol(); });
+                inp.focus();
+            }
+        }
+
+        function cwHucreKelimede(k, r, c) {
+            for (let i = 0; i < k.kelime.length; i++) {
+                const rr = k.yatay ? k.r : k.r + i, cc = k.yatay ? k.c + i : k.c;
+                if (rr === r && cc === c) return true;
+            }
+            return false;
+        }
+
+        function cwSec(i) {
+            const k = cwAktifP.kelimeler[i];
+            if (k.cozuldu) return;
+            cwSecili = k;
+            cwCiz();
+        }
+
+        function cwKontrol() {
+            if (!cwSecili) return;
+            const inp = document.getElementById('cw-input');
+            if (!inp) return;
+            const yazilan = normalizeAnswer(inp.value || '');
+            if (!yazilan) return;
+            if (yazilan === normalizeAnswer(cwSecili.kelime)) {
+                cwSecili.cozuldu = true;
+                cwSecili = null;
+                playCorrect();
+                const kalan = cwAktifP.kelimeler.filter(function (k) { return !k.cozuldu; });
+                if (!kalan.length) { cwBolumBitti(); return; }
+                cwCiz();
+            } else {
+                playWrong();
+                inp.style.borderColor = '#e41e3f';
+                _animate(inp, 'anim-shake');
+                setTimeout(function () { if (inp) inp.style.borderColor = ''; }, 900);
+            }
+        }
+
+        function cwBolumBitti() {
+            cwBolum++;
+            const seviyeBitti = cwBolum >= CW_BULMACA;
+            if (seviyeBitti) { cwSeviye++; cwBolum = 0; }
+            cwDurumKaydet();
+            celebrate();
+            playFanfare();
+            document.getElementById('cw-govde').innerHTML =
+                '<div class="cw-bitis">' +
+                  '<div class="cw-b-ust">' + (seviyeBitti ? '\ud83c\udfc6 Seviye tamamland\u0131!' : '\u2705 Bulmaca \u00e7\u00f6z\u00fcld\u00fc!') + '</div>' +
+                  '<div class="cw-b-alt">' +
+                    (seviyeBitti ? 'Art\u0131k Seviye ' + cwSeviye + '\u2019desin.' :
+                                   'S\u0131radaki: Bulmaca ' + (cwBolum + 1) + ' / ' + CW_BULMACA) +
+                  '</div>' +
+                  '<button class="primary-btn" style="background-color:#6b3fd4" onclick="cwBolumBasla()">Devam Et</button>' +
+                '</div>';
+            document.getElementById('cw-kalan').textContent = 'tamamland\u0131';
+        }
+
+        document.getElementById('cw-back').addEventListener('click', closeCrossword);
+
+        // ---- Eglence secim ekrani: oyunlar tek kapi altinda ----
         function funAc() { document.getElementById('fun-overlay').classList.add('acik'); }
         function funKapat() { document.getElementById('fun-overlay').classList.remove('acik'); }
 
@@ -9168,6 +9562,9 @@
         });
         document.getElementById('fun-puzzle').addEventListener('click', function() {
             funKapat(); startPuzzle();
+        });
+        document.getElementById('fun-cw').addEventListener('click', function() {
+            funKapat(); openCrossword();
         });
         document.getElementById('puzzle-again-btn').addEventListener('click', startPuzzle);
 
