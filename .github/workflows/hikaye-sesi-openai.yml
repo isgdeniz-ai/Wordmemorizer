@@ -205,3 +205,4 @@ jobs:
           git add ses
           git commit -m "Hikaye sesleri (OpenAI)" || echo "degisiklik yok"
           git push
+ 
