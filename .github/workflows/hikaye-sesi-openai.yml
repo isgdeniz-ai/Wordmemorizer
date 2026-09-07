@@ -156,11 +156,38 @@ jobs:
               subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', gec,
                               '-codec:a', 'libmp3lame', '-b:a', '96k', '-ac', '1', mp3],
                              check=True)
-              json.dump({"id": kid, "sure": round(len(pcm)/2/ORNEKLEM, 2), "harita": harita},
+              # ---- harita ile MP3'u hizala ----
+              # Zaman damgalari ham PCM uzerinden olculuyor, ama uygulama MP3 caliyor.
+              # MP3 kodlayicisi bas/son dolgu ekler ve cerceve hizalamasi yapar; bu yuzden
+              # MP3'un gercek suresi PCM'den biraz farkli olur. Fark her cumlede birikip
+              # metnin sesin onune gecmesine yol acar. Cozum: gercek sureyi olcup
+              # haritayi ayni oranda olceklemek.
+              hesap = len(pcm) / 2 / ORNEKLEM
+              gercek = hesap
+              try:
+                  ps = subprocess.run(
+                      ['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+                       '-of', 'default=nw=1:nk=1', mp3],
+                      capture_output=True, text=True, check=True)
+                  gercek = float(ps.stdout.strip())
+              except Exception as e:
+                  print(f"    ! ffprobe okunamadi, olcekleme atlandi: {e}")
+
+              oran = (gercek / hesap) if hesap > 0 else 1.0
+              if abs(oran - 1.0) > 0.0005:
+                  harita = [[p, s, round(b * oran, 3), round(e * oran, 3)]
+                            for p, s, b, e in harita]
+                  fark = (gercek - hesap)
+                  print(f"    ! PCM {hesap:.2f} sn -> MP3 {gercek:.2f} sn "
+                        f"(fark {fark:+.2f} sn, oran {oran:.5f}) · harita olceklendi")
+              else:
+                  print(f"    · sure farki ihmal edilebilir (oran {oran:.5f})")
+
+              json.dump({"id": kid, "sure": round(gercek, 2), "harita": harita},
                         open(f'ses/{kid}.json', 'w'), separators=(',', ':'))
 
               print(f"    -> {os.path.getsize(mp3)//1024} KB · {len(harita)} cumle · "
-                    f"{harf} harf · {len(pcm)/2/ORNEKLEM:.0f} sn")
+                    f"{harf} harf · {gercek:.0f} sn")
               toplam_harf += harf
               uretilen += 1
 
