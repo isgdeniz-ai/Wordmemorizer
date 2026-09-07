@@ -153,7 +153,11 @@ jobs:
                   f.write(b'RIFF' + struct.pack('<I', 36 + n) + b'WAVEfmt ')
                   f.write(struct.pack('<IHHIIHH', 16, 1, 1, ORNEKLEM, ORNEKLEM * 2, 2, 16))
                   f.write(b'data' + struct.pack('<I', n) + bytes(pcm))
+              # -ar 44100: 24 kHz MP3 (MPEG-2 Layer III) bazi Android cozuculerinde
+              # yanlis hizda calinip metin/ses kaymasina yol aciyor. 44.1 kHz her
+              # cozucunun yerel olarak destekledigi standart MPEG-1 hizi.
               subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', gec,
+                              '-ar', '44100',
                               '-codec:a', 'libmp3lame', '-b:a', '96k', '-ac', '1', mp3],
                              check=True)
               # ---- harita ile MP3'u hizala ----
@@ -200,4 +204,4 @@ jobs:
           git config user.email "actions@github.com"
           git add ses
           git commit -m "Hikaye sesleri (OpenAI)" || echo "degisiklik yok"
-          git push 
+          git push
