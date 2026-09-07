@@ -9992,9 +9992,30 @@
         // ---- hazir seslendirme (mp3 + zaman haritasi) ---------------------
         // Hikayenin sesi onceden uretilmisse tarayici sesi yerine o calinir.
         let sesHarita = null, sesCalar = null, sesIzle = null;
+        // Harita PCM'e gore yazildi; cihazin MP3 cozucusu dosyayi biraz farkli
+        // uzunlukta calabiliyor (24 kHz MPEG-2 kipinde bu yaygin). Oran sabit
+        // oldugu icin fark her saniye birikir ve metin sesin onune gecer.
+        // Cozum: ses yuklenince cihazin bildirdigi GERCEK sureyi olcup
+        // haritayi ayni oranda olceklemek. Boyle olunca kayma matematiksel
+        // olarak sifirlanir ve sesi yeniden uretmek gerekmez.
+        let sesOlcek = 1;
+
+        function sesOlcekHesapla() {
+            sesOlcek = 1;
+            if (!sesCalar || !sesHarita) return;
+            const d = sesCalar.duration;
+            const beklenen = sesHarita.sure;
+            if (!isFinite(d) || d <= 0 || !beklenen || beklenen <= 0) return;
+            const o = d / beklenen;
+            // makul sinirlar disindaysa bozuk veri say, dokunma
+            if (o > 0.75 && o < 1.35) sesOlcek = o;
+        }
+        // haritadaki ham zamani cihazin gercek zamanina cevirir
+        function sesZaman(v) { return v * sesOlcek; }
 
         function sesDosyaKontrol(id) {
             sesHarita = null;
+            sesOlcek = 1;
             playerGoster(false);
             if (sesCalar) { try { sesCalar.pause(); } catch (e) {} sesCalar = null; }
             fetch('/ses/' + id + '.json', { cache: 'no-cache' })
@@ -10004,7 +10025,10 @@
                     sesHarita = d;
                     sesCalar = new Audio('/ses/' + id + '.mp3');
                     sesCalar.preload = 'metadata';
-                    sesCalar.addEventListener('loadedmetadata', playerYenile);
+                    sesCalar.addEventListener('loadedmetadata', function () {
+                        sesOlcekHesapla();
+                        playerYenile();
+                    });
                     sesCalar.addEventListener('ended', function () {
                         okuyor = false;
                         if (sesIzle) { clearInterval(sesIzle); sesIzle = null; }
@@ -10040,7 +10064,7 @@
             if (!ilk) return false;
             closeSheet();
             okuyor = true; okuButonu();
-            sesCalar.currentTime = ilk[2];
+            sesCalar.currentTime = sesZaman(ilk[2]);
             sesCalar.play().catch(() => { okumayiDurdur(); });
             sesIzle = setInterval(function () {
                 if (!okuyor || !sesCalar) return;
@@ -10048,7 +10072,7 @@
                 if (t >= son[3] + 0.15) { okumayiDurdur(); return; }
                 let aktif = -1;
                 for (const x of sesHarita.harita) {
-                    if (x[0] === rdPage && t >= x[2] - 0.05 && t < x[3] + 0.25) { aktif = x[1]; break; }
+                    if (x[0] === rdPage && t >= sesZaman(x[2]) - 0.05 && t < sesZaman(x[3]) + 0.25) { aktif = x[1]; break; }
                 }
                 document.querySelectorAll('.rs.play').forEach(e => {
                     if (e.id !== 'rs-' + aktif) e.classList.remove('play');
@@ -10070,10 +10094,10 @@
             const x = haritaBul(rdPage, si);
             if (!x) return false;
             mp3Durdur();
-            sesCalar.currentTime = x[2];
+            sesCalar.currentTime = sesZaman(x[2]);
             sesCalar.play().catch(() => {});
             const bitir = setInterval(function () {
-                if (!sesCalar || sesCalar.paused || sesCalar.currentTime >= x[3]) {
+                if (!sesCalar || sesCalar.paused || sesCalar.currentTime >= sesZaman(x[3])) {
                     try { sesCalar.pause(); } catch (e) {}
                     clearInterval(bitir);
                 }
@@ -10131,7 +10155,7 @@
         function anlikCumle(t) {
             if (!sesHarita) return null;
             for (const x of sesHarita.harita) {
-                if (t >= x[2] - 0.05 && t < x[3] + 0.25) return x;
+                if (t >= sesZaman(x[2]) - 0.05 && t < sesZaman(x[3]) + 0.25) return x;
             }
             return null;
         }
@@ -10159,7 +10183,7 @@
             const x = haritaBul(pi, si);
             if (!x || !sesCalar) return false;
             closeSheet();
-            sesCalar.currentTime = x[2];
+            sesCalar.currentTime = sesZaman(x[2]);
             sesCalar.playbackRate = HIZLAR[hizIdx];
             sesCalar.play().catch(() => {});
             okuyor = true;
