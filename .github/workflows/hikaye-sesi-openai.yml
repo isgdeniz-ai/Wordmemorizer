@@ -200,4 +200,4 @@ jobs:
           git config user.email "actions@github.com"
           git add ses
           git commit -m "Hikaye sesleri (OpenAI)" || echo "degisiklik yok"
-          git push
+          git push 
