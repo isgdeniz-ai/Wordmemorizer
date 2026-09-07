@@ -438,6 +438,50 @@
         .cw-bitis { text-align:center; padding:18px 6px; }
         .cw-bitis .cw-b-ust { font-size:20px; font-weight:800; color:#1e5a2c; margin-bottom:6px; }
         .cw-bitis .cw-b-alt { font-size:14px; color:#606770; margin-bottom:14px; }
+
+        /* ===== CUMLE KURMA / DINLE & DIZ ===== */
+        #sb-screen { display:none; flex-direction:column; height:100%; }
+        .sb-ust { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+        .sb-ust h2 { font-size:18px; font-weight:800; color:#1c1e21; letter-spacing:-.3px; }
+        .sb-durum { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+        .sb-rozet { background:#eef1f6; border-radius:20px; padding:5px 11px;
+                    font-size:12px; font-weight:800; color:#3c4658; }
+        .sb-rozet.vurgu { background:#0f7b6c; color:#fff; }
+
+        .sb-soru { background:#0f7b6c; color:#fff; border-radius:13px; padding:14px 16px;
+                   font-size:16.5px; font-weight:700; line-height:1.4; text-align:center; margin-bottom:14px; }
+        .sb-ses { display:flex; gap:9px; margin-bottom:14px; }
+        .sb-ses button { flex:1; padding:13px 8px; border:2px solid #0f7b6c; border-radius:12px;
+                         background:#fff; color:#0f7b6c; font-size:14px; font-weight:800;
+                         font-family:inherit; cursor:pointer; }
+        .sb-ses button.dolu { background:#0f7b6c; color:#fff; }
+
+        /* Cevap alani: secilen kelimeler buraya dizilir */
+        .sb-cevap { min-height:64px; border:2px dashed #c9cfda; border-radius:13px;
+                    padding:9px; display:flex; flex-wrap:wrap; gap:7px; align-content:flex-start;
+                    margin-bottom:12px; background:#fafbfc; }
+        .sb-cevap.dogru { border-color:#31a24c; border-style:solid; background:#f2fbf2; }
+        .sb-cevap.yanlis { border-color:#e41e3f; border-style:solid; background:#fdf3f4; }
+
+        .sb-havuz { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; }
+        .sb-cip { padding:10px 13px; border-radius:10px; border:1.5px solid #d6d9de; background:#fff;
+                  font-size:15px; font-weight:700; color:#1c1e21; font-family:inherit;
+                  cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.07); }
+        .sb-cip.gizli { visibility:hidden; }
+        .sb-cevap .sb-cip { background:#0f7b6c; border-color:#0f7b6c; color:#fff; }
+        .sb-cevap.dogru .sb-cip { background:#31a24c; border-color:#31a24c; }
+
+        .sb-alt { display:flex; gap:9px; }
+        .sb-alt button { flex:1; padding:12px; border:none; border-radius:11px; font-size:14px;
+                         font-weight:800; font-family:inherit; cursor:pointer; }
+        .sb-alt .sb-temizle { background:#f0f2f5; color:#3c4658; }
+        .sb-alt .sb-ileri { background:#0f7b6c; color:#fff; }
+        .sb-cozum { font-size:13.5px; color:#606770; margin-top:10px; line-height:1.5; }
+        .sb-cozum b { color:#1c1e21; }
+        .sb-bitis { text-align:center; padding:20px 6px; }
+        .sb-bitis .sb-b-ust { font-size:21px; font-weight:800; color:#0f7b6c; margin-bottom:6px; }
+        .sb-bitis .sb-b-alt { font-size:14px; color:#606770; margin-bottom:16px; }
+
         #fun-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 900;
                        display: none; align-items: center; justify-content: center; padding: 22px; }
         #fun-overlay.acik { display: flex; }
@@ -868,6 +912,18 @@
         </div>
 
         <!-- OKUMA MODULU -->
+        <div id="sb-screen">
+            <div class="sb-ust">
+                <button class="story-back" id="sb-back"><span class="gb-ok">←</span> Geri</button>
+                <h2 id="sb-title">Cümle Kurma</h2>
+            </div>
+            <div class="sb-durum">
+                <span class="sb-rozet vurgu" id="sb-ilerleme">1 / 10</span>
+                <span class="sb-rozet" id="sb-skor">0 doğru</span>
+            </div>
+            <div id="sb-govde"></div>
+        </div>
+
         <div id="cw-screen">
             <div class="cw-ust">
                 <button class="story-back" id="cw-back"><span class="gb-ok">←</span> Geri</button>
@@ -1011,6 +1067,16 @@
                     <span class="fs-ikon">⬛</span>
                     <span><span class="fs-ad">Kelime Bulmacası</span>
                     <span class="fs-alt">Kutucukları doldur — seviyeli, 10 kelimelik bulmacalar</span></span>
+                </button>
+                <button class="fun-sec" id="fun-sb-ceviri">
+                    <span class="fs-ikon">🧱</span>
+                    <span><span class="fs-ad">Cümle Kurma</span>
+                    <span class="fs-alt">Türkçesi verilir, İngilizce cümleyi sırala</span></span>
+                </button>
+                <button class="fun-sec" id="fun-sb-dinleme">
+                    <span class="fs-ikon">🎧</span>
+                    <span><span class="fs-ad">Dinle &amp; Diz</span>
+                    <span class="fs-alt">Cümleyi dinle, duyduğun kelimeleri sırala</span></span>
                 </button>
                 <button class="fun-kapat" id="fun-close">Kapat</button>
             </div>
@@ -9559,6 +9625,203 @@
             document.getElementById('cw-kalan').textContent = 'tamamland\u0131';
         }
 
+        // ==========================================
+        // CUMLE KURMA + DINLE & DIZ
+        // Ayni mekanik, iki farkli ipucu:
+        //   'ceviri'  -> Turkce cumle gosterilir, Ingilizcesi dizilir
+        //   'dinleme' -> Ingilizce cumle seslendirilir, duyulan dizilir
+        // Veritabanindaki ex/ex2 ornek cumleleri kullanilir, yeni icerik gerekmez.
+        // ==========================================
+        const SB_SORU = 10;
+        let sbMod = 'ceviri', sbListe = [], sbIndex = 0, sbDogru = 0;
+        let sbSecilen = [], sbHavuz = [], sbKilit = false;
+
+        // Cumleyi kelimelere ayirir; noktalama cikarilir ki cipler temiz olsun
+        function sbParcala(c) {
+            return String(c || '').replace(/[.,!?;:"“”]/g, ' ').trim().split(/\s+/).filter(Boolean);
+        }
+
+        // Oynanabilir cumle havuzu: once gorulmus kelimeler, yoksa seviye araligi
+        function sbCumleHavuzu() {
+            let kaynak = quizSeenWords();
+            if (kaynak.length < 25) {
+                const sirali = ['A1', 'A2', 'B1', 'B2', 'C1'];
+                const cur = (document.getElementById('current-level') || {}).value || 'A1';
+                const tgt = (document.getElementById('target-level') || {}).value || 'B2';
+                let i1 = sirali.indexOf(cur), i2 = sirali.indexOf(tgt);
+                if (i1 < 0) i1 = 0;
+                if (i2 < 0) i2 = sirali.length - 1;
+                if (i1 > i2) { const t = i1; i1 = i2; i2 = t; }
+                const izin = sirali.slice(i1, i2 + 1);
+                kaynak = wordDatabase.filter(function (w) { return izin.indexOf(w.level) >= 0; });
+            }
+            const out = [];
+            kaynak.forEach(function (w) {
+                [[w.ex, w.exTr], [w.ex2, w.ex2Tr]].forEach(function (c) {
+                    const en = c[0], tr = (c[1] || '').replace(/[{}]/g, '');
+                    if (!en || !tr) return;
+                    const n = sbParcala(en).length;
+                    if (n < 4 || n > 10) return;   // cok kisa ogretmez, cok uzun telefonda sigmaz
+                    out.push({ en: en, tr: tr, kelime: w.en });
+                });
+            });
+            return out;
+        }
+
+        function sbSeslendir(hiz) {
+            if (!('speechSynthesis' in window)) return;
+            const s = sbListe[sbIndex];
+            if (!s) return;
+            const synth = window.speechSynthesis;
+            try { synth.cancel(); _warmTTS(); synth.resume(); } catch (e) {}
+            const u = new SpeechSynthesisUtterance(s.en);
+            const v = _pickEnglishVoice();
+            if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
+            u.rate = hiz;
+            u.pitch = OKUMA_TON;
+            try { synth.speak(u); } catch (e) {}
+        }
+
+        function startSentenceBuilder(mod) {
+            sbMod = mod === 'dinleme' ? 'dinleme' : 'ceviri';
+            const havuz = sbCumleHavuzu();
+            if (havuz.length < SB_SORU) { alert('Yeterli \u00f6rnek c\u00fcmle yok.'); return; }
+            sbListe = _shuffle(havuz).slice(0, SB_SORU);
+            sbIndex = 0; sbDogru = 0;
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('sb-screen').style.display = 'flex';
+            document.getElementById('sb-title').textContent =
+                sbMod === 'dinleme' ? 'Dinle & Diz' : 'C\u00fcmle Kurma';
+            sbSoruCiz();
+        }
+
+        function closeSentenceBuilder() {
+            try { window.speechSynthesis.cancel(); } catch (e) {}
+            document.getElementById('sb-screen').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'flex';
+        }
+
+        function sbSoruCiz() {
+            if (sbIndex >= sbListe.length) { sbBitir(); return; }
+            const s = sbListe[sbIndex];
+            sbKilit = false;
+            sbSecilen = [];
+            const dogruSira = sbParcala(s.en);
+            // karistir; sansa dogru sirada gelirse tekrar karistir
+            let k = _shuffle(dogruSira);
+            let deneme = 0;
+            while (k.join(' ') === dogruSira.join(' ') && deneme++ < 8) k = _shuffle(dogruSira);
+            sbHavuz = k;
+
+            document.getElementById('sb-ilerleme').textContent = (sbIndex + 1) + ' / ' + sbListe.length;
+            document.getElementById('sb-skor').textContent = sbDogru + ' do\u011fru';
+
+            let h = '';
+            if (sbMod === 'dinleme') {
+                h += '<div class="sb-ses">' +
+                       '<button class="dolu" onclick="sbSeslendir(0.95)">\ud83d\udd0a Dinle</button>' +
+                       '<button onclick="sbSeslendir(0.55)">\ud83d\udc22 Yava\u015f</button>' +
+                     '</div>';
+            } else {
+                h += '<div class="sb-soru">' + s.tr + '</div>';
+            }
+            h += '<div class="sb-cevap" id="sb-cevap"></div>' +
+                 '<div class="sb-havuz" id="sb-havuz"></div>' +
+                 '<div class="sb-alt">' +
+                   '<button class="sb-temizle" onclick="sbTemizle()">\u21ba Temizle</button>' +
+                   '<button class="sb-ileri" onclick="sbGec()">Bilmiyorum</button>' +
+                 '</div>' +
+                 '<div class="sb-cozum" id="sb-cozum"></div>';
+            document.getElementById('sb-govde').innerHTML = h;
+            sbTahtaCiz();
+            if (sbMod === 'dinleme') sbSeslendir(0.95);
+        }
+
+        function sbTahtaCiz() {
+            const cev = document.getElementById('sb-cevap');
+            const hav = document.getElementById('sb-havuz');
+            if (!cev || !hav) return;
+            cev.innerHTML = sbSecilen.map(function (o, i) {
+                return '<button class="sb-cip" onclick="sbGeriAl(' + i + ')">' + o.k + '</button>';
+            }).join('');
+            hav.innerHTML = sbHavuz.map(function (k, i) {
+                const kullanildi = sbSecilen.some(function (o) { return o.i === i; });
+                return '<button class="sb-cip' + (kullanildi ? ' gizli' : '') + '"' +
+                       (kullanildi ? ' disabled' : ' onclick="sbEkle(' + i + ')"') + '>' + k + '</button>';
+            }).join('');
+        }
+
+        function sbEkle(i) {
+            if (sbKilit) return;
+            if (sbSecilen.some(function (o) { return o.i === i; })) return;
+            sbSecilen.push({ i: i, k: sbHavuz[i] });
+            sbTahtaCiz();
+            if (sbSecilen.length === sbHavuz.length) sbKontrol();
+        }
+
+        function sbGeriAl(pos) {
+            if (sbKilit) return;
+            sbSecilen.splice(pos, 1);
+            const cev = document.getElementById('sb-cevap');
+            if (cev) cev.className = 'sb-cevap';
+            sbTahtaCiz();
+        }
+
+        function sbTemizle() {
+            if (sbKilit) return;
+            sbSecilen = [];
+            const cev = document.getElementById('sb-cevap');
+            if (cev) cev.className = 'sb-cevap';
+            sbTahtaCiz();
+        }
+
+        function sbKontrol() {
+            const s = sbListe[sbIndex];
+            const kurulan = sbSecilen.map(function (o) { return o.k; }).join(' ');
+            const dogruStr = sbParcala(s.en).join(' ');
+            const cev = document.getElementById('sb-cevap');
+            if (kurulan.toLowerCase() === dogruStr.toLowerCase()) {
+                sbKilit = true; sbDogru++;
+                if (cev) cev.className = 'sb-cevap dogru';
+                document.getElementById('sb-skor').textContent = sbDogru + ' do\u011fru';
+                playCorrect();
+                if (sbMod === 'dinleme') {
+                    document.getElementById('sb-cozum').innerHTML = '<b>' + s.tr + '</b>';
+                }
+                setTimeout(function () { sbIndex++; sbSoruCiz(); }, 1100);
+            } else {
+                if (cev) { cev.className = 'sb-cevap yanlis'; _animate(cev, 'anim-shake'); }
+                playWrong();
+            }
+        }
+
+        // Bilmiyorum: dogru cumleyi gosterir, dogru sayilmaz
+        function sbGec() {
+            if (sbKilit) return;
+            sbKilit = true;
+            const s = sbListe[sbIndex];
+            document.getElementById('sb-cozum').innerHTML =
+                '<b>' + s.en + '</b><br>' + s.tr;
+            const alt = document.querySelector('#sb-govde .sb-ileri');
+            if (alt) { alt.textContent = 'S\u0131radaki \u2192'; alt.setAttribute('onclick', 'sbIndex++; sbSoruCiz();'); }
+        }
+
+        function sbBitir() {
+            try { window.speechSynthesis.cancel(); } catch (e) {}
+            const yuzde = Math.round(sbDogru / sbListe.length * 100);
+            document.getElementById('sb-govde').innerHTML =
+                '<div class="sb-bitis">' +
+                  '<div class="sb-b-ust">\u2705 Tur bitti</div>' +
+                  '<div class="sb-b-alt">' + sbDogru + ' / ' + sbListe.length + ' do\u011fru (%' + yuzde + ')</div>' +
+                  '<button class="primary-btn" style="background-color:#0f7b6c" onclick="startSentenceBuilder(\'' + sbMod + '\')">Yeni Tur</button>' +
+                '</div>';
+            document.getElementById('sb-ilerleme').textContent = 'bitti';
+            celebrate();
+            playFanfare();
+        }
+
+        document.getElementById('sb-back').addEventListener('click', closeSentenceBuilder);
+
         document.getElementById('cw-back').addEventListener('click', closeCrossword);
 
         // ---- Eglence secim ekrani: oyunlar tek kapi altinda ----
@@ -9582,6 +9845,12 @@
         });
         document.getElementById('fun-cw').addEventListener('click', function() {
             funKapat(); openCrossword();
+        });
+        document.getElementById('fun-sb-ceviri').addEventListener('click', function() {
+            funKapat(); startSentenceBuilder('ceviri');
+        });
+        document.getElementById('fun-sb-dinleme').addEventListener('click', function() {
+            funKapat(); startSentenceBuilder('dinleme');
         });
         document.getElementById('puzzle-again-btn').addEventListener('click', startPuzzle);
 
