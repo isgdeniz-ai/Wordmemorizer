@@ -10031,7 +10031,7 @@
                     });
                     sesCalar.addEventListener('ended', function () {
                         okuyor = false;
-                        if (sesIzle) { clearInterval(sesIzle); sesIzle = null; }
+                        sesIzleDurdur();
                         document.querySelectorAll('.rs.play').forEach(e => e.classList.remove('play'));
                         playerYenile();
                     });
@@ -10047,7 +10047,7 @@
             return null;
         }
         function mp3Durdur() {
-            if (sesIzle) { clearInterval(sesIzle); sesIzle = null; }
+            sesIzleDurdur();
             if (sesCalar) { try { sesCalar.pause(); } catch (e) {} }  // yeri korunur
             document.querySelectorAll('.rs.play').forEach(e => e.classList.remove('play'));
             playerYenile();
@@ -10066,25 +10066,8 @@
             okuyor = true; okuButonu();
             sesCalar.currentTime = sesZaman(ilk[2]);
             sesCalar.play().catch(() => { okumayiDurdur(); });
-            sesIzle = setInterval(function () {
-                if (!okuyor || !sesCalar) return;
-                const t = sesCalar.currentTime;
-                if (t >= son[3] + 0.15) { okumayiDurdur(); return; }
-                let aktif = -1;
-                for (const x of sesHarita.harita) {
-                    if (x[0] === rdPage && t >= sesZaman(x[2]) - 0.05 && t < sesZaman(x[3]) + 0.25) { aktif = x[1]; break; }
-                }
-                document.querySelectorAll('.rs.play').forEach(e => {
-                    if (e.id !== 'rs-' + aktif) e.classList.remove('play');
-                });
-                if (aktif >= 0) {
-                    const el = document.getElementById('rs-' + aktif);
-                    if (el && !el.classList.contains('play')) {
-                        el.classList.add('play');
-                        try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
-                    }
-                }
-            }, 120);
+            // sayfa sonunda dursun: sinir da olceklenmis zamanla verilir
+            sesIzleBaslat(sesZaman(son[3]) + 0.15);
             return true;
         }
         function mp3CumleOku(sent) {
@@ -10140,7 +10123,7 @@
             } else {
                 sesCalar.pause();
                 okuyor = false;
-                if (sesIzle) { clearInterval(sesIzle); sesIzle = null; }
+                sesIzleDurdur();
             }
             playerYenile();
         }
@@ -10159,25 +10142,58 @@
             }
             return null;
         }
-        function sesIzleBaslat() {
-            if (sesIzle) clearInterval(sesIzle);
-            sesIzle = setInterval(function () {
-                if (!sesCalar) return;
-                playerYenile();
-                if (sesCalar.paused) return;
-                const x = anlikCumle(sesCalar.currentTime);
-                if (!x) return;
-                // ses baska sayfaya gectiyse sayfayi da cevir
-                if (x[0] !== rdPage) { rdPage = x[0]; renderPage(); }
-                document.querySelectorAll('.rs.play').forEach(e => {
-                    if (e.id !== 'rs-' + x[1]) e.classList.remove('play');
-                });
-                const el = document.getElementById('rs-' + x[1]);
-                if (el && !el.classList.contains('play')) {
-                    el.classList.add('play');
-                    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
-                }
-            }, 150);
+        // Vurgulamayi setInterval yerine requestAnimationFrame surer.
+        // setInterval, ana is parcacigi mesgulken gecikir; uygulama buyudukce
+        // bu gecikme artar ve vurgu cumlenin ARKASINDA kalip sonra yerine oturur.
+        // rAF kare senkronludur, gecikme birikmez ve tarayici sekmesi arka
+        // plandayken kendiliginden durur.
+        let sesSonCumle = null, sesSonEl = null, sesSonYenile = 0, sesBitisSiniri = null;
+
+        function sesIzleAdim() {
+            if (!sesCalar || !okuyor) { sesIzle = null; return; }
+            sesIzle = requestAnimationFrame(sesIzleAdim);
+            if (sesCalar.paused) return;
+
+            // sayfa okuma modunda sinira gelince dur
+            if (sesBitisSiniri !== null && sesCalar.currentTime >= sesBitisSiniri) {
+                okumayiDurdur(); return;
+            }
+
+            // ilerleme cubugu saniyede ~5 kez yeter; her karede DOM yazmak bosuna yuk
+            const simdi = Date.now();
+            if (simdi - sesSonYenile > 200) { sesSonYenile = simdi; playerYenile(); }
+
+            const x = anlikCumle(sesCalar.currentTime);
+            if (!x) return;
+            // ayni cumledeysek hicbir DOM islemi yapma
+            if (sesSonCumle && sesSonCumle[0] === x[0] && sesSonCumle[1] === x[1]) return;
+            sesSonCumle = x;
+
+            if (x[0] !== rdPage) { rdPage = x[0]; renderPage(); sesSonEl = null; }
+            if (sesSonEl) sesSonEl.classList.remove('play');
+            const el = document.getElementById('rs-' + x[1]);
+            sesSonEl = el;
+            if (!el) return;
+            el.classList.add('play');
+            // yalnizca ekran disindaysa kaydir; her cumlede yumusak kaydirma
+            // animasyonu baslatmak ana is parcacigini tikiyor
+            try {
+                const r = el.getBoundingClientRect();
+                const disarda = r.top < 60 || r.bottom > (window.innerHeight - 60);
+                if (disarda) el.scrollIntoView({ block: 'center' });
+            } catch (e) {}
+        }
+
+        function sesIzleBaslat(sinir) {
+            sesIzleDurdur();
+            sesSonCumle = null; sesSonEl = null; sesSonYenile = 0;
+            sesBitisSiniri = (typeof sinir === 'number') ? sinir : null;
+            sesIzle = requestAnimationFrame(sesIzleAdim);
+        }
+
+        function sesIzleDurdur() {
+            if (sesIzle) { cancelAnimationFrame(sesIzle); sesIzle = null; }
+            sesBitisSiniri = null;
         }
         function cumledenOynat(pi, si) {
             const x = haritaBul(pi, si);
@@ -10557,7 +10573,7 @@
             if (sesCalar && !sesCalar.paused) {
                 sesCalar.pause();               // yeri korunur, bastan baslamaz
                 okuyor = false;
-                if (sesIzle) { clearInterval(sesIzle); sesIzle = null; }
+                sesIzleDurdur();
                 playerYenile();
             } else if (okuyor) okumayiDurdur();
             clearMarks();
