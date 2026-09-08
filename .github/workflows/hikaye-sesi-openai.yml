@@ -54,7 +54,7 @@ jobs:
           USLUP_HIKAYE: ${{ inputs.uslup_hikaye }}
         run: |
           python3 - <<'PY'
-          import json, os, struct, subprocess, time, requests
+          import json, os, struct, subprocess, time, requests, array
 
           ANAHTAR = os.environ.get('OPENAI_KEY', '').strip()
           if not ANAHTAR:
@@ -75,6 +75,34 @@ jobs:
           }
 
           ARA_MS, KONUSMA_MS, ORNEKLEM = 240, 380, 24000
+
+          def sessizlik_kirp(ham, esik=500, kenar_ms=40):
+              """Klibin basindaki ve sonundaki sessizligi atar.
+
+              Her cumle ayri bir TTS istegi ve her klip konusmadan once bir miktar
+              sessizlikle basliyor. Harita 'bas' degerini klibin basina koydugu icin
+              vurgu aciliyor ama ses henuz konusmuyor -> yazi sesin onune geciyor.
+              Sessizlik kisa cumlelerde 1.5 sn'ye kadar cikip uzun cumlelerde
+              fark edilmedigi icin kayma tutarsiz gorunuyor.
+              Kenarda 40 ms pay birakilir ki kelime basi kesilmesin."""
+              a = array.array('h')
+              a.frombytes(ham)
+              n = len(a)
+              if n == 0:
+                  return ham
+              i = 0
+              while i < n and abs(a[i]) < esik:
+                  i += 1
+              j = n - 1
+              while j > i and abs(a[j]) < esik:
+                  j -= 1
+              if i >= j:              # bastan sona sessiz: dokunma
+                  return ham
+              pay = int(ORNEKLEM * kenar_ms / 1000)
+              i = max(0, i - pay)
+              j = min(n - 1, j + pay)
+              return a[i:j + 1].tobytes()
+
           U_SOHBET = os.environ.get('USLUP_SOHBET') or 'Natural podcast conversation.'
           U_HIKAYE = os.environ.get('USLUP_HIKAYE') or 'Calm, warm storytelling.'
           YENILE   = (os.environ.get('YENILE') or '').strip().lower() in ('evet', 'yes', 'true', '1')
@@ -141,7 +169,7 @@ jobs:
                           pcm += uzun
                       onceki = kim
                       bas = len(pcm) / 2 / ORNEKLEM
-                      pcm += pcm_uret(metin, SESLER.get(kim, SESLER['anlatici']), uslup)
+                      pcm += sessizlik_kirp(pcm_uret(metin, SESLER.get(kim, SESLER['anlatici']), uslup))
                       bit = len(pcm) / 2 / ORNEKLEM
                       pcm += kisa
                       harita.append([pi, si, round(bas, 3), round(bit, 3)])
@@ -205,4 +233,3 @@ jobs:
           git add ses
           git commit -m "Hikaye sesleri (OpenAI)" || echo "degisiklik yok"
           git push
- 
