@@ -9673,6 +9673,16 @@
             return sorun.length ? sorun.join(' | ') : 'uyumlu';
         }
 
+        // Bir cumlenin duz metni (ilk 46 karakter) — kulakla karsilastirmak icin
+        function senkCumleMetni(pi, si) {
+            try {
+                const c = rdStory.pages[pi][si];
+                if (!c) return null;
+                const m = (c.en || []).map(function (t) { return t.t; }).join('').trim();
+                return m.length > 46 ? m.slice(0, 46) + '…' : m;
+            } catch (e) { return null; }
+        }
+
         function senkYaz() {
             const p = document.getElementById('senk-panel');
             if (!p || !senkAcik) return;
@@ -9707,6 +9717,14 @@
             if (x) {
                 const el = document.getElementById('rs-' + x[1]);
                 s += 'vurgu elemani : ' + (el ? 'var' : 'YOK (rs-' + x[1] + ' bulunamadi)') + '\n';
+                // Panel sesin GERCEKTE ne dedigini bilemez; karsilastirabilmen icin
+                // haritaya gore o an okunmasi gereken cumleyi ve komsularini yaz.
+                s += '\nharitaya gore su an okunan:\n';
+                [-2, -1, 0, 1, 2].forEach(function (d) {
+                    const m = senkCumleMetni(x[0], x[1] + d);
+                    if (m === null) return;
+                    s += (d === 0 ? ' >> ' : '    ') + (x[1] + d) + ': ' + m + '\n';
+                });
             }
             p.textContent = s;
         }
