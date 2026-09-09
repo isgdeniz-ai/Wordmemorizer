@@ -74,7 +74,10 @@ jobs:
               "mayalin":  "sage",    # obezite sohbetindeki uzman
           }
 
-          ARA_MS, KONUSMA_MS, ORNEKLEM = 240, 380, 24000
+          # Kliplerin kendi (kontrolsuz) sessizligi kirpildigi icin araliklari
+          # burada bilerek uzatiyoruz: hikayenin nefesi geri gelir ve sureler
+          # olculdugu icin senkron hic bozulmaz.
+          ARA_MS, KONUSMA_MS, SAYFA_MS, ORNEKLEM = 430, 680, 950, 24000
 
           def sessizlik_kirp(ham, esik=500, kenar_ms=40):
               """Klibin basindaki ve sonundaki sessizligi atar.
@@ -155,11 +158,14 @@ jobs:
               print(f"=== {st['title']} ({kid}) · {st.get('tur','hikaye')}")
 
               pcm = bytearray()
-              kisa = b'\x00\x00' * int(ORNEKLEM * ARA_MS / 1000)
-              uzun = b'\x00\x00' * int(ORNEKLEM * KONUSMA_MS / 1000)
+              kisa  = b'\x00\x00' * int(ORNEKLEM * ARA_MS / 1000)
+              uzun  = b'\x00\x00' * int(ORNEKLEM * KONUSMA_MS / 1000)
+              sayfaAra = b'\x00\x00' * int(ORNEKLEM * SAYFA_MS / 1000)
               harita, harf, onceki = [], 0, None
 
               for pi, sayfa in enumerate(st['pages']):
+                  if pi > 0:                    # sayfa gecisinde daha uzun nefes
+                      pcm += sayfaAra
                   for si, cumle in enumerate(sayfa):
                       metin = ''.join(t['t'] for t in cumle['en']).strip()
                       if not metin:
