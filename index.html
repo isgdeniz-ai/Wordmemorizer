@@ -744,7 +744,16 @@
                    white-space:nowrap; }
         .oku-btn:active { background:#fdeed9; }
         .oku-btn.on { background:#8a4d00; border-color:#8a4d00; color:#fff; }
-        .rs.play { background:#d7e9ff; box-shadow:0 0 0 4px #d7e9ff; }
+        /* Okunan cumle: dolgu yerine cumle basinda dikey isaret.
+           Dolgu, birkac yuz milisaniyelik kaymayi bile gozle gorunur kiliyordu;
+           tek bir isaret ayni bilgiyi verip hatayi cok daha az belli ediyor.
+           ::before mutlak konumlu oldugu icin metin akisi hic kaymaz. */
+        .rs.play { background:none; box-shadow:none; position:relative; }
+        .rs.play::before {
+            content:''; position:absolute; left:-6px; top:.08em;
+            width:3px; height:1.05em; border-radius:2px; background:#2f6df6;
+            box-shadow:0 0 5px rgba(47,109,246,.5);
+        }
 
         .sp-btn { display:inline-flex; align-items:center; justify-content:center;
                   width:30px; height:30px; margin-left:6px; vertical-align:middle;
