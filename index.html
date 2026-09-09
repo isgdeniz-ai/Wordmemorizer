@@ -10238,12 +10238,22 @@
                 (h === 1 ? '1' : String(h).replace('.', ',')) + 'x';
         }
         // sesin bulundugu cumleyi bul: [sayfa, cumle] ya da null
+        // Aktif cumle = basi gecilmis EN SON cumle.
+        // Eski surum eslesen ILK cumleyi donduruyordu; pencereler +0.25 toleransi
+        // yuzunden ust uste bindigi icin yeni cumle basladiktan sonra vurgu bir
+        // sure onceki cumlede takili kaliyordu (ses onde, renklendirme arkada).
+        // Bu yontemde bindirme sorunu yok ve cumleler arasi sessizlikte vurgu
+        // son okunan cumlede kalir; kullanicinin bekledigi davranis budur.
         function anlikCumle(t) {
             if (!sesHarita) return null;
-            for (const x of sesHarita.harita) {
-                if (t >= sesZaman(x[2]) - 0.05 && t < sesZaman(x[3]) + 0.25) return x;
+            const h = sesHarita.harita;
+            let bul = null;
+            for (let i = 0; i < h.length; i++) {
+                // 60 ms erken gecis: goz kulaktan biraz once yakalasin
+                if (t + 0.06 >= sesZaman(h[i][2])) bul = h[i];
+                else break;   // harita zaman sirali, gerisine bakmaya gerek yok
             }
-            return null;
+            return bul;
         }
         // Vurgulamayi setInterval yerine requestAnimationFrame surer.
         // setInterval, ana is parcacigi mesgulken gecikir; uygulama buyudukce
