@@ -7723,6 +7723,10 @@
         let reviewStarted = false;
 
         // --- GUN MOTORU: kalici durum (localStorage, cihaza/tarayiciya ozel) ---
+        // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
+        // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
+        // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
+        const YAPIM = '2026-09-10 · senk-3';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -9695,7 +9699,10 @@
         function senkYaz() {
             const p = document.getElementById('senk-panel');
             if (!p || !senkAcik) return;
-            if (!sesCalar || !sesHarita) { p.textContent = 'ses/harita yuklenmedi'; return; }
+            if (!sesCalar || !sesHarita) {
+                p.textContent = 'yapim : ' + YAPIM + '\nses/harita yuklenmedi';
+                return;
+            }
 
             const t = sesCalar.currentTime;
             const x = anlikCumle(t);
@@ -9703,6 +9710,7 @@
             const uyum = senkHaritaKontrol();
 
             let s = '';
+            s += 'yapim         : ' + YAPIM + '\n';
             s += 'ses / uretim  : ' + (sesHarita.ses || 'bilinmiyor') +
                  (sesHarita.uretim ? '  (' + sesHarita.uretim + ')' : '  (eski dosya)') + '\n';
             s += 'harita suresi : ' + (sure || 0).toFixed(2) + ' sn\n';

@@ -1,7 +1,8 @@
 // Word Memorizer - service worker
 // HTML icin "once ag, olmazsa onbellek" (guncellemeler hemen gelsin)
-// Diger dosyalar icin "once onbellek" (hizli acilsin)
-const CACHE = 'wordmem-v80';
+// Ses dosyalari ve zaman haritalari icin de "once ag"
+// Diger dosyalar (ikon, manifest) icin "once onbellek" (hizli acilsin)
+const CACHE = 'wordmem-v81';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +11,19 @@ const ASSETS = [
   './icon-512.png',
   './icon-maskable-512.png'
 ];
+
+// Ses dosyalari ve zaman haritalari.
+// ONEMLI: bunlar eskiden "once onbellek" dalina dusuyordu. Zaman haritasi
+// (ses/<id>.json) bir kez indirilince bir daha guncellenmiyordu; ses yeniden
+// uretildiginde uygulama YENI mp3'u ESKI haritayla calisiyor ve metin ile ses
+// birbirini tutmuyordu. Tarayicida bu onbellek olmadigi icin sorun gorunmuyordu.
+function sesKaynagiMi(url) {
+  try {
+    const yol = new URL(url, self.location.origin).pathname;
+    if (yol.indexOf('/ses/') >= 0) return true;
+    return /\.(json|mp3|opus|m4a|aac|wav)$/i.test(yol) && yol.indexOf('manifest') < 0;
+  } catch (e) { return false; }
+}
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -44,6 +58,23 @@ self.addEventListener('fetch', (e) => {
           return res;
         })
         .catch(() => caches.match('./index.html').then((r) => r || caches.match('./')))
+    );
+    return;
+  }
+
+  // Ses ve zaman haritalari: once ag, olmazsa onbellek.
+  // Boylece ses yeniden uretildiginde harita da hemen guncellenir;
+  // cevrimdisiyken eski kopya calismaya devam eder.
+  if (sesKaynagiMi(req.url)) {
+    e.respondWith(
+      fetch(req).then((res) => {
+        // Kismi yanit (206) onbellege alinamaz; ses caları Range istegi yollar.
+        if (res && res.status === 200 && res.type === 'basic') {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        }
+        return res;
+      }).catch(() => caches.match(req))
     );
     return;
   }
