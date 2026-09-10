@@ -164,7 +164,7 @@ jobs:
                   continue
 
               uslup = U_SOHBET if st.get('tur') == 'podcast' else U_HIKAYE
-              print(f"=== {st['title']} ({kid}) · {st.get('tur','hikaye')}")
+              print(f"=== {st['title']} ({kid}) · {st.get('tur','hikaye')} · anlatici sesi: {SESLER.get('anlatici')}")
 
               pcm = bytearray()
               kisa  = b'\x00\x00' * int(ORNEKLEM * ARA_MS / 1000)
@@ -230,7 +230,12 @@ jobs:
               else:
                   print(f"    · sure farki ihmal edilebilir (oran {oran:.5f})")
 
-              json.dump({"id": kid, "sure": round(gercek, 2), "harita": harita},
+              # Hangi sesle uretildigi JSON'a yazilir: uygulamadaki teshis paneli
+              # bunu gosterir, boylece "yenilendi mi" sorusu tahmine kalmaz.
+              json.dump({"id": kid, "sure": round(gercek, 2),
+                         "ses": SESLER.get('anlatici'),
+                         "uretim": time.strftime('%Y-%m-%d %H:%M'),
+                         "harita": harita},
                         open(f'ses/{kid}.json', 'w'), separators=(',', ':'))
 
               print(f"    -> {os.path.getsize(mp3)//1024} KB · {len(harita)} cumle · "
