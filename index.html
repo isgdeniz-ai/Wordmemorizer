@@ -10019,12 +10019,16 @@
         function _sesPuan(v) {
             const ad = (v.name || '').toLowerCase();
             let p = 0;
-            if (/^en[-_]us/i.test(v.lang)) p += 30;
-            else if (/^en[-_](gb|au|ca|ie)/i.test(v.lang)) p += 24;
-            else if (/^en/i.test(v.lang)) p += 14;
+            // Amerikan Ingilizcesi belirgin sekilde tercih edilir. Eskiden fark
+            // yalnizca 6 puandi ve "neural" bonusu (45) bunu kolayca eziyordu;
+            // sonucta cihaz Ingiliz aksanli bir ses secebiliyordu.
+            if (/^en[-_]us/i.test(v.lang)) p += 40;
+            else if (/^en[-_](gb|au|ca|ie|in|za|nz)/i.test(v.lang)) p += 8;
+            else if (/^en/i.test(v.lang)) p += 6;
             if (/natural|neural|enhanced|premium|wavenet/.test(ad)) p += 45;
             if (/google/.test(ad)) p += 28;
-            if (/samantha|aria|jenny|libby|sonia|ava|allison|emma|michelle/.test(ad)) p += 22;
+            // Amerikan aksanli tanidik sesler (libby/sonia cikarildi: onlar Ingiliz)
+            if (/samantha|aria|jenny|ava|allison|emma|michelle|guy|davis/.test(ad)) p += 22;
             if (!v.localService) p += 16;
             if (/compact|espeak|pico|robot/.test(ad)) p -= 45;
             return p;
