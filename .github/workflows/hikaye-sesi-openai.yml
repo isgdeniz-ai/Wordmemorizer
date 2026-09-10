@@ -14,11 +14,15 @@ on:
       uslup_sohbet:
         description: 'Sohbetler için üslup'
         required: false
-        default: 'Friendly and lively podcast conversation. Warm energy, natural rhythm, clear pronunciation for English learners.'
+        default: 'Friendly and lively podcast conversation. Warm energy, natural rhythm, clear pronunciation for English learners. Speak in standard American English with a General American accent.'
       uslup_hikaye:
         description: 'Hikâyeler için üslup'
         required: false
-        default: 'Calm, warm storytelling. Unhurried pace, gentle expression, clear pronunciation for English learners.'
+        default: 'Calm, warm storytelling. Unhurried pace, gentle expression, clear pronunciation for English learners. Speak in standard American English with a General American accent.'
+      anlatici_ses:
+        description: 'Hikâye anlatıcısının sesi (fable = İngiliz aksanı, nova/ash/onyx/sage = Amerikan)'
+        required: false
+        default: 'nova'
 
 permissions:
   contents: write
@@ -52,6 +56,7 @@ jobs:
           YENILE:       ${{ inputs.yenile }}
           USLUP_SOHBET: ${{ inputs.uslup_sohbet }}
           USLUP_HIKAYE: ${{ inputs.uslup_hikaye }}
+          ANLATICI_SES: ${{ inputs.anlatici_ses }}
         run: |
           python3 - <<'PY'
           import json, os, struct, subprocess, time, requests, array
@@ -63,8 +68,12 @@ jobs:
           MODEL = "gpt-4o-mini-tts"
 
           # ---------------- karakter -> ses
+          # NOT: "fable" OpenAI'nin Ingiliz aksanli sesidir. Amerikan Ingilizcesi
+          # icin anlatici varsayilan olarak "nova"ya alindi; workflow girdisiyle
+          # degistirilebilir. Diger sesler (alloy, ash, coral, onyx, sage) zaten
+          # Amerikan aksanina yakin.
           SESLER = {
-              "anlatici": "fable",   # hikaye anlaticisi
+              "anlatici": os.environ.get('ANLATICI_SES') or 'nova',
               "mia":      "coral",
               "vance":    "onyx",
               "emma":     "coral",   "sam":   "ash",
