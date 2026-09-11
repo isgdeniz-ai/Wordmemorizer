@@ -439,15 +439,6 @@
         .cw-bitis .cw-b-ust { font-size:20px; font-weight:800; color:#1e5a2c; margin-bottom:6px; }
         .cw-bitis .cw-b-alt { font-size:14px; color:#606770; margin-bottom:14px; }
 
-        /* ===== SENKRON TESHIS PANELI ===== */
-        #senk-panel { display:none; background:#10141c; color:#d6e2f0; border-radius:10px;
-                      padding:9px 11px; margin-bottom:10px; font-size:11.5px; line-height:1.6;
-                      font-family:ui-monospace,Menlo,Consolas,monospace; white-space:pre-wrap; }
-        #senk-panel.acik { display:block; }
-        #senk-panel .sp-iyi { color:#5ee08a; }
-        #senk-panel .sp-kotu { color:#ff7b8a; }
-        #senk-panel .sp-uyari { color:#ffcf5e; }
-        #senk-panel b { color:#fff; }
 
         /* ===== CUMLE KURMA / DINLE & DIZ ===== */
         #sb-screen { display:none; flex-direction:column; height:100%; }
@@ -976,7 +967,6 @@
                     </div>
                     <button class="pl-hiz" id="pl-hiz">1x</button>
                 </div>
-                <div id="senk-panel"></div>
                 <div id="reader-body"></div>
                 <div class="reader-nav">
                     <button id="rd-prev">‹ Önceki</button>
@@ -7726,7 +7716,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-09-10 · senk-3';
+        const YAPIM = '2026-09-11 · temiz-1';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -8804,6 +8794,11 @@
             inReview = false; reviewStarted = false; restartPending = false;
             hideGameArea();
             clearFeedback(); hideCardSpeak(); hideEndActions();
+            ['story-screen', 'cw-screen', 'sb-screen'].forEach(function (id) {
+                const e = document.getElementById(id);
+                if (e) e.style.display = 'none';
+            });
+            ekranNereden = 'welcome';
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('welcome-screen').style.display = 'flex';
             restoreWelcomeDefaults();
@@ -9495,14 +9490,12 @@
         function openCrossword() {
             const d = cwDurumYukle();
             cwSeviye = d.seviye; cwBolum = d.bolum;
-            document.getElementById('welcome-screen').style.display = 'none';
-            document.getElementById('cw-screen').style.display = 'flex';
+            altEkranAc('cw-screen');
             cwBolumBasla();
         }
 
         function closeCrossword() {
-            document.getElementById('cw-screen').style.display = 'none';
-            document.getElementById('welcome-screen').style.display = 'flex';
+            altEkranKapat('cw-screen');
         }
 
         function cwBolumBasla() {
@@ -9649,105 +9642,6 @@
             document.getElementById('cw-kalan').textContent = 'tamamland\u0131';
         }
 
-        // ===== SENKRON TESHISI =====
-        // Kayma tutarsiz oldugu icin tek bir teori yetmiyor; cihazda olcelim.
-        // ⚙ butonuna 3 kez ust uste basinca acilir.
-        let senkAcik = false, senkTik = 0, senkTikZaman = 0;
-        let senkOrnek = [];   // [gecenSure, sapma] ciftleri
-
-        function senkAcKapa() {
-            senkAcik = !senkAcik;
-            senkOrnek = [];
-            const p = document.getElementById('senk-panel');
-            if (p) p.classList.toggle('acik', senkAcik);
-            if (senkAcik) senkYaz();
-        }
-
-        // Harita ile ekrandaki cumle sayilari uyusuyor mu?
-        function senkHaritaKontrol() {
-            if (!sesHarita || !rdStory) return 'harita yok';
-            const sorun = [];
-            const sayfaAdet = {};
-            sesHarita.harita.forEach(function (x) {
-                sayfaAdet[x[0]] = Math.max(sayfaAdet[x[0]] || 0, x[1] + 1);
-            });
-            Object.keys(sayfaAdet).forEach(function (pi) {
-                const sayfa = rdStory.pages[pi];
-                if (!sayfa) { sorun.push('sayfa ' + pi + ' metinde yok'); return; }
-                if (sayfaAdet[pi] > sayfa.length) {
-                    sorun.push('sayfa ' + pi + ': harita ' + sayfaAdet[pi] +
-                               ' cumle, metin ' + sayfa.length);
-                }
-            });
-            const hSayfa = Object.keys(sayfaAdet).length;
-            if (hSayfa !== rdStory.pages.length) {
-                sorun.push('sayfa sayisi: harita ' + hSayfa + ', metin ' + rdStory.pages.length);
-            }
-            return sorun.length ? sorun.join(' | ') : 'uyumlu';
-        }
-
-        // Bir cumlenin duz metni (ilk 46 karakter) — kulakla karsilastirmak icin
-        function senkCumleMetni(pi, si) {
-            try {
-                const c = rdStory.pages[pi][si];
-                if (!c) return null;
-                const m = (c.en || []).map(function (t) { return t.t; }).join('').trim();
-                return m.length > 46 ? m.slice(0, 46) + '…' : m;
-            } catch (e) { return null; }
-        }
-
-        function senkYaz() {
-            const p = document.getElementById('senk-panel');
-            if (!p || !senkAcik) return;
-            if (!sesCalar || !sesHarita) {
-                p.textContent = 'yapim : ' + YAPIM + '\nses/harita yuklenmedi';
-                return;
-            }
-
-            const t = sesCalar.currentTime;
-            const x = anlikCumle(t);
-            const sure = sesHarita.sure, dur = sesCalar.duration;
-            const uyum = senkHaritaKontrol();
-
-            let s = '';
-            s += 'yapim         : ' + YAPIM + '\n';
-            s += 'ses / uretim  : ' + (sesHarita.ses || 'bilinmiyor') +
-                 (sesHarita.uretim ? '  (' + sesHarita.uretim + ')' : '  (eski dosya)') + '\n';
-            s += 'harita suresi : ' + (sure || 0).toFixed(2) + ' sn\n';
-            s += 'cihaz suresi  : ' + (isFinite(dur) ? dur.toFixed(2) : '?') + ' sn\n';
-            s += 'olcek         : ' + sesOlcek.toFixed(5) +
-                 (Math.abs(sesOlcek - 1) > 0.002 ? '  <-- hiz farki var' : '') + '\n';
-            s += 'hiz           : ' + HIZLAR[hizIdx] + 'x\n';
-            s += 'simdi         : ' + t.toFixed(2) + ' sn\n';
-            s += 'harita/metin  : ' + uyum + '\n';
-
-            if (x) {
-                const bas = sesZaman(x[2]), bit = sesZaman(x[3]);
-                const sapma = t - bas;                   // + ise ses cumlenin icinde
-                s += 'aktif cumle   : sayfa ' + x[0] + ' / cumle ' + x[1] + '\n';
-                s += 'pencere       : ' + bas.toFixed(2) + ' - ' + bit.toFixed(2) + ' sn\n';
-                s += 'cumle basindan: +' + sapma.toFixed(2) + ' sn\n';
-                senkOrnek.push([t, sapma]);
-                if (senkOrnek.length > 400) senkOrnek.shift();
-            } else {
-                s += 'aktif cumle   : YOK (bosluktayiz)\n';
-            }
-            // vurgulanan eleman gercekten sayfada var mi
-            if (x) {
-                const el = document.getElementById('rs-' + x[1]);
-                s += 'vurgu elemani : ' + (el ? 'var' : 'YOK (rs-' + x[1] + ' bulunamadi)') + '\n';
-                // Panel sesin GERCEKTE ne dedigini bilemez; karsilastirabilmen icin
-                // haritaya gore o an okunmasi gereken cumleyi ve komsularini yaz.
-                s += '\nharitaya gore su an okunan:\n';
-                [-2, -1, 0, 1, 2].forEach(function (d) {
-                    const m = senkCumleMetni(x[0], x[1] + d);
-                    if (m === null) return;
-                    s += (d === 0 ? ' >> ' : '    ') + (x[1] + d) + ': ' + m + '\n';
-                });
-            }
-            p.textContent = s;
-        }
-
         // ===== CUMLE KURMA + DINLE & DIZ =====
         // Ayni mekanik, iki farkli ipucu:
         //   'ceviri'  -> Turkce cumle gosterilir, Ingilizcesi dizilir
@@ -9810,8 +9704,7 @@
             if (havuz.length < SB_SORU) { alert('Yeterli \u00f6rnek c\u00fcmle yok.'); return; }
             sbListe = _shuffle(havuz).slice(0, SB_SORU);
             sbIndex = 0; sbDogru = 0;
-            document.getElementById('welcome-screen').style.display = 'none';
-            document.getElementById('sb-screen').style.display = 'flex';
+            altEkranAc('sb-screen');
             document.getElementById('sb-title').textContent =
                 sbMod === 'dinleme' ? 'Dinle & Diz' : 'C\u00fcmle Kurma';
             sbSoruCiz();
@@ -9819,8 +9712,7 @@
 
         function closeSentenceBuilder() {
             try { window.speechSynthesis.cancel(); } catch (e) {}
-            document.getElementById('sb-screen').style.display = 'none';
-            document.getElementById('welcome-screen').style.display = 'flex';
+            altEkranKapat('sb-screen');
         }
 
         function sbSoruCiz() {
@@ -10297,7 +10189,7 @@
 
             // ilerleme cubugu saniyede ~5 kez yeter; her karede DOM yazmak bosuna yuk
             const simdi = Date.now();
-            if (simdi - sesSonYenile > 200) { sesSonYenile = simdi; playerYenile(); if (senkAcik) senkYaz(); }
+            if (simdi - sesSonYenile > 200) { sesSonYenile = simdi; playerYenile(); }
 
             const x = anlikCumle(sesCalar.currentTime);
             if (!x) return;
@@ -10532,9 +10424,39 @@
             document.getElementById('ws-back').style.display = 'block';
         }
 
+        // Tam ekran alt bolumler (Metinler, oyunlar) acilirken ALTTAKI ekranlar
+        // da gizlenmeli. Eskiden yalnizca karsilama ekrani gizleniyordu; kelime
+        // calismasindan gelindiginde kart ekrani altta acik kaliyor ve asagi
+        // kaydirinca eski kelime karti gorunuyordu.
+        let ekranNereden = 'welcome';
+
+        function altEkranAc(id) {
+            const ma = document.getElementById('main-app');
+            const ws = document.getElementById('welcome-screen');
+            const ps = document.getElementById('placement-test-screen');
+            ekranNereden = (ma && getComputedStyle(ma).display !== 'none') ? 'main' : 'welcome';
+            if (ma) ma.style.display = 'none';
+            if (ws) ws.style.display = 'none';
+            if (ps) ps.style.display = 'none';
+            const hedef = document.getElementById(id);
+            if (hedef) hedef.style.display = 'flex';
+            try { window.scrollTo(0, 0); } catch (e) {}
+        }
+
+        function altEkranKapat(id) {
+            const hedef = document.getElementById(id);
+            if (hedef) hedef.style.display = 'none';
+            if (ekranNereden === 'main') {
+                document.getElementById('main-app').style.display = 'flex';
+                refreshBottomBar();
+            } else {
+                document.getElementById('welcome-screen').style.display = 'flex';
+            }
+            try { window.scrollTo(0, 0); } catch (e) {}
+        }
+
         function openStories() {
-            document.getElementById('welcome-screen').style.display = 'none';
-            document.getElementById('story-screen').style.display = 'flex';
+            altEkranAc('story-screen');
             document.getElementById('story-reader').style.display = 'none';
             document.getElementById('story-title').textContent = 'Metinler';
             const el = document.getElementById('story-list');
@@ -10630,8 +10552,7 @@
 
         function closeStories() {
             okumayiDurdur();
-            document.getElementById('story-screen').style.display = 'none';
-            document.getElementById('welcome-screen').style.display = 'flex';
+            altEkranKapat('story-screen');
         }
         function openStory(i) {
             okumayiDurdur();
@@ -10902,14 +10823,7 @@
         document.getElementById('ifade-back').addEventListener('click', closeIfadeler);
         document.getElementById('if-ara').addEventListener('input', ifadeListele);
         document.getElementById('oku-btn').addEventListener('click', sayfayiOku);
-        document.getElementById('ses-btn').addEventListener('click', function () {
-            // 3 kez ust uste (1.2 sn icinde) basilirsa senkron teshis paneli acilir
-            const n = Date.now();
-            senkTik = (n - senkTikZaman < 1200) ? senkTik + 1 : 1;
-            senkTikZaman = n;
-            if (senkTik >= 3) { senkTik = 0; senkAcKapa(); return; }
-            sesAyarlari();
-        });
+        document.getElementById('ses-btn').addEventListener('click', sesAyarlari);
         document.getElementById('pl-oynat').addEventListener('click', oynatDurdur);
         document.getElementById('pl-hiz').addEventListener('click', hizDegistir);
         (function () {
