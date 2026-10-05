@@ -2,7 +2,7 @@
 // HTML icin "once ag, olmazsa onbellek" (guncellemeler hemen gelsin)
 // Ses dosyalari ve zaman haritalari icin de "once ag"
 // Diger dosyalar (ikon, manifest) icin "once onbellek" (hizli acilsin)
-const CACHE = 'wordmem-v81';
+const CACHE = 'wordmem-v82';
 const ASSETS = [
   './',
   './index.html',
@@ -93,3 +93,63 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
+
+
+// =====================================================================
+// GUNLUK HATIRLATMA — Firebase Cloud Messaging
+// =====================================================================
+
+// Bildirime dokununca uygulamayi ac / one getir.
+// TUZAK 1: FCM'nin kendi tiklama isleyicisi, baglantisi (link) olmayan
+// bildirimlerde hicbir sayfa acmiyor ve kendinden sonraki isleyicileri
+// durduruyor. Bu yuzden bizimkini FCM'DEN ONCE kaydediyoruz.
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const pencereler = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const p of pencereler) { if ('focus' in p) return p.focus(); }
+    if (self.clients.openWindow) return self.clients.openWindow('./');
+  })());
+});
+
+// Firebase kutuphanelerini yukle. Once sayfayla ayni surumu dene, olmazsa
+// yaygin bir eski surume dus. Ikisi de yuklenemezse (orn. gstatic'e erisim
+// yoksa) servis calisani YINE kurulur; cevrimdisi calisma bozulmaz,
+// sadece bildirim gelmez.
+let fcmHazir = false;
+for (const surum of ['12.15.0', '10.12.2']) {
+  try {
+    importScripts(
+      `https://www.gstatic.com/firebasejs/${surum}/firebase-app-compat.js`,
+      `https://www.gstatic.com/firebasejs/${surum}/firebase-messaging-compat.js`
+    );
+    fcmHazir = true;
+    break;
+  } catch (err) { /* sonraki surumu dene */ }
+}
+
+if (fcmHazir && self.firebase) {
+  firebase.initializeApp({
+    apiKey: "AIzaSyADXePsyOkHyoBbjY6nznBcx5tGbk_76rI",
+    authDomain: "glizwor.com",
+    projectId: "word-memorizer-718b5",
+    storageBucket: "word-memorizer-718b5.firebasestorage.app",
+    messagingSenderId: "1058175451313",
+    appId: "1:1058175451313:web:6a8274910d8115d656e290"
+  });
+  const messaging = firebase.messaging();
+
+  // TUZAK 2: Firebase Console'dan gonderilen bildirimler "notification"
+  // alani tasir ve FCM bunlari arka planda KENDISI gosterir. Burada bir de
+  // biz gosterirsek kullanici ayni bildirimi iki kez gorur.
+  // Yalnizca veri tasiyan (data-only) mesajlari biz gosteriyoruz.
+  messaging.onBackgroundMessage((p) => {
+    if (p && p.notification) return;
+    const d = (p && p.data) || {};
+    return self.registration.showNotification(d.title || 'Word Memorizer', {
+      body: d.body || 'Bugünün kelimeleri seni bekliyor.',
+      icon: './icon-192.png',
+      data: d
+    });
+  });
+}

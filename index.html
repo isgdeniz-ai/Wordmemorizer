@@ -483,6 +483,23 @@
         .sb-bitis .sb-b-ust { font-size:21px; font-weight:800; color:#0f7b6c; margin-bottom:6px; }
         .sb-bitis .sb-b-alt { font-size:14px; color:#606770; margin-bottom:16px; }
 
+        /* ===== GUNLUK HATIRLATMA KARTI ===== */
+        .bk-kart { display:flex; align-items:center; gap:12px; width:100%; margin-top:12px;
+                   background:#fff8e6; border:1.5px solid #f2d27a; border-radius:14px;
+                   padding:12px 14px; box-sizing:border-box; }
+        .bk-metin { flex:1; display:flex; flex-direction:column; gap:2px; text-align:left; }
+        .bk-metin b { font-size:15px; color:#5a4300; }
+        .bk-metin span { font-size:12.5px; color:#8a7232; line-height:1.35; }
+        .bk-btn { flex:0 0 auto; padding:10px 18px; border:none; border-radius:11px;
+                  background:#f5b301; color:#3a2a00; font-size:14px; font-weight:800;
+                  font-family:inherit; cursor:pointer; }
+        .bk-btn:disabled { background:#e8eef0; color:#6b7a80; cursor:default; }
+        .bk-kart.acik { background:#eefaf1; border-color:#9fdcae; }
+        .bk-kart.acik .bk-metin b { color:#1e5a2c; }
+        .bk-kart.acik .bk-metin span { color:#4f7a5a; }
+        .bk-kod { display:block; margin:6px auto 0; background:none; border:none;
+                  color:#9aa3ab; font-size:11.5px; text-decoration:underline;
+                  font-family:inherit; cursor:pointer; }
         #fun-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 900;
                        display: none; align-items: center; justify-content: center; padding: 22px; }
         #fun-overlay.acik { display: flex; }
@@ -895,6 +912,14 @@
             <button id="home-ifade-btn" class="primary-btn" style="background-color: #6b3fd4; margin-top: 12px;">🗂️ Gramer & Deyimler Listesi</button>
             <button id="home-fun-btn" class="primary-btn" style="background-color: #7c4dff; margin-top: 12px;">🎮 Eğlence</button>
             <button class="primary-btn" style="background-color: #31a24c; margin-top: 12px;" onclick="startPlacementTest()">Seviyemi Belirle (Test)</button>
+            <div id="bildirim-kart" class="bk-kart" style="display:none;">
+                <div class="bk-metin">
+                    <b>🔔 Günlük hatırlatma</b>
+                    <span id="bk-alt">Her gün kelimelerini çalışmayı unutma.</span>
+                </div>
+                <button id="bk-btn" class="bk-btn">Aç</button>
+            </div>
+            <button id="bk-kod" class="bk-kod" style="display:none;">test kodunu kopyala</button>
 
             <button class="nasil-h" id="nasil-h" onclick="nasilAc()"><span class="ok">❯</span><span class="ad">Nasıl çalışıyor?</span></button>
             <div id="nasil-govde"><div class="info-box">
@@ -1181,6 +1206,7 @@
             deleteUser, reauthenticateWithPopup, reauthenticateWithCredential, EmailAuthProvider
         } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, query, orderBy, limit, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+        import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyADXePsyOkHyoBbjY6nznBcx5tGbk_76rI",
@@ -1223,6 +1249,37 @@
             getDocs: getDocs,
             updateDoc: updateDoc
         };
+
+        // ---- Gunluk hatirlatma: Firebase Cloud Messaging ----
+        // Genel (public) Web Push anahtari; gizli degildir, istemciye gomulur.
+        const VAPID_ANAHTAR = "BE8lJKPKOmGjhTtXyzT8Q71G4plFhAGhR6oKeku03X_7d65fba-q9dn6cRtrSmZeEjZ91WZF9gYUXE5YDng_9Q4";
+        window.__bildirim = {
+            destek: async function () {
+                try { return await isSupported(); } catch (e) { return false; }
+            },
+            // Mevcut sw.js kaydini kullaniyoruz: ayni adreste ikinci bir
+            // servis calisani (firebase-messaging-sw.js) acilirsa ikisi cakisir.
+            jetonAl: async function () {
+                const kayit = await navigator.serviceWorker.ready;
+                return await getToken(getMessaging(fbApp), {
+                    vapidKey: VAPID_ANAHTAR,
+                    serviceWorkerRegistration: kayit
+                });
+            }
+        };
+        // Uygulama ACIKKEN gelen bildirimi FCM kendiliginden gostermez; biz gosteririz.
+        isSupported().then(function (ok) {
+            if (!ok) return;
+            onMessage(getMessaging(fbApp), async function (p) {
+                const n = (p && p.notification) || {};
+                try {
+                    const kayit = await navigator.serviceWorker.ready;
+                    kayit.showNotification(n.title || "Word Memorizer", {
+                        body: n.body || "", icon: "icon-192.png"
+                    });
+                } catch (e) {}
+            });
+        }).catch(function () {});
 
         onAuthStateChanged(fbAuth, function(user) {
             if (typeof window.onFirebaseAuthChange === 'function') {
@@ -7716,7 +7773,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-09-11 · temiz-1';
+        const YAPIM = '2026-10-05 · bildirim-1';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -11834,6 +11891,84 @@
             consentKvkk = false;
             renderAccountPanel();
             document.getElementById('account-panel').style.display = 'flex';
+        });
+
+        // --- Gunluk hatirlatma karti (push bildirimi) ---
+        // Izin yalnizca kullanici butona dokundugunda istenir; sayfa acilir acilmaz
+        // izin sormak tarayicilar tarafindan bastirilir ve kullaniciyi rahatsiz eder.
+        const BILDIRIM_KEY = 'wm_bildirim_v1';
+
+        function bkDurum(durum) {
+            const kart = document.getElementById('bildirim-kart');
+            const btn = document.getElementById('bk-btn');
+            const alt = document.getElementById('bk-alt');
+            const kod = document.getElementById('bk-kod');
+            if (!kart) return;
+            kart.style.display = 'flex';
+            kart.classList.toggle('acik', durum === 'acik');
+            kod.style.display = (durum === 'acik') ? 'block' : 'none';
+            if (durum === 'acik') {
+                btn.textContent = 'Açık ✓'; btn.disabled = true;
+                alt.textContent = 'Her gün kelimelerin için hatırlatma alacaksın.';
+            } else if (durum === 'engelli') {
+                btn.textContent = 'Kapalı'; btn.disabled = true;
+                alt.textContent = 'Bildirimler engellenmiş. Telefon ayarlarından uygulamanın bildirimlerini açabilirsin.';
+            } else if (durum === 'bekliyor') {
+                btn.textContent = '…'; btn.disabled = true;
+            } else if (durum === 'hata') {
+                btn.textContent = 'Tekrar dene'; btn.disabled = false;
+                alt.textContent = 'Bir sorun oldu. İnternet bağlantını kontrol edip tekrar dene.';
+            } else {
+                btn.textContent = 'Aç'; btn.disabled = false;
+                alt.textContent = 'Her gün kelimelerini çalışmayı unutma.';
+            }
+        }
+
+        async function bkJetonYenile() {
+            // Jetonlar zamanla yenilenebilir; izin varsa sessizce guncel tutuyoruz.
+            try {
+                const t = await window.__bildirim.jetonAl();
+                if (t) { localStorage.setItem(BILDIRIM_KEY, t); return t; }
+            } catch (e) {}
+            return null;
+        }
+
+        async function bkAc() {
+            bkDurum('bekliyor');
+            let izin;
+            try { izin = await Notification.requestPermission(); }
+            catch (e) { izin = Notification.permission; }
+            if (izin === 'denied') { bkDurum('engelli'); return; }
+            if (izin !== 'granted') { bkDurum('kapali'); return; }
+            const t = await bkJetonYenile();
+            if (t) { bkDurum('acik'); try { playCorrect(); } catch (e) {} }
+            else bkDurum('hata');
+        }
+
+        async function bkBaslat() {
+            if (!('Notification' in window) || !('serviceWorker' in navigator) || !window.__bildirim) return;
+            if (!(await window.__bildirim.destek())) return;     // desteklenmeyen cihazda kart gizli kalir
+            document.getElementById('bk-btn').onclick = bkAc;
+            document.getElementById('bk-kod').onclick = async function () {
+                const t = localStorage.getItem(BILDIRIM_KEY) || '';
+                try { await navigator.clipboard.writeText(t); this.textContent = 'kopyalandı ✓'; }
+                catch (e) { window.prompt('Test kodu:', t); }
+            };
+            const izin = Notification.permission;
+            if (izin === 'granted') {
+                bkDurum('acik');
+                bkJetonYenile();                                  // arka planda tazele
+            } else if (izin === 'denied') bkDurum('engelli');
+            else bkDurum('kapali');
+        }
+
+        // Modul betigi (Firebase) bu betikten SONRA calisir; hazir olmasini bekliyoruz.
+        window.addEventListener('load', function () {
+            let deneme = 0;
+            (function bekle() {
+                if (window.__bildirim) { bkBaslat(); return; }
+                if (++deneme < 20) setTimeout(bekle, 250);
+            })();
         });
 
         // --- PWA: service worker kaydi (cevrimdisi calisma icin) ---
