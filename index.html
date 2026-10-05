@@ -497,6 +497,10 @@
         .bk-kart.acik { background:#eefaf1; border-color:#9fdcae; }
         .bk-kart.acik .bk-metin b { color:#1e5a2c; }
         .bk-kart.acik .bk-metin span { color:#4f7a5a; }
+        .bk-hata { margin-top:6px; padding:8px 10px; border-radius:9px; background:#fdf1f0;
+                   border:1px solid #f0c9c4; color:#8a2d22; font-size:11px; line-height:1.4;
+                   font-family:ui-monospace,Menlo,Consolas,monospace; text-align:left;
+                   word-break:break-word; user-select:text; -webkit-user-select:text; }
         .bk-kod { display:block; margin:6px auto 0; background:none; border:none;
                   color:#9aa3ab; font-size:11.5px; text-decoration:underline;
                   font-family:inherit; cursor:pointer; }
@@ -919,6 +923,7 @@
                 </div>
                 <button id="bk-btn" class="bk-btn">Aç</button>
             </div>
+            <div id="bk-hata" class="bk-hata" style="display:none;"></div>
             <button id="bk-kod" class="bk-kod" style="display:none;">test kodunu kopyala</button>
 
             <button class="nasil-h" id="nasil-h" onclick="nasilAc()"><span class="ok">❯</span><span class="ad">Nasıl çalışıyor?</span></button>
@@ -7773,7 +7778,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-10-05 · bildirim-1';
+        const YAPIM = '2026-10-05 · bildirim-2';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -11906,6 +11911,7 @@
             if (!kart) return;
             kart.style.display = 'flex';
             kart.classList.toggle('acik', durum === 'acik');
+            if (durum !== 'hata') { const ayr = document.getElementById('bk-hata'); if (ayr) ayr.style.display = 'none'; }
             kod.style.display = (durum === 'acik') ? 'block' : 'none';
             if (durum === 'acik') {
                 btn.textContent = 'Açık ✓'; btn.disabled = true;
@@ -11917,19 +11923,32 @@
                 btn.textContent = '…'; btn.disabled = true;
             } else if (durum === 'hata') {
                 btn.textContent = 'Tekrar dene'; btn.disabled = false;
-                alt.textContent = 'Bir sorun oldu. İnternet bağlantını kontrol edip tekrar dene.';
+                alt.textContent = 'Bildirim kaydı yapılamadı.';
+                const ayr = document.getElementById('bk-hata');
+                if (ayr) {
+                    ayr.textContent = bkSonHata ? bkSonHata.slice(0, 320) : '';
+                    ayr.style.display = bkSonHata ? 'block' : 'none';
+                }
             } else {
                 btn.textContent = 'Aç'; btn.disabled = false;
                 alt.textContent = 'Her gün kelimelerini çalışmayı unutma.';
             }
         }
 
+        // Son hata metni: telefonda gelistirici araclari olmadigi icin hatayi
+        // ekranda gosteriyoruz, yoksa sebebi asla goremiyoruz.
+        let bkSonHata = '';
         async function bkJetonYenile() {
             // Jetonlar zamanla yenilenebilir; izin varsa sessizce guncel tutuyoruz.
             try {
                 const t = await window.__bildirim.jetonAl();
-                if (t) { localStorage.setItem(BILDIRIM_KEY, t); return t; }
-            } catch (e) {}
+                if (t) { localStorage.setItem(BILDIRIM_KEY, t); bkSonHata = ''; return t; }
+                bkSonHata = 'Firebase bos jeton dondurdu.';
+            } catch (e) {
+                const kod = (e && e.code) ? e.code : ((e && e.name) || 'hata');
+                const msj = (e && e.message) ? e.message : String(e);
+                bkSonHata = kod + ' — ' + msj;
+            }
             return null;
         }
 
