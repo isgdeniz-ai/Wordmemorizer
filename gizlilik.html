@@ -88,7 +88,7 @@
       </span>
     </a>
     <h1 id="pageTitle">Gizlilik Politikası</h1>
-    <p class="updated">Son güncelleme: 5 Ağustos 2026</p>
+    <p class="updated">Son güncelleme: 6 Ekim 2026</p>
   </header>
 
   <nav class="tabs" role="tablist">
@@ -106,11 +106,11 @@
       <li><b>Veri satışı yok.</b> Verileriniz hiçbir koşulda üçüncü taraflara satılmaz veya kiralanmaz.</li>
       <li><b>Reklam izleyicisi yok.</b> Uygulamada reklam ağı, davranışsal profilleme veya üçüncü taraf izleme kodu bulunmaz.</li>
       <li><b>Analitik yok.</b> Uygulama kullanımını ölçen bir analitik aracı çalıştırılmaz.</li>
-      <li><b>Gereksiz izin yok.</b> Kamera, mikrofon, konum, rehber veya galeri erişimi istenmez.</li>
+      <li><b>Gereksiz izin yok.</b> Kamera, mikrofon, konum, rehber veya galeri erişimi istenmez. Bildirim izni yalnızca günlük hatırlatma için istenir.</li>
     </ul>
 
     <h2 data-n="2">Misafir kullanım</h2>
-    <p>Uygulamayı hesap açmadan kullanabilirsin. Misafir modunda öğrenme verilerin cihazından hiç çıkmaz — sunucularımıza hiçbir şey gönderilmez. Bunun tek dezavantajı, ilerlemenin yedeklenmemesidir.</p>
+    <p>Uygulamayı hesap açmadan kullanabilirsin. Misafir modunda öğrenme verilerin cihazından hiç çıkmaz; sunucularımıza hiçbir şey gönderilmez. Bunun tek dezavantajı, ilerlemenin yedeklenmemesidir. Günlük hatırlatma için kullanılan bildirim kimliği 4. maddede anlatılmıştır.</p>
 
     <h2 data-n="3">Üyelikte toplanan bilgiler</h2>
     <p>En az veri ilkesiyle çalışıyoruz. Yalnızca uygulamanın çalışması için gerekli olanları topluyoruz:</p>
@@ -120,26 +120,31 @@
       <li><b>Hata bildirimleri:</b> Bir kelimede hata bildirdiğinde; kelimeyi, seçtiğin sorun türünü, yazdığın notu ve (giriş yapmışsan) e-posta adresini kaydederiz. Misafir olarak bildirim gönderirsen e-posta bilgisi kaydedilmez.</li>
     </ul>
 
-    <h2 data-n="4">Şifre güvenliği</h2>
+    <h2 data-n="4" id="bildirim">Günlük hatırlatma bildirimleri</h2>
+    <p>Ana ekrandaki <b>Günlük hatırlatma</b> özelliği varsayılan olarak açıktır; misafir ya da üye olarak kullanılabilir. Çalışması için telefonunun bildirim iznini vermen gerekir; izni vermezsen bildirim kimliği oluşturulmaz.</p>
+    <p>Hatırlatma açıkken, sana bildirim gönderebilmek için Google Firebase Cloud Messaging hizmeti kullanılır. Bu amaçla cihazına özel bir bildirim kimliği oluşturulur ve Google sunucularında saklanır. Bu kimlik yalnızca hatırlatma göndermek için kullanılır; reklam, takip veya profil oluşturma amacıyla kullanılmaz, hesabınla eşleştirilmez ve üçüncü kişilerle paylaşılmaz.</p>
+    <p>Hatırlatmayı dilediğin an ana ekrandaki <b>Günlük hatırlatma</b> anahtarından kapatabilirsin; bu durumda bildirim kimliği silinir. Bildirimleri telefonunun <b>Ayarlar &gt; Uygulamalar &gt; Word Memorizer &gt; Bildirimler</b> menüsünden de kapatabilirsin. Uygulamayı kaldırdığında veya bildirim iznini geri aldığında kimlik kullanılamaz hâle gelir; uzun süre etkin olmayan kimlikler Google tarafından otomatik olarak geçersiz kılınır.</p>
+
+    <h2 data-n="5">Şifre güvenliği</h2>
     <p>E-posta ile kayıt olursan şifren, Google Firebase Authentication tarafından işlenir ve sektör standardı yöntemlerle korunur. Şifren bize hiçbir aşamada iletilmez; ne görebilir ne de sıfırlayabiliriz. Şifreni unutursan uygulama üzerinden e-postana sıfırlama bağlantısı gönderilir.</p>
 
-    <h2 data-n="5">Çerezler ve yerel depolama</h2>
+    <h2 data-n="6">Çerezler ve yerel depolama</h2>
     <p>Oturumunu açık tutmak, çalışma ilerlemeni cihazda saklamak ve uygulamanın internetsiz de açılabilmesi için tarayıcının yerel depolama alanını ve önbelleğini kullanırız. Bu teknolojiler seni internette takip etmek için kullanılmaz; reklam çerezi barındırmayız.</p>
 
-    <h2 data-n="6">Veri güvenliği</h2>
+    <h2 data-n="7">Veri güvenliği</h2>
     <p>Uygulamayla sunucu arasındaki tüm trafik SSL/TLS ile şifrelenir. Veri tabanı kuralları, her kullanıcının yalnızca kendi kaydına erişebileceği şekilde yapılandırılmıştır.</p>
     <p>Hiçbir sistem mutlak güvenlik garantisi veremez; ancak güvenliği etkileyen bir olay yaşanması hâlinde, etkilenen kullanıcıları ve ilgili kurumları mevzuatın öngördüğü sürede bilgilendireceğiz.</p>
 
-    <h2 data-n="7">Çocukların gizliliği</h2>
+    <h2 data-n="8">Çocukların gizliliği</h2>
     <p>Uygulama her yaştan kullanıcıya açıktır, ancak 13 yaşın altındaki kullanıcılardan bilerek kişisel veri toplamıyoruz. Ebeveynseniz ve çocuğunuzun onayınız olmadan hesap oluşturduğunu düşünüyorsanız <a href="mailto:info@glizwor.com">info@glizwor.com</a> adresinden bize ulaşın; ilgili hesap ve veriler silinecektir.</p>
 
-    <h2 data-n="8">Hesabını silme</h2>
+    <h2 data-n="9">Hesabını silme</h2>
     <p>Hesabını ve ona bağlı tüm verileri dilediğin an silebilirsin: Hesap panelindeki <b>Hesabımı ve tüm verilerimi sil</b> seçeneğini kullanman yeterli. Silme işlemi geri alınamaz; hesabın, buluttaki yedeğin ve cihazındaki ilerlemen kalıcı olarak kaldırılır.</p>
 
-    <h2 data-n="9">Politika değişiklikleri</h2>
+    <h2 data-n="10">Politika değişiklikleri</h2>
     <p>Bu politikada değişiklik yaparsak güncel sürümü uygulama içinde yayımlarız. Veri kullanımını genişleten önemli bir değişiklik olursa uygulama içi bildirim veya e-posta ile haber veririz.</p>
 
-    <h2 data-n="10">İletişim</h2>
+    <h2 data-n="11">İletişim</h2>
     <p>E-posta: <a href="mailto:info@glizwor.com">info@glizwor.com</a><br>
     Web sitesi: <a href="https://glizwor.com">glizwor.com</a></p>
 
@@ -154,15 +159,15 @@
     İletişim: <a href="mailto:info@glizwor.com">info@glizwor.com</a></p>
 
     <h2 data-n="2">Üyelik zorunlu değildir</h2>
-    <p>Uygulamayı misafir olarak kullanabilirsin. Bu durumda hiçbir kişisel verin tarafımıza iletilmez; çalışma ilerlemen yalnızca kendi cihazının hafızasında saklanır. Cihazını değiştirirsen ya da uygulama verisini silersen ilerlemen geri getirilemez.</p>
-    <p>Aşağıdaki hükümler yalnızca üyelik oluşturmayı tercih eden kullanıcılar için geçerlidir.</p>
+    <p>Uygulamayı misafir olarak kullanabilirsin. Bu durumda, günlük hatırlatma için kullanılan bildirim kimliği dışında hiçbir kişisel verin tarafımıza iletilmez; çalışma ilerlemen yalnızca kendi cihazının hafızasında saklanır. Cihazını değiştirirsen ya da uygulama verisini silersen ilerlemen geri getirilemez.</p>
+    <p>Aşağıdaki hükümler yalnızca üyelik oluşturmayı tercih eden kullanıcılar için geçerlidir; <b>bildirim kimliğine</b> ilişkin hükümler ise günlük hatırlatması açık olan tüm kullanıcıları kapsar.</p>
 
     <h2 data-n="3">İşlenen kişisel veriler</h2>
     <ul>
       <li><b>Kimlik:</b> Belirlediğin ya da Google hesabından gelen ad — uygulama içinde sana hitap etmek için.</li>
       <li><b>İletişim:</b> E-posta adresin — hesabını tanımlamak ve şifre sıfırlama için.</li>
       <li><b>Kullanım:</b> Çalıştığın kelimeler, günlük hedefin, seviye seçimin ve doğru-yanlış geçmişin — ilerlemeni yedeklemek ve tekrar algoritmasını çalıştırmak için.</li>
-      <li><b>Bildirim:</b> Hata bildirdiğinde kelime, sorun türü, notun ve e-postan — içerik hatalarını düzeltmek için.</li>
+      <li><b>Hata bildirimi:</b> Hata bildirdiğinde kelime, sorun türü, notun ve e-postan — içerik hatalarını düzeltmek için.</li><li><b>Bildirim kimliği:</b> Günlük hatırlatma açıkken ve bildirim iznini verdiğinde cihazına özel oluşturulan kimlik — yalnızca hatırlatma göndermek için. Hesabınla eşleştirilmez.</li>
     </ul>
     <h3>Şifreler hakkında</h3>
     <p>E-posta ile kayıt olursan şifren doğrudan Google Firebase Authentication altyapısına iletilir. Şifren bizim tarafımızdan görülemez, saklanmaz ve hiçbir sistemimize kaydedilmez.</p>
@@ -171,17 +176,17 @@
 
     <h2 data-n="4">İşleme amacı ve hukuki sebep</h2>
     <p>Kişisel verilerin; hesabının oluşturulması, ilerlemenin yedeklenmesi ve farklı cihazlardan erişimin sağlanması amacıyla, KVKK m.5/2-c (sözleşmenin kurulması ve ifasıyla doğrudan ilgili olması) hukuki sebebine dayanılarak işlenir.</p>
-    <p>Hata bildirimlerin, KVKK m.5/2-f (meşru menfaat) kapsamında, uygulama içeriğinin düzeltilmesi amacıyla işlenir.</p>
+    <p>Hata bildirimlerin, KVKK m.5/2-f (meşru menfaat) kapsamında, uygulama içeriğinin düzeltilmesi amacıyla işlenir.</p><p>Bildirim kimliği, yalnızca günlük hatırlatma açıkken ve bildirim iznini vermen hâlinde, sana çalışma hatırlatması gönderilebilmesi amacıyla KVKK m.5/2-f (meşru menfaat) hukuki sebebine dayanılarak işlenir. Hatırlatmayı dilediğin an kapatabilirsin.</p>
 
     <h2 data-n="5">Verilerin saklandığı yer ve yurt dışına aktarım</h2>
     <p>Veriler, Google tarafından sağlanan Firebase altyapısında saklanır. Bu nedenle kişisel verilerin yurt dışında bulunan sunuculara aktarılmaktadır.</p>
-    <p>Veriler aktarım sırasında (SSL/TLS) ve sunucuda şifreli olarak tutulur. Üyelik oluştururken verdiğin onay bu aktarımı da kapsamaktadır. Bunun dışında verilerin hiçbir üçüncü kişiye satılmaz, kiralanmaz veya pazarlama amacıyla paylaşılmaz.</p>
+    <p>Veriler aktarım sırasında (SSL/TLS) ve sunucuda şifreli olarak tutulur. Üyelik oluştururken verdiğin onay bu aktarımı da kapsamaktadır. Günlük hatırlatma açıkken bildirim kimliği de aynı altyapı aracılığıyla yurt dışındaki sunuculara iletilir. Bunun dışında verilerin hiçbir üçüncü kişiye satılmaz, kiralanmaz veya pazarlama amacıyla paylaşılmaz.</p>
 
     <h2 data-n="6">Kimlerin erişimi var</h2>
     <p>Çalışma ilerlemene yalnızca sen erişebilirsin; veri tabanı kuralları her kaydın yalnızca sahibi tarafından okunmasına izin verecek şekilde yapılandırılmıştır. Hata bildirimlerin, içerik düzeltmesi yapılabilmesi için uygulama ekibi tarafından incelenir.</p>
 
     <h2 data-n="7">Saklama süresi</h2>
-    <p>Verilerin, hesabın aktif olduğu sürece saklanır. Hesabını sildiğinde hesabına bağlı tüm ilerleme verisi kalıcı olarak silinir. Hata bildirimleri, ilgili içerik düzeltildikten sonra kişisel bağlantısı kaldırılarak saklanabilir.</p>
+    <p>Verilerin, hesabın aktif olduğu sürece saklanır. Hesabını sildiğinde hesabına bağlı tüm ilerleme verisi kalıcı olarak silinir. Hata bildirimleri, ilgili içerik düzeltildikten sonra kişisel bağlantısı kaldırılarak saklanabilir. Bildirim kimliği, hatırlatmayı uygulamadan kapattığında silinir; bildirim iznini geri aldığında veya uygulamayı kaldırdığında kullanılamaz hâle gelir; uzun süre etkin olmayan kimlikler Google tarafından otomatik olarak geçersiz kılınır.</p>
 
     <h2 data-n="8">KVKK m.11 kapsamındaki haklarınız</h2>
     <ul class="plain">

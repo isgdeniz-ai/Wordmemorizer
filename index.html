@@ -490,10 +490,19 @@
         .bk-metin { flex:1; display:flex; flex-direction:column; gap:2px; text-align:left; }
         .bk-metin b { font-size:15px; color:#5a4300; }
         .bk-metin span { font-size:12.5px; color:#8a7232; line-height:1.35; }
-        .bk-btn { flex:0 0 auto; padding:10px 18px; border:none; border-radius:11px;
-                  background:#f5b301; color:#3a2a00; font-size:14px; font-weight:800;
-                  font-family:inherit; cursor:pointer; }
-        .bk-btn:disabled { background:#e8eef0; color:#6b7a80; cursor:default; }
+        /* ac/kapa anahtari (role="switch") */
+        .bk-btn { flex:0 0 auto; position:relative; width:54px; height:32px; padding:0; border:none;
+                  border-radius:999px; background:#c9d2d8; cursor:pointer; transition:background .2s; }
+        .bk-btn::after { content:''; position:absolute; top:3px; left:3px; width:26px; height:26px;
+                  border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.28);
+                  transition:transform .2s; }
+        .bk-btn[aria-checked="true"] { background:#31a24c; }
+        .bk-btn[aria-checked="true"]::after { transform:translateX(22px); }
+        .bk-btn:disabled { opacity:.5; cursor:default; }
+        .bk-btn.bekliyor { opacity:1; }
+        .bk-btn.bekliyor::after { animation:bkNabiz .8s ease-in-out infinite alternate; }
+        @keyframes bkNabiz { to { box-shadow:0 0 0 6px rgba(49,162,76,.28); } }
+        .bk-btn:focus-visible { outline:2px solid #1877f2; outline-offset:2px; }
         .bk-kart.acik { background:#eefaf1; border-color:#9fdcae; }
         .bk-kart.acik .bk-metin b { color:#1e5a2c; }
         .bk-kart.acik .bk-metin span { color:#4f7a5a; }
@@ -837,9 +846,217 @@
         .ws-state { margin-top:16px; padding:13px 14px; border-radius:12px; font-size:13px; font-weight:800; text-align:center; }
         .ws-state.q { background:#e8f4fd; color:#1877f2; border:1px solid #cfe4fa; }
         .ws-state.d { background:#e5f6ea; color:#1d7a3e; border:1px solid #c6e7d1; }
+
+        /* ===== KELIME CARKI =====
+           Tam ekran katman: ustte geri, cark sekmeleri, arama ve halka anahtari;
+           altta yakinlastirilabilir cark. Dilim acilinca sahnenin ustune binen
+           katman, kelime karti dilimin altindan (genis ekranda sagdan) kayar.
+           Tum kurallar #kc-ekran altinda; uygulamanin geri kalanina dokunmaz. */
+        #kc-ekran {
+            --kc-bg: #ffffff; --kc-yuzey: #f8f9fa; --kc-fg: #1c1e21; --kc-soluk: #606770; --kc-cizgi: #e4e6eb;
+            --kc-vurgu: #1877f2; --kc-golge: rgba(28, 30, 33, .16);
+            --kc-hap: #ffffff; --kc-hap-cizgi: rgba(28, 30, 33, .14); --kc-isaret: rgba(24, 119, 242, .14);
+            --s1: 74%; --l1: 72%; --s2: 68%; --l2: 84%; --s3: 62%; --l3: 92%;
+            --ts: 50%; --tl: 18%; --cs: 46%; --cl: 46%; --krem: rgba(255, 255, 255, .55);
+            --kc-yazi: "Roboto Condensed", sans-serif-condensed, "Arial Narrow", "Avenir Next Condensed", "DejaVu Sans Condensed", sans-serif;
+            position: fixed; inset: 0; z-index: 980; display: none; background: var(--kc-bg); color: var(--kc-fg);
+        }
+        #kc-ekran.acik { display: block; }
+        #kc-ekran [hidden] { display: none !important; }
+        #kc-ekran .kc-ic { height: 100%; max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px;
+            padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 10px); }
+        #kc-ekran .kc-bas { display: flex; align-items: center; gap: 10px; }
+        #kc-ekran .kc-bas h2 { font-size: 19px; font-weight: 800; color: var(--kc-fg); letter-spacing: -.3px; }
+
+        #kc-ekran .sekmeler { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+            margin: 0 -16px; padding: 0 16px; }
+        #kc-ekran .sekmeler::-webkit-scrollbar { display: none; }
+        #kc-ekran .sekmeler button { flex: none; white-space: nowrap; padding: 9px 15px; border: 1px solid #e2e6ee;
+            background: #f2f4f8; color: #5c6780; border-radius: 999px; font-size: 13px; font-weight: 800; cursor: pointer; }
+        #kc-ekran .sekmeler button[aria-selected="true"] { background: #13224A; border-color: #13224A; color: #fff; }
+        #kc-ekran .sekmeler button:focus-visible, #kc-ekran .yuvarlak:focus-visible, #kc-ekran .geri:focus-visible,
+        #kc-ekran .oneri button:focus-visible { outline: 2px solid var(--kc-vurgu); outline-offset: 2px; }
+
+        #kc-ekran .arama { position: relative; }
+        #kc-ekran .arama svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px;
+            color: var(--kc-soluk); pointer-events: none; }
+        #kc-ara { width: 100%; padding: 12px 14px 12px 40px; font-size: 14px; border: 2px solid var(--kc-cizgi); border-radius: 12px;
+            outline: none; background: var(--kc-yuzey); color: var(--kc-fg); -webkit-appearance: none; appearance: none; }
+        #kc-ara:focus { border-color: var(--kc-vurgu); background: #fff; }
+        #kc-ekran .oneri { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; padding: 6px; list-style: none;
+            background: #fff; border: 1px solid var(--kc-cizgi); border-radius: 14px; box-shadow: 0 12px 30px var(--kc-golge); }
+        #kc-ekran .oneri button { width: 100%; display: flex; align-items: baseline; gap: 8px; text-align: left; border: 0;
+            background: none; padding: 10px; border-radius: 10px; cursor: pointer; min-width: 0; color: var(--kc-fg); font-size: 14px; }
+        #kc-ekran .oneri button.ilk { background: var(--kc-isaret); }
+        #kc-ekran .oneri b { font-size: 15.5px; font-weight: 800; }
+        #kc-ekran .oneri .o-tr { color: var(--kc-soluk); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #kc-ekran .oneri .o-aile { font-size: 12px; font-weight: 700; color: var(--kc-soluk); }
+        #kc-ekran .oneri .bos { padding: 10px; color: var(--kc-soluk); font-size: 14px; }
+
+        #kc-ekran .anahtar { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; font-weight: 700; color: var(--kc-soluk); }
+        #kc-ekran .anahtar span { display: inline-flex; align-items: center; gap: 6px; }
+        #kc-ekran .anahtar i { width: 18px; height: 11px; border-radius: 3px; display: inline-block; }
+        #kc-ekran .anahtar .k1 { background: hsl(222 14% var(--l1)); }
+        #kc-ekran .anahtar .k2 { background: hsl(222 14% var(--l2)); }
+        #kc-ekran .anahtar .k3 { background: hsl(222 14% var(--l3)); border: 1px solid var(--kc-cizgi); }
+
+        /* sahne */
+        #kc-ekran .sahne { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+        #kc-cark { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+        #kc-cark:active { cursor: grabbing; }
+        #kc-ekran svg text { font-family: var(--kc-yazi); pointer-events: none; }
+        #kc-ekran .h1 { fill: hsl(var(--h) var(--s1) var(--l1)); }
+        #kc-ekran .h2 { fill: hsl(var(--h) var(--s2) var(--l2)); }
+        #kc-ekran .h3 { fill: hsl(var(--h) var(--s3) var(--l3)); }
+        #kc-ekran .yz { fill: hsl(var(--h) var(--ts) var(--tl)); }
+        #kc-ekran .hucre path { stroke: var(--kc-bg); stroke-width: 1.6; }
+        #kc-ekran .hucre { cursor: pointer; }
+        #kc-ekran .hucre:focus, #kc-ekran .hucre:focus-visible { outline: none; }
+        #kc-ekran .hucre:focus-visible path { stroke: var(--kc-vurgu); stroke-width: 3; }
+        #kc-ekran .aile, #kc-ekran .taban > g { transition: opacity .22s ease, transform .22s ease; }
+        #kc-ekran .aile.soluk, #kc-ekran .taban > g.soluk { opacity: .16; }
+        #kc-ekran .krem { fill: none; stroke: var(--krem); stroke-width: 2.5; }
+        #kc-ekran .krem.kalin { stroke-width: 5; }
+        #kc-ekran .golge-zemin { fill: url(#kc-zeminCark); }
+        #kc-ekran .merkez circle { fill: #fff; stroke: var(--kc-cizgi); stroke-width: 1.5; }
+        #kc-ekran .merkez .m-ad { fill: var(--kc-fg); font-weight: 700; }
+        #kc-ekran .merkez .m-alt { fill: var(--kc-soluk); font-weight: 600; letter-spacing: .04em; }
+
+        #kc-ekran .yakinlik { position: absolute; right: 4px; bottom: 6px; display: flex; gap: 8px; z-index: 5; transition: opacity .25s; }
+        #kc-ekran .sahne.dilimde .yakinlik, #kc-ekran .sahne.dilimde .ipucu { opacity: 0; pointer-events: none; }
+        #kc-ekran .yuvarlak { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+            border: 1px solid var(--kc-cizgi); background: #fff; color: var(--kc-fg); box-shadow: 0 4px 12px var(--kc-golge); }
+        #kc-ekran .yuvarlak svg { width: 18px; height: 18px; }
+        #kc-ekran .ipucu { position: absolute; left: 4px; bottom: 8px; right: 160px; z-index: 5; font-size: 12px; font-weight: 700;
+            color: var(--kc-soluk); line-height: 1.35; pointer-events: none; transition: opacity .3s; }
+        #kc-ekran .ipucu.gizli { opacity: 0; }
+
+        /* dilim katmani */
+        #kc-ekran .dilim { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; }
+        #kc-ekran .perde { position: absolute; inset: 0; background: var(--kc-bg); opacity: 0; }
+        #kc-ekran .dilim-ust { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 4px 0;
+            transition: opacity .2s ease; }
+        #kc-ekran .dilim.gecis .dilim-ust { opacity: 0; }
+        #kc-ekran .geri { display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px 9px 11px; border-radius: 999px;
+            cursor: pointer; border: 1px solid var(--kc-cizgi); background: #fff; color: var(--kc-fg); font-size: 14px; font-weight: 800; }
+        #kc-ekran .geri svg { width: 16px; height: 16px; }
+        #kc-ekran .dilim-ad { flex: 1; min-width: 0; text-align: center; font-size: 15px; font-weight: 600; color: var(--kc-soluk);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #kc-ekran .dilim-ad b { color: var(--kc-fg); font-size: 19px; font-weight: 800; margin-right: 2px; }
+        #kc-ekran .dilim-govde { position: relative; z-index: 1; flex: 1; min-height: 0; }
+        #kc-ekran .cizim { position: absolute; left: 0; right: 0; top: 0; height: 100%; transition: height .32s ease, width .32s ease;
+            will-change: transform; }
+        #kc-dsvg { width: 100%; height: 100%; display: block; }
+        #kc-ekran .pill { cursor: pointer; }
+        #kc-ekran .pill rect { fill: var(--kc-hap); stroke: var(--kc-hap-cizgi); stroke-width: 1.2; transition: fill .15s; }
+        #kc-ekran .pill .p-w { fill: var(--kc-fg); font-weight: 600; }
+        #kc-ekran .pill .p-l { fill: var(--kc-soluk); font-weight: 700; letter-spacing: .04em; }
+        #kc-ekran .pill.aktif rect { fill: hsl(var(--h) var(--s1) var(--l1)); stroke: hsl(var(--h) var(--ts) var(--tl)); stroke-width: 2; }
+        #kc-ekran .pill.aktif .p-w, #kc-ekran .pill.aktif .p-l { fill: hsl(var(--h) var(--ts) var(--tl)); }
+        #kc-ekran .pill.nabiz rect { animation: kcNabiz 1s ease 2; }
+        @keyframes kcNabiz { 50% { stroke: #1877f2; stroke-width: 4; } }
+        #kc-ekran .hubpill .p-w { fill: hsl(var(--h) var(--ts) var(--tl)); font-weight: 600; }
+        #kc-ekran .hubpill .p-tr { fill: hsl(var(--h) var(--ts) var(--tl)); font-weight: 500; opacity: .8; }
+        #kc-ekran .hubpill rect { fill: transparent; stroke: none; }
+        #kc-ekran .hubpill.aktif rect { fill: var(--kc-hap); stroke: hsl(var(--h) var(--ts) var(--tl)); }
+        #kc-ekran .kenar { fill: hsl(var(--h) var(--cs) var(--cl)); }
+        #kc-ekran .bant { stroke: #fff; stroke-width: 2; }
+        #kc-ekran .parilti { fill: none; stroke: rgba(255, 255, 255, .45); stroke-width: 3; }
+
+        /* kelime karti */
+        #kc-ekran .kart { position: absolute; left: 0; right: 0; bottom: 0; height: 56%; z-index: 3; background: #fff;
+            border: 1px solid var(--kc-cizgi); border-radius: 20px; box-shadow: 0 -10px 34px var(--kc-golge);
+            padding: 14px 16px 18px; overflow-y: auto; transform: translateY(108%);
+            transition: transform .32s cubic-bezier(.2, .8, .2, 1); display: flex; flex-direction: column; gap: 8px; }
+        #kc-ekran .dilim.kartli .cizim { height: 44%; }
+        #kc-ekran .dilim.kartli .kart { transform: none; }
+        #kc-ekran .k-ust { display: flex; align-items: center; gap: 8px; }
+        #kc-ekran .rozet { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; background: var(--kc-isaret); color: var(--kc-vurgu); }
+        #kc-ekran .tur { font-size: 13px; font-weight: 700; color: var(--kc-soluk); flex: 1; }
+        #kc-ekran .k-kelime { display: flex; align-items: center; gap: 10px; }
+        #kc-ekran .kart .yuvarlak { width: 36px; height: 36px; box-shadow: none; flex: none; }
+        #kc-ekran .k-kelime h2 { font-size: 27px; font-weight: 800; line-height: 1.1; letter-spacing: -.3px; overflow-wrap: anywhere; }
+        #kc-ekran .k-tr { font-size: 17px; font-weight: 700; }
+        #kc-ekran .k-ornek { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 12px; background: var(--kc-yuzey);
+            font-size: 14.5px; line-height: 1.45; }
+        #kc-ekran .k-ornek .en { font-style: italic; }
+        #kc-ekran .k-ornek .tr { color: var(--kc-soluk); }
+        #kc-ekran .k-ornek mark { background: var(--kc-isaret); color: inherit; border-radius: 4px; padding: 0 3px; font-weight: 700; }
+        #kc-ekran .k-not { color: var(--kc-soluk); font-size: 13.5px; line-height: 1.45; }
+        #kc-ekran .k-aile { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; font-weight: 700; color: var(--kc-soluk); }
+        #kc-ekran .k-aile button { border: 1px solid var(--kc-cizgi); background: var(--kc-yuzey); border-radius: 999px; padding: 5px 12px;
+            cursor: pointer; font-size: 14px; font-weight: 800; color: var(--kc-fg); }
+
+        @media (min-width: 760px) {
+            #kc-ekran .kart { left: auto; top: 0; bottom: auto; width: 340px; height: auto; max-height: 100%; transform: translateX(110%);
+                box-shadow: -10px 10px 34px var(--kc-golge); }
+            #kc-ekran .dilim.kartli .cizim { height: 100%; width: calc(100% - 352px); }
+        }
+        @media (hover: hover) {
+            #kc-ekran .hucre:hover path { filter: brightness(.96) saturate(1.1); }
+            #kc-ekran .pill:hover rect { stroke: var(--kc-vurgu); }
+            #kc-ekran .oneri button:hover { background: var(--kc-isaret); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #kc-ekran .aile, #kc-ekran .cizim, #kc-ekran .kart, #kc-ekran .ipucu { transition: none !important; }
+            #kc-ekran .pill.nabiz rect { animation: none; }
+        }
     </style>
 </head>
 <body>
+    <!-- KELIME CARKI (tam ekran katman) -->
+    <div id="kc-ekran" role="dialog" aria-label="Kelime Çarkı" aria-hidden="true">
+        <div class="kc-ic">
+            <div class="kc-bas">
+                <button class="story-back" id="kc-kapat"><span class="gb-ok">←</span> Geri</button>
+                <h2>Kelime Çarkı</h2>
+            </div>
+            <div class="sekmeler" role="tablist" aria-label="Çark seç" id="kc-sekmeler"></div>
+            <div class="arama">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.6-3.6"></path></svg>
+                <input id="kc-ara" type="search" placeholder="Kelime ara: happy, mutlu…" autocomplete="off" spellcheck="false" aria-label="Kelime ara">
+                <ul class="oneri" id="kc-oneri" hidden></ul>
+            </div>
+            <div class="anahtar" aria-label="Halkalar">
+                <span><i class="k1"></i>İç: ana kelime</span>
+                <span><i class="k2"></i>Orta: A1–B1</span>
+                <span><i class="k3"></i>Dış: B2–C1</span>
+            </div>
+            <div class="sahne" id="kc-sahne">
+                <svg id="kc-cark" viewBox="-410 -410 820 820" preserveAspectRatio="xMidYMin meet" aria-label="Kelime çarkı">
+                    <defs>
+                        <filter id="kc-golge" x="-30%" y="-30%" width="160%" height="160%">
+                            <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000" flood-opacity=".28"></feDropShadow>
+                        </filter>
+                        <radialGradient id="kc-zeminCark">
+                            <stop offset=".86" stop-color="#000" stop-opacity=".16"></stop>
+                            <stop offset="1" stop-color="#000" stop-opacity="0"></stop>
+                        </radialGradient>
+                    </defs>
+                    <g id="kc-vp"></g>
+                </svg>
+                <p class="ipucu" id="kc-ipucu">İki parmakla yakınlaştır · bir kelimeye dokun</p>
+                <div class="yakinlik">
+                    <button class="yuvarlak" id="kc-zEksi" aria-label="Uzaklaştır"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"></path></svg></button>
+                    <button class="yuvarlak" id="kc-zSifir" aria-label="Çarkı sığdır"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg></button>
+                    <button class="yuvarlak" id="kc-zArti" aria-label="Yakınlaştır"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+                </div>
+
+                <section class="dilim" id="kc-dilim" hidden aria-label="Kelime ailesi">
+                    <div class="perde" id="kc-perde"></div>
+                    <div class="dilim-ust">
+                        <button class="geri" id="kc-geri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>Çark</button>
+                        <div class="dilim-ad" id="kc-dilimAd"></div>
+                        <button class="yuvarlak" id="kc-dilimX" aria-label="Dilimi kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+                    </div>
+                    <div class="dilim-govde">
+                        <div class="cizim" id="kc-cizim"><svg id="kc-dsvg" preserveAspectRatio="xMidYMid meet" aria-label="Seçilen dilim"></svg></div>
+                        <aside class="kart" id="kc-kart" aria-live="polite" inert></aside>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
     <div class="app-container">
         
         <!-- 0. GİRİŞ KAPISI -->
@@ -914,6 +1131,7 @@
             <button class="primary-btn" onclick="startApp()">Çalışmaya Başla</button>
             <button id="home-story-btn" class="primary-btn" style="background-color: #e08a1e; margin-top: 12px;">📖 Metinler</button>
             <button id="home-ifade-btn" class="primary-btn" style="background-color: #6b3fd4; margin-top: 12px;">🗂️ Gramer & Deyimler Listesi</button>
+            <button id="home-cark-btn" class="primary-btn" style="background-color: #0f8b8d; margin-top: 12px;">🎡 Kelime Çarkı</button>
             <button id="home-fun-btn" class="primary-btn" style="background-color: #7c4dff; margin-top: 12px;">🎮 Eğlence</button>
             <button class="primary-btn" style="background-color: #31a24c; margin-top: 12px;" onclick="startPlacementTest()">Seviyemi Belirle (Test)</button>
             <div id="bildirim-kart" class="bk-kart" style="display:none;">
@@ -921,7 +1139,7 @@
                     <b>🔔 Günlük hatırlatma</b>
                     <span id="bk-alt">Her gün kelimelerini çalışmayı unutma.</span>
                 </div>
-                <button id="bk-btn" class="bk-btn">Aç</button>
+                <button id="bk-btn" class="bk-btn" role="switch" aria-checked="false" aria-label="Günlük hatırlatma"></button>
             </div>
             <div id="bk-hata" class="bk-hata" style="display:none;"></div>
             <button id="bk-kod" class="bk-kod" style="display:none;">test kodunu kopyala</button>
@@ -1211,7 +1429,7 @@
             deleteUser, reauthenticateWithPopup, reauthenticateWithCredential, EmailAuthProvider
         } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, query, orderBy, limit, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-        import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging.js";
+        import { getMessaging, getToken, deleteToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyADXePsyOkHyoBbjY6nznBcx5tGbk_76rI",
@@ -1270,6 +1488,16 @@
                     vapidKey: VAPID_ANAHTAR,
                     serviceWorkerRegistration: kayit
                 });
+            },
+            // Kullanici hatirlatmayi kapatinca jeton ve push aboneligi silinir.
+            // deleteToken, tanidigi bir servis calisani yoksa varsayilan
+            // firebase-messaging-sw.js'i kaydetmeye kalkar; bu yuzden once ayni
+            // kaydi getToken ile tanitiyoruz (ag hatasi olsa bile kayit tanitilir).
+            jetonSil: async function () {
+                const m = getMessaging(fbApp);
+                const kayit = await navigator.serviceWorker.ready;
+                try { await getToken(m, { vapidKey: VAPID_ANAHTAR, serviceWorkerRegistration: kayit }); } catch (e) {}
+                return await deleteToken(m);
             }
         };
         // Uygulama ACIKKEN gelen bildirimi FCM kendiliginden gostermez; biz gosteririz.
@@ -1438,6 +1666,7 @@
             { en: "aircraft", tr: "hava aracı/uçak", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "The aircraft landed safely.", exTr: "{Uçak} güvenli bir şekilde indi.", ex2: "The airline operates more than two hundred aircraft.", ex2Tr: "Havayolu iki yüzden fazla {uçak} işletiyor.", usage: "Uçak ve helikopter gibi araçların genel adı; tekil ve çoğul aynı yazılır.", synonyms: [] },
             { en: "airline", tr: "havayolu (şirketi)", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "The airline canceled the flight.", exTr: "{Havayolu} uçuşu iptal etti.", ex2: "She works for a French airline.", ex2Tr: "Bir Fransız {havayolunda} çalışıyor.", usage: "Yolcu taşıyan uçuş şirketi.", synonyms: [] },
             { en: "airport", tr: "havalimanı", type: "n.", level: "A1", day: 1, mistakeCount: 0, ex: "We met her at the airport.", exTr: "Onunla {havalimanında} buluştuk.", ex2: "Our flight leaves from the new airport.", ex2Tr: "Uçuşumuz yeni {havalimanından} kalkıyor.", usage: "Uçakların iniş kalkış yaptığı yer.", synonyms: [] },
+            { en: "aisle", tr: "koridor (koltuk arası)", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "Would you like a window seat or an aisle seat?", exTr: "Cam kenarı mı yoksa {koridor} tarafı mı istersiniz?", ex2: "Please keep the aisle clear during the flight.", ex2Tr: "Lütfen uçuş boyunca {koridoru} boş tutun.", usage: "Uçak, sinema veya market rafları arasındaki geçit; 's' harfi okunmaz.", synonyms: [] },
             { en: "alarm", tr: "alarm/telaşa düşürmek", type: "n., v.", level: "B1", day: 1, mistakeCount: 0, ex: "The fire alarm went off.", exTr: "Yangın {alarmı} çaldı.", ex2: "She set her alarm for six o'clock.", ex2Tr: "{Alarmını} saat altıya kurdu.", usage: "Uyarı sesi veya cihazı; fiil olarak (B2) endişelendirmek demektir.", synonyms: [] },
             { en: "album", tr: "albüm", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "The band released a new album.", exTr: "Grup yeni bir {albüm} çıkardı.", ex2: "We looked through an old photo album.", ex2Tr: "Eski bir fotoğraf {albümüne} baktık.", usage: "Şarkı derlemesi veya fotoğraf defteri.", synonyms: [] },
             { en: "alcohol", tr: "alkol", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "He never drinks alcohol.", exTr: "Hiç {alkol} içmez.", ex2: "This cleaning product contains alcohol.", ex2Tr: "Bu temizlik ürünü {alkol} içerir.", usage: "İçki içindeki madde veya içkilerin genel adı.", synonyms: [] },
@@ -1674,6 +1903,7 @@
             { en: "badger", tr: "porsuk", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "A badger lives under the old tree.", exTr: "Yaşlı ağacın altında bir {porsuk} yaşıyor.", ex2: "Badgers come out at night.", ex2Tr: "{Porsuklar} geceleri dışarı çıkar.", usage: "Siyah beyaz çizgili yüzü olan, toprak altında yaşayan hayvan.", synonyms: [] },
             { en: "badly", tr: "kötü biçimde/fena halde", type: "adv.", level: "A2", day: 1, mistakeCount: 0, ex: "The team played badly.", exTr: "Takım {kötü} oynadı.", ex2: "He was badly hurt in the accident.", ex2Tr: "Kazada {ağır bir şekilde} yaralandı.", usage: "Kötü bir şekilde; 'badly hurt' ağır yaralı gibi 'ciddi ölçüde' anlamı da vardır.", synonyms: [] },
             { en: "bag", tr: "çanta/torba", type: "n.", level: "A1", day: 1, mistakeCount: 0, ex: "She put the books in her bag.", exTr: "Kitapları {çantasına} koydu.", ex2: "She carried a heavy bag of books.", ex2Tr: "Ağır bir kitap {çantası} taşıdı.", usage: "Eşya taşımaya yarayan çanta veya poşet.", synonyms: [] },
+            { en: "baggage", tr: "bagaj", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "You can pick up your baggage at carousel 5.", exTr: "{Bagajını} 5 numaralı banttan alabilirsin.", ex2: "Each passenger may check one piece of baggage.", ex2Tr: "Her yolcu bir parça {bagaj} teslim edebilir.", usage: "'Luggage' ile aynı anlamdadır; sayılamaz, 'a piece of baggage' denir.", synonyms: [] },
             { en: "bail", tr: "kefalet", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "He was released on bail.", exTr: "{Kefaletle} serbest bırakıldı.", ex2: "The judge set bail at ten thousand lira.", ex2Tr: "Hakim {kefaleti} on bin lira olarak belirledi.", usage: "Hukuki terim; 'on bail' kefaletle serbest demektir.", synonyms: [] },
             { en: "bake", tr: "fırında pişirmek", type: "v.", level: "B1", day: 1, mistakeCount: 0, ex: "She baked a chocolate cake.", exTr: "Bir çikolatalı kek {pişirdi}.", ex2: "We bake fresh bread every Sunday morning.", ex2Tr: "Her Pazar sabahı taze ekmek {pişiririz}.", usage: "Ekmek, kek gibi şeyleri fırında pişirmek.", synonyms: [] },
             { en: "bakery", tr: "fırın/pastane", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "There is a new bakery near the beach.", exTr: "Sahilin yakınında yeni bir {fırın} var.", ex2: "She buys fresh bread from the bakery.", ex2Tr: "{Fırından} taze ekmek alır.", usage: "bake (fırında pişirmek) fiilinden gelir.", synonyms: [] },
@@ -1793,6 +2023,7 @@
             { en: "bless", tr: "kutsamak", type: "v.", level: "C1", day: 1, mistakeCount: 0, ex: "The priest blessed the marriage.", exTr: "Rahip evliliği {kutsadı}.", ex2: "The family gathered as the elder blessed the newborn baby.", ex2Tr: "Aile büyüğü yeni doğan bebeği {kutsarken} bir araya geldi.", usage: "Tanrının korumasını dilemek; 'Bless you!' hapşıran kişiye söylenir.", synonyms: [] },
             { en: "blessing", tr: "nimet/onay", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "Good health is a great blessing.", exTr: "İyi sağlık büyük bir {nimettir}.", ex2: "The couple asked for their parents' blessing before the wedding.", ex2Tr: "Çift düğünden önce ebeveynlerinin {onayını} istedi.", usage: "Şükredilecek şey (nimet) veya bir işe verilen onay ve rıza.", synonyms: [] },
             { en: "blind", tr: "kör/görme engelli", type: "adj.", level: "B2", day: 1, mistakeCount: 0, ex: "She has been blind since birth.", exTr: "Doğuştan {kör}.", ex2: "He was completely blind to his own mistakes.", ex2Tr: "Kendi hatalarına karşı tamamen {kördü}.", usage: "Göremeyen; 'blind to' bir şeyi görmezden gelen anlamı da vardır.", synonyms: [] },
+            { en: "bliss", tr: "büyük mutluluk/saadet", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "Lying on the beach all day was pure bliss.", exTr: "Bütün gün sahilde uzanmak {tam bir mutluluktu}.", ex2: "After a long week, a quiet Sunday morning is pure bliss.", ex2Tr: "Uzun bir haftanın ardından sakin bir pazar sabahı {tam bir mutluluktur}.", usage: "Derin ve kusursuz mutluluk hâli; en çok 'pure bliss' (tam bir mutluluk) kalıbıyla kullanılır.", synonyms: [] },
             { en: "block", tr: "blok/engellemek", type: "n., v.", level: "A2", day: 1, mistakeCount: 0, ex: "She lives two blocks away.", exTr: "İki {blok} ötede yaşıyor.", ex2: "A fallen tree blocked the road.", ex2Tr: "Devrilen bir ağaç yolu {kapattı}.", usage: "Yapı adası veya kütle; fiil olarak (B1) yolu tıkamak demektir.", synonyms: [] },
             { en: "blog", tr: "blog", type: "n.", level: "A1", day: 1, mistakeCount: 0, ex: "She writes a travel blog.", exTr: "Bir gezi {blogu} yazıyor.", ex2: "She posts photos on her food blog.", ex2Tr: "Yemek {blogunda} fotoğraf paylaşıyor.", usage: "Kişisel internet günlüğü.", synonyms: [] },
             { en: "blond", tr: "sarışın", type: "adj.", level: "A1", day: 1, mistakeCount: 0, ex: "He has blond hair.", exTr: "{Sarı} saçları var.", ex2: "The little girl has blond curls.", ex2Tr: "Küçük kızın {sarışın} bukleleri var.", usage: "Açık sarı saç rengini niteler.", synonyms: [] },
@@ -1970,6 +2201,7 @@
             { en: "celebration", tr: "kutlama", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "The wedding was a big celebration.", exTr: "Düğün büyük bir {kutlamaydı}.", ex2: "The town holds a celebration every summer.", ex2Tr: "Kasaba her yaz bir {kutlama} düzenler.", usage: "Kutlama etkinliği veya töreni.", synonyms: [] },
             { en: "celebrity", tr: "ünlü kişi", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "The celebrity signed autographs.", exTr: "{Ünlü kişi} imza dağıttı.", ex2: "She became a celebrity after the film.", ex2Tr: "Filmden sonra bir {ünlü} oldu.", usage: "Toplumca tanınan meşhur kişi.", synonyms: [] },
             { en: "cell", tr: "hücre", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "The body is made of cells.", exTr: "Vücut {hücrelerden} oluşur.", ex2: "The prisoner spent a year in a small cell.", ex2Tr: "Mahkum küçük bir {hücrede} bir yıl geçirdi.", usage: "Canlının en küçük yapı birimi; hapishane hücresi anlamı da vardır.", synonyms: [] },
+            { en: "cement", tr: "çimento", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "The workers mixed cement, sand and water.", exTr: "İşçiler {çimentoyu}, kumu ve suyu karıştırdı.", ex2: "The cement needs a full day to dry.", ex2Tr: "{Çimentonun} kuruması için tam bir gün gerekiyor.", usage: "Kum ve suyla karışınca betonu oluşturan bağlayıcı; betonun kendisi 'concrete'tir.", synonyms: [] },
             { en: "cemetery", tr: "mezarlık", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "He was buried in the local cemetery.", exTr: "Yerel {mezarlığa} gömüldü.", ex2: "They visited an old cemetery on the edge of town.", ex2Tr: "Kasabanın kenarındaki eski bir {mezarlığı} ziyaret ettiler.", usage: "Kiliseye bağlı olmayan gömü alanı.", synonyms: [] },
             { en: "cent", tr: "sent", type: "n.", level: "A1", day: 1, mistakeCount: 0, ex: "The pen costs fifty cents.", exTr: "Kalem elli {sent}.", ex2: "The apples cost eighty cents a kilo.", ex2Tr: "Elmalar kilosu seksen {sente} mal oluyor.", usage: "Doların yüzde biri.", synonyms: [] },
             { en: "center", tr: "merkez/ortalamak", type: "n.", level: "A1", day: 1, mistakeCount: 0, ex: "The store is in the city center.", exTr: "Mağaza şehir {merkezinde}.", ex2: "There is a fountain in the center of the square.", ex2Tr: "Meydanın {merkezinde} bir çeşme var.", usage: "Bir yerin orta noktası; İngiliz İngilizcesinde 'centre' yazılır.", synonyms: [] },
@@ -2357,6 +2589,7 @@
             { en: "coworker", tr: "iş arkadaşı", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "My coworker helped me with the report.", exTr: "{İş arkadaşım} raporda bana yardım etti.", ex2: "She gets on well with her coworkers.", ex2Tr: "{İş arkadaşlarıyla} iyi geçiniyor.", usage: "Amerikan İngilizcesinde yaygındır; İngiliz İngilizcesinde colleague tercih edilir.", synonyms: [] },
             { en: "crack", tr: "çatlamak/çatlak", type: "v., n.", level: "B2", day: 1, mistakeCount: 0, ex: "The glass cracked but did not break.", exTr: "Cam {çatladı} ama kırılmadı.", ex2: "It took the detective weeks to crack the code.", ex2Tr: "Dedektifin şifreyi {çözmesi} haftalar aldı.", usage: "Çatlamak veya kırılma sesi; 'crack a code' şifre çözmek demektir.", synonyms: [] },
             { en: "craft", tr: "zanaat/el işi", type: "n., v.", level: "B2", day: 1, mistakeCount: 0, ex: "Pottery is a traditional craft.", exTr: "Çömlekçilik geleneksel bir {zanaattır}.", ex2: "Basket weaving is a craft passed down through generations.", ex2Tr: "Sepet örücülüğü nesiller boyunca aktarılan bir {zanaattır}.", usage: "İsim olarak (B2) el becerisi gerektiren iş; fiil olarak (C1) ustalıkla üretmek.", synonyms: [] },
+            { en: "crane", tr: "vinç/turna", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "A crane lifted the steel beams to the top floor.", exTr: "Bir {vinç} çelik kirişleri en üst kata kaldırdı.", ex2: "Nobody may stand under the crane while it is working.", ex2Tr: "{Vinç} çalışırken altında kimse durmamalıdır.", usage: "İnşaatta vinç; kuş olarak turna anlamına da gelir.", synonyms: [] },
             { en: "crash", tr: "çarpışma/çökmek", type: "n., v.", level: "B1", day: 1, mistakeCount: 0, ex: "He had a car crash.", exTr: "Bir araba {kazası} geçirdi.", ex2: "My computer crashed while I was saving the file.", ex2Tr: "Dosyayı kaydederken bilgisayarım {çöktü}.", usage: "Şiddetli çarpışma; bilgisayarın veya borsanın çökmesi anlamı da vardır.", synonyms: [] },
             { en: "crawl", tr: "emeklemek/sürünmek", type: "v.", level: "C1", day: 1, mistakeCount: 0, ex: "The baby is learning to crawl.", exTr: "Bebek {emeklemeyi} öğreniyor.", ex2: "Traffic crawled along the highway during rush hour.", ex2Tr: "Trafik yoğun saatlerde otoyol boyunca {sürünerek} ilerledi.", usage: "Elleri ve dizleri üzerinde ilerlemek; trafiğin çok yavaş akması için de kullanılır.", synonyms: [] },
             { en: "crazy", tr: "çılgın/deli", type: "adj.", level: "A2", day: 1, mistakeCount: 0, ex: "That's a crazy idea.", exTr: "Bu {çılgın} bir fikir.", ex2: "The children went crazy with joy.", ex2Tr: "Çocuklar sevinçten {çıldırdı}.", usage: "Akıl dışı veya çok heyecanlı; 'crazy about' bir şeye deli olmak demektir.", synonyms: [] },
@@ -2415,6 +2648,7 @@
             { en: "custody", tr: "velayet/gözaltı", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "The mother was given custody of the children.", exTr: "Anneye çocukların {velayeti} verildi.", ex2: "The suspect remained in police custody overnight.", ex2Tr: "Şüpheli geceyi polis {gözetiminde} geçirdi.", usage: "Çocuğun yasal bakım hakkı; 'in custody' gözaltında demektir.", synonyms: [] },
             { en: "custom", tr: "gelenek/görenek", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "It is a local custom to bow.", exTr: "Eğilmek yerel bir {gelenektir}.", ex2: "Every culture has its own wedding customs.", ex2Tr: "Her kültürün kendi düğün {gelenekleri} vardır.", usage: "Bir toplumda yerleşmiş alışkanlık.", synonyms: [] },
             { en: "customer", tr: "müşteri", type: "n.", level: "A1", day: 1, mistakeCount: 0, ex: "The shop has many customers.", exTr: "Dükkânın çok {müşterisi} var.", ex2: "A customer asked for the manager.", ex2Tr: "Bir {müşteri} yöneticiyi istedi.", usage: "Bir yerden ürün veya hizmet alan kişi.", synonyms: [] },
+            { en: "customs", tr: "gümrük", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "We went through customs after we landed.", exTr: "İndikten sonra {gümrükten} geçtik.", ex2: "You must declare these goods at customs.", ex2Tr: "Bu malları {gümrükte} beyan etmelisin.", usage: "Bu anlamda hep çoğul kullanılır; tekil 'custom' gelenek demektir.", synonyms: [] },
             { en: "cut", tr: "kesmek/kesik/kısmak", type: "v., n.", level: "A1", day: 1, mistakeCount: 0, ex: "Cut the paper in half.", exTr: "Kâğıdı ikiye {kes}.", ex2: "The company had to cut costs.", ex2Tr: "Şirketin maliyetleri {kısması} gerekti.", usage: "Bıçakla ayırmak; ücreti veya bütçeyi kısmak (cut costs), çekimi cut-cut-cut.", synonyms: [] },
             { en: "cute", tr: "sevimli/şirin", type: "adj.", level: "B2", day: 1, mistakeCount: 0, ex: "What a cute puppy!", exTr: "Ne {şirin} bir köpek yavrusu!", ex2: "She wore a cute little hat to the party.", ex2Tr: "Partiye {sevimli} küçük bir şapka taktı.", usage: "Hoş ve çekici görünen; Amerikan İngilizcesinde yaygındır.", synonyms: [] },
             { en: "cutting", tr: "kesme/çelik (bitki)", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "She grew the plant from a cutting.", exTr: "Bitkiyi bir {çelikten} yetiştirdi.", ex2: "He kept a newspaper cutting about his father's award.", ex2Tr: "Babasının ödülüyle ilgili bir gazete {kupürünü} sakladı.", usage: "Kesme işlemi; bitkiden üretim için alınan dal parçası.", synonyms: [] },
@@ -2512,6 +2746,7 @@
             { en: "deny", tr: "inkar etmek/reddetmek", type: "v.", level: "B2", day: 1, mistakeCount: 0, ex: "He denied stealing the money.", exTr: "Parayı çaldığını {inkar etti}.", ex2: "The company denied any responsibility for the accident.", ex2Tr: "Şirket kazadaki herhangi bir sorumluluğu {reddetti}.", usage: "Bir şeyin doğru olmadığını söylemek; 'admit' zıttıdır.", synonyms: [] },
             { en: "depart", tr: "ayrılmak/kalkmak", type: "v.", level: "B2", day: 1, mistakeCount: 0, ex: "The train departs at 9:15.", exTr: "Tren 9:15'te {kalkar}.", ex2: "Our flight will depart from gate twelve.", ex2Tr: "Uçuşumuz on iki numaralı kapıdan {kalkacak}.", usage: "'Leave' kelimesinin resmi hali; tren ve uçak kalkışlarında kullanılır.", synonyms: [] },
             { en: "department", tr: "bölüm/departman", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "She works in the sales department.", exTr: "Satış {departmanında} çalışıyor.", ex2: "Ask at the information department.", ex2Tr: "Danışma {departmanına} sor.", usage: "Bir kurumun ayrı çalışan birimi; mağaza reyonu anlamı da vardır.", synonyms: [] },
+            { en: "departure", tr: "kalkış/hareket", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "Please arrive at the airport two hours before departure.", exTr: "Lütfen {kalkıştan} iki saat önce havalimanında ol.", ex2: "Check the departure board for your gate number.", ex2Tr: "Kapı numaran için {kalkış} ekranına bak.", usage: "Yolculuğun başladığı an; havalimanı ekranlarında 'Departures' giden uçuşları gösterir, zıttı 'arrival'dır.", synonyms: [] },
             { en: "depend", tr: "bağlı olmak/güvenmek", type: "v.", level: "A2", day: 1, mistakeCount: 0, ex: "It depends on the weather.", exTr: "Hava durumuna {bağlı}.", ex2: "You can always depend on her help.", ex2Tr: "Her zaman onun yardımına {güvenebilirsin}.", usage: "'Depend on' bir şeye bağlı olmak veya birine güvenmek demektir.", synonyms: [] },
             { en: "dependence", tr: "muhtaçlık/bağımlı olma", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "The country wants to reduce its dependence on oil.", exTr: "Ülke petrole olan {bağımlılığını} azaltmak istiyor.", ex2: "The small business grew increasingly dependent on a single major client.", ex2Tr: "Küçük işletme giderek tek bir büyük müşteriye {bağımlı} hale geldi.", usage: "'Dependence on' kalıbıyla, bir şeye muhtaç olma durumu.", synonyms: [] },
             { en: "dependent", tr: "bağımlı/muhtaç", type: "adj.", level: "B2", day: 1, mistakeCount: 0, ex: "The success is dependent on good weather.", exTr: "Başarı iyi havaya {bağlı}.", ex2: "Young children are completely dependent on their parents.", ex2Tr: "Küçük çocuklar tamamen ebeveynlerine {bağımlıdır}.", usage: "'Dependent on' kalıbıyla, bir şeye bağlı olan.", synonyms: [] },
@@ -2541,6 +2776,7 @@
             { en: "desperate", tr: "çaresiz/umutsuz", type: "adj.", level: "B2", day: 1, mistakeCount: 0, ex: "He was desperate for help.", exTr: "Yardım için {çaresizdi}.", ex2: "She made a desperate attempt to escape.", ex2Tr: "Kaçmak için {umutsuz} bir girişimde bulundu.", usage: "be desperate for kalıbı bir şeye çok muhtaç olmak demektir.", synonyms: [] },
             { en: "desperately", tr: "umutsuzca/çaresizce", type: "adv.", level: "B2", day: 1, mistakeCount: 0, ex: "He desperately needs a job.", exTr: "Bir işe {çaresizce} ihtiyacı var.", ex2: "She desperately wanted to finish the race despite the pain.", ex2Tr: "Acıya rağmen yarışı {çaresizce} bitirmek istedi.", usage: "Büyük bir ihtiyaç ve çaresizlikle.", synonyms: [] },
             { en: "despite", tr: "-e rağmen", type: "prep.", level: "B2", day: 1, mistakeCount: 0, ex: "Despite the rain, we went out.", exTr: "Yağmura {rağmen} dışarı çıktık.", ex2: "He passed despite his mistakes.", ex2Tr: "Hatalarına {rağmen} geçti.", usage: "in spite of ile aynı anlamdadır; ardından of gelmez.", synonyms: [] },
+            { en: "destination", tr: "varış yeri/gidilecek yer", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "Our final destination is Tokyo.", exTr: "Son {varış noktamız} Tokyo.", ex2: "Antalya is a popular vacation destination.", ex2Tr: "Antalya popüler bir tatil {yeridir}.", usage: "Bir yolculuğun ya da gönderinin ulaşacağı yer.", synonyms: [] },
             { en: "destroy", tr: "yok etmek/tahrip etmek", type: "v.", level: "B1", day: 1, mistakeCount: 0, ex: "The fire destroyed the old house.", exTr: "Yangın eski evi {yok etti}.", ex2: "War destroys everything.", ex2Tr: "Savaş her şeyi {tahrip eder}.", usage: "damage hasar vermektir; destroy tamamen ortadan kaldırmaktır.", synonyms: [] },
             { en: "destruction", tr: "yıkım", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "The war caused widespread destruction.", exTr: "Savaş yaygın bir {yıkıma} neden oldu.", ex2: "The storm left a trail of destruction across the coast.", ex2Tr: "Fırtına kıyı boyunca bir {yıkım} izi bıraktı.", usage: "Tamamen yok etme veya edilme durumu.", synonyms: [] },
             { en: "destructive", tr: "yıkıcı", type: "adj.", level: "C1", day: 1, mistakeCount: 0, ex: "The storm had a destructive effect on the coast.", exTr: "Fırtına kıyı üzerinde {yıkıcı} bir etki yarattı.", ex2: "His destructive habits eventually cost him his job.", ex2Tr: "{Yıkıcı} alışkanlıkları sonunda işine mal oldu.", usage: "Zarar ve yıkıma yol açan; davranışlar için de kullanılır.", synonyms: [] },
@@ -2684,6 +2920,7 @@
             { en: "dream", tr: "rüya/hayal/rüya görmek", type: "n., v.", level: "A2", day: 1, mistakeCount: 0, ex: "I had a strange dream last night.", exTr: "Dün gece garip bir {rüya} gördüm.", ex2: "She dreams of becoming a doctor.", ex2Tr: "Doktor olmayı {hayal ediyor}.", usage: "dream of / about kalıbı hayal etmek anlamındadır.", synonyms: [] },
             { en: "dress", tr: "elbise/giyinmek", type: "n., v.", level: "A1", day: 1, mistakeCount: 0, ex: "She wore a blue dress.", exTr: "Mavi bir {elbise} giymişti.", ex2: "He dressed quickly and left.", ex2Tr: "Çabucak {giyindi} ve çıktı.", usage: "get dressed kalıbı giyinmek demektir.", synonyms: [] },
             { en: "drift", tr: "sürüklenmek", type: "v.", level: "C1", day: 1, mistakeCount: 0, ex: "The boat drifted out to sea.", exTr: "Tekne denize doğru {sürüklendi}.", ex2: "The two old friends slowly drifted apart after college.", ex2Tr: "İki eski arkadaş üniversiteden sonra yavaşça {birbirinden uzaklaştı}.", usage: "Akıntıyla veya amaçsızca sürüklenmek; 'drift apart' zamanla uzaklaşmak.", synonyms: [] },
+            { en: "drill", tr: "matkap/delmek/tatbikat", type: "n., v.", level: "B2", day: 1, mistakeCount: 0, ex: "We need a drill to make holes in the wall.", exTr: "Duvarda delik açmak için bir {matkaba} ihtiyacımız var.", ex2: "We have a fire drill at the office every six months.", ex2Tr: "Ofiste her altı ayda bir yangın {tatbikatı} yapıyoruz.", usage: "'Fire drill' yangın tatbikatı demektir; iş güvenliğinde sık geçer.", synonyms: [] },
             { en: "drink", tr: "içmek/içecek", type: "v., n.", level: "A1", day: 1, mistakeCount: 0, ex: "I drink tea every morning.", exTr: "Her sabah çay {içerim}.", ex2: "Would you like a cold drink?", ex2Tr: "Soğuk bir {içecek} ister misin?", usage: "Geçmiş hâlleri drank ve drunk biçimindedir.", synonyms: [] },
             { en: "drive", tr: "sürmek/araba kullanmak", type: "v.", level: "A1", day: 1, mistakeCount: 0, ex: "Can you drive a car?", exTr: "Araba {kullanabiliyor} musun?", ex2: "We drove to the beach.", ex2Tr: "Sahile arabayla {gittik}.", usage: "Geçmiş hâlleri drove ve driven biçimindedir.", synonyms: [] },
             { en: "driver", tr: "sürücü/şoför", type: "n.", level: "A1", day: 1, mistakeCount: 0, ex: "The bus driver was very kind.", exTr: "Otobüs {şoförü} çok nazikti.", ex2: "He is a careful driver.", ex2Tr: "Dikkatli bir {sürücüdür}.", usage: "drive fiilinden türemiştir.", synonyms: [] },
@@ -3108,6 +3345,7 @@
             { en: "flexibility", tr: "esneklik", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "The job offers flexibility in working hours.", exTr: "İş çalışma saatlerinde {esneklik} sunuyor.", ex2: "Yoga improves both strength and flexibility.", ex2Tr: "Yoga hem gücü hem de {esnekliği} geliştirir.", usage: "Değişime uyum sağlayabilme.", synonyms: [] },
             { en: "flexible", tr: "esnek", type: "adj.", level: "B2", day: 1, mistakeCount: 0, ex: "My working hours are quite flexible.", exTr: "Çalışma saatlerim oldukça {esnek}.", ex2: "The material is flexible enough to bend without breaking.", ex2Tr: "Malzeme kırılmadan bükülebilecek kadar {esnek}.", usage: "Hem bükülebilir fiziksel malzemeler hem de çalışma saatleri veya kurallar gibi soyut durumlar için kullanılır.", synonyms: [] },
             { en: "flight", tr: "uçuş", type: "n.", level: "A1", day: 1, mistakeCount: 0, ex: "Our flight to Moscow was delayed by an hour.", exTr: "Moskova {uçuşumuz} bir saat gecikti.", ex2: "Our flight was delayed by two hours.", ex2Tr: "{Uçuşumuz} iki saat gecikti.", usage: "Uçağın gerçekleştirdiği seyahat. 'Flight attendant' (kabin memuru/hostes) sık kullanılan bir havacılık terimidir.", synonyms: [] },
+            { en: "flight attendant", tr: "kabin memuru", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "The flight attendant showed us the emergency exits.", exTr: "{Kabin memuru} bize acil çıkışları gösterdi.", ex2: "She has worked as a flight attendant for ten years.", ex2Tr: "On yıldır {kabin memuru} olarak çalışıyor.", usage: "Uçakta yolcu güvenliği ve hizmetinden sorumlu görevli; 'stewardess' eskimiş sayılır.", synonyms: [] },
             { en: "float", tr: "yüzmek/su üstünde durmak", type: "v.", level: "B2", day: 1, mistakeCount: 0, ex: "Wood floats on water.", exTr: "Tahta suyun üzerinde {yüzer}.", ex2: "The children watched the leaves float down the stream.", ex2Tr: "Çocuklar yaprakların dere boyunca {süzülmesini} izledi.", usage: "Bir nesnenin batmadan suyun veya bir sıvının yüzeyinde kalmasını ifade eder.", synonyms: [] },
             { en: "flood", tr: "sel/su basmak", type: "n., v.", level: "B1", day: 1, mistakeCount: 0, ex: "Heavy rains caused severe floods in the region.", exTr: "Şiddetli yağmurlar bölgede ciddi {sellere} neden oldu.", ex2: "The company received a flood of complaints after the price increase.", ex2Tr: "Şirket fiyat artışından sonra bir {şikayet seli} aldı.", usage: "Doğal afet olarak su baskınını belirtir. Mecazi olarak şikayetlerin yağması (flood of complaints) anlamında da geçer.", synonyms: [] },
             { en: "floor", tr: "zemin/kat", type: "n.", level: "A1", day: 1, mistakeCount: 0, ex: "Take the elevator to the fifth floor.", exTr: "Beşinci {kata} asansörle çık.", ex2: "The keys fell on the floor.", ex2Tr: "Anahtarlar {yere} düştü.", usage: "Odanın tabanı/zemini veya binalardaki kat seviyesini (first floor) belirtmek için kullanılır.", synonyms: [] },
@@ -3354,6 +3592,7 @@
             { en: "halfway", tr: "yarı yolda", type: "adv.", level: "C1", day: 1, mistakeCount: 0, ex: "We stopped halfway up the mountain.", exTr: "Dağın {yarısına} kadar durduk.", ex2: "The two sides agreed to meet halfway on the price.", ex2Tr: "İki taraf fiyat konusunda {ortada buluşmayı} kabul etti.", usage: "İki nokta arasının ortasında; 'meet halfway' ortada buluşmak demektir.", synonyms: [] },
             { en: "hall", tr: "salon/koridor", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "Leave your shoes in the entrance hall.", exTr: "Ayakkabılarını giriş {salonunda} bırak.", ex2: "The concert hall was full.", ex2Tr: "Konser {salonu} doluydu.", usage: "Binalardaki geniş antre, koridor veya etkinlik salonlarını belirtir.", synonyms: [] },
             { en: "halt", tr: "durdurmak (aniden)/duruş", type: "v., n.", level: "C1", day: 1, mistakeCount: 0, ex: "The strike halted production.", exTr: "Grev üretimi {durdurdu}.", ex2: "The train came to a sudden halt just before the station.", ex2Tr: "Tren istasyondan hemen önce aniden {durdu}.", usage: "'Come to a halt' durma noktasına gelmek demektir.", synonyms: [] },
+            { en: "hammer", tr: "çekiç", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "He used a hammer to fix the shelf.", exTr: "Rafı tamir etmek için {çekiç} kullandı.", ex2: "Hand me the hammer and some nails, please.", ex2Tr: "Bana {çekici} ve birkaç çivi uzatır mısın lütfen?", usage: "Fiil olarak çekiçle vurmak, çivi çakmak anlamına da gelir.", synonyms: [] },
             { en: "hand", tr: "el/vermek", type: "n., v.", level: "A1", day: 1, mistakeCount: 0, ex: "Raise your hand if you have a question.", exTr: "Soru sormak için {elini} kaldırdı.", ex2: "He raised his hand to ask a question.", ex2Tr: "Soru sormak için {elini} kaldırdı.", usage: "İsim olarak el organı (A1), fiil olarak ise bir şeyi elden uzatmak (B1) anlamındadır. 'Hand in' ödev teslim etmek demektir.", synonyms: [] },
             { en: "handful", tr: "avuç dolusu/bir avuç", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "Only a handful of people attended.", exTr: "Sadece {bir avuç} insan katıldı.", ex2: "Add just a handful of nuts to the salad for extra crunch.", ex2Tr: "Ekstra çıtırlık için salataya sadece {bir avuç} kuruyemiş ekle.", usage: "'A handful of' çok az sayıda demektir; ele avuca sığmaz kişi anlamı da vardır.", synonyms: [] },
             { en: "handle", tr: "idare etmek/kulp/kol", type: "v., n.", level: "B2", day: 1, mistakeCount: 0, ex: "He knows how to handle difficult operational problems.", exTr: "Zor operasyonel sorunları nasıl {ele alacağını} biliyor.", ex2: "The handle on the door broke, so we couldn't open it.", ex2Tr: "Kapının {kolu} kırıldı, bu yüzden açamadık.", usage: "Fiil olarak bir işin üstesinden gelmek veya yönetmek (B2), isim olarak kapı kulbu anlamındadır.", synonyms: [] },
@@ -3723,6 +3962,7 @@
             { en: "invisible", tr: "görünmez", type: "adj.", level: "C1", day: 1, mistakeCount: 0, ex: "The stars are invisible during the day.", exTr: "Yıldızlar gündüz {görünmez}.", ex2: "The report highlights the often invisible struggles of low-wage workers.", ex2Tr: "Rapor düşük ücretli işçilerin genellikle {görünmeyen} mücadelelerini vurguluyor.", usage: "Gözle görülemeyen; toplumda fark edilmeyenler için mecazen kullanılır.", synonyms: [] },
             { en: "invitation", tr: "davet/davetiye", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "Thank you for the wedding invitation.", exTr: "Düğün {davetiyesi} için teşekkürler.", ex2: "I sent the invitation by email.", ex2Tr: "{Daveti} e-posta ile gönderdim.", usage: "Birini bir etkinliğe yazılı (davetiye kartı) veya sözlü olarak çağırma eyleminin ismidir.", synonyms: [] },
             { en: "invite", tr: "davet etmek", type: "v.", level: "A2", day: 1, mistakeCount: 0, ex: "I want to invite you to my birthday party.", exTr: "Bizi pazar günü akşam yemeğine {davet ettiler}.", ex2: "They invited us for dinner on Sunday.", ex2Tr: "Pazar günü akşam yemeğine bizi {davet ettiler}.", usage: "Birinden misafir olarak bir yere gelmesini istemek eylemidir.", synonyms: [] },
+            { en: "invoice", tr: "fatura", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "We will email you the invoice today.", exTr: "{Faturayı} bugün size e-postayla göndereceğiz.", ex2: "Please pay the invoice within 30 days.", ex2Tr: "Lütfen {faturayı} 30 gün içinde ödeyin.", usage: "Resmi satış belgesi; restoranda ödenen hesap ise 'bill' (Amerikan İngilizcesinde 'check') olur.", synonyms: [] },
             { en: "invoke", tr: "(yasaya) dayanmak/yardıma çağırmak", type: "v.", level: "C1", day: 1, mistakeCount: 0, ex: "The president invoked emergency powers.", exTr: "Cumhurbaşkanı acil durum yetkilerini {devreye soktu}.", ex2: "The company invoked a clause in the contract to cancel the deal.", ex2Tr: "Şirket anlaşmayı iptal etmek için sözleşmedeki bir maddeyi {öne sürdü}.", usage: "Resmi bir yetkiyi devreye sokmak; 'çağrıştırmak' anlamındaki 'evoke' ile karıştırılmamalıdır.", synonyms: [] },
             { en: "involve", tr: "içermek/kapsamak/dahil etmek", type: "v.", level: "A2", day: 1, mistakeCount: 0, ex: "The new project will involve a lot of traveling.", exTr: "Yeni proje çok fazla seyahat {içerecek}.", ex2: "The job involves working at weekends.", ex2Tr: "İş hafta sonları çalışmayı {içeriyor}.", usage: "Bir işin zorunlu olarak bir durumu gerektirmesi veya bir kişiyi sürece dahil etmesi anlamındadır.", synonyms: [] },
             { en: "involved", tr: "ilgili/dahil olan/karışan", type: "adj.", level: "B1", day: 1, mistakeCount: 0, ex: "He was involved in a traffic accident yesterday.", exTr: "Dün bir trafik kazasına {karıştı}.", ex2: "She got involved in several community projects.", ex2Tr: "Birkaç topluluk projesinde yer {aldı}.", usage: "Bir olaya veya suça karışmış, ya da bir projede aktif olarak rol alan (get involved) kişileri belirtir.", synonyms: [] },
@@ -4931,6 +5171,7 @@
             { en: "recent", tr: "son/yeni (zaman)", type: "adj.", level: "A2", day: 1, mistakeCount: 0, ex: "In recent years, technology has advanced rapidly.", exTr: "{Son} yıllarda teknoloji hızla ilerledi.", ex2: "Her most recent book is about travel.", ex2Tr: "En {son} kitabı seyahat hakkında.", usage: "Günümüze yakın bir geçmişte olmuş, yeni sayılabilecek olayları (recent news) tanımlar.", synonyms: [] },
             { en: "recently", tr: "son zamanlarda/geçenlerde", type: "adv.", level: "A2", day: 1, mistakeCount: 0, ex: "Have you seen any good movies recently?", exTr: "{Son zamanlarda} iyi bir film izledin mi?", ex2: "We recently moved to a bigger house.", ex2Tr: "{Yakın zamanda} daha büyük bir eve taşındık.", usage: "Özellikle 'Present Perfect Tense' (I have recently done) ile çok sık kullanılan zaman zarfıdır.", synonyms: [] },
             { en: "reception", tr: "resepsiyon/karşılama", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "You can leave the keys at the hotel reception.", exTr: "Anahtarları otel {resepsiyonuna} bırakabilirsin.", ex2: "The wedding reception was held in a garden.", ex2Tr: "Düğün {resepsiyonu} bir bahçede yapıldı.", usage: "Otellerdeki giriş bankosu veya misafirleri ağırlamak için düzenlenen resmi davettir.", synonyms: [] },
+            { en: "receptionist", tr: "resepsiyon görevlisi", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "The receptionist gave us the room key.", exTr: "{Resepsiyon görevlisi} bize oda anahtarını verdi.", ex2: "Ask the receptionist to call a taxi for you.", ex2Tr: "{Resepsiyon görevlisinden} sana bir taksi çağırmasını iste.", usage: "Otel, hastane veya ofis girişinde gelenleri karşılayan kişi.", synonyms: [] },
             { en: "recession", tr: "resesyon/ekonomik durgunluk", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "Many lost their jobs during the recession.", exTr: "{Durgunluk} döneminde birçok kişi işini kaybetti.", ex2: "Economists are warning that a global recession may be coming.", ex2Tr: "Ekonomistler küresel bir {durgunluğun} gelebileceği konusunda uyarıyor.", usage: "Ekonomik küçülme dönemi.", synonyms: [] },
             { en: "recipe", tr: "yemek tarifi", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "Could you give me the recipe for this traditional soup?", exTr: "Bu geleneksel çorbanın {tarifini} verebilir misin?", ex2: "This recipe is very easy to follow.", ex2Tr: "Bu {tarifi} takip etmek çok kolay.", usage: "Yemeklerin nasıl yapılacağını ve malzemelerini anlatan metindir. Okunuşu 're-si-pi' şeklindedir.", synonyms: [] },
             { en: "recipient", tr: "alan kişi/muhatap", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "She was the recipient of this year's award.", exTr: "Bu yılın ödülünün {alıcısıydı}.", ex2: "Make sure you enter the correct email address for the recipient.", ex2Tr: "{Alıcı} için doğru e-posta adresini girdiğinden emin ol.", usage: "Ödül, bağış veya mektubu alan kişi.", synonyms: [] },
@@ -4961,6 +5202,7 @@
             { en: "refrigerator", tr: "buzdolabı", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "Put the milk back in the refrigerator.", exTr: "Sütü {buzdolabına} geri koy.", ex2: "The refrigerator is almost empty.", ex2Tr: "{Buzdolabı} neredeyse boş.", usage: "Yiyecekleri soğuk tutan ev aletidir. Günlük dilde genellikle daha kısa olan 'fridge' kelimesi tercih edilir.", synonyms: [] },
             { en: "refuge", tr: "sığınacak yer/barınak", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "They took refuge in a cave during the storm.", exTr: "Fırtına sırasında bir mağarada {sığındılar}.", ex2: "The organization provides refuge for families fleeing difficult situations.", ex2Tr: "Kuruluş zor durumlardan kaçan aileler için {sığınak} sağlıyor.", usage: "'Take refuge' sığınmak demektir.", synonyms: [] },
             { en: "refugee", tr: "mülteci", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "The camp shelters thousands of refugees.", exTr: "Kamp binlerce {mülteciyi} barındırıyor.", ex2: "Several countries have opened their borders to welcome refugees.", ex2Tr: "Birçok ülke {mültecileri} karşılamak için sınırlarını açtı.", usage: "Savaş veya zulümden kaçan kişi.", synonyms: [] },
+            { en: "refund", tr: "para iadesi/iade etmek", type: "n., v.", level: "B2", day: 1, mistakeCount: 0, ex: "The store gave me a full refund.", exTr: "Mağaza paramın {tamamını iade etti}.", ex2: "If the flight is canceled, the airline will refund your ticket.", ex2Tr: "Uçuş iptal edilirse havayolu bilet ücretini {iade eder}.", usage: "Satın alınan ürün ya da hizmetin parasını geri vermek; isim ve fiil olarak kullanılır.", synonyms: [] },
             { en: "refusal", tr: "reddediş/geri çevirme", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "His refusal to apologize made things worse.", exTr: "Özür dilemeyi {reddetmesi} işleri kötüleştirdi.", ex2: "The bank's refusal to grant the loan disappointed the small business owner.", ex2Tr: "Bankanın krediyi vermeyi {reddetmesi} küçük işletme sahibini hayal kırıklığına uğrattı.", usage: "Kabul etmeme durumu.", synonyms: [] },
             { en: "refuse", tr: "reddetmek", type: "v.", level: "A2", day: 1, mistakeCount: 0, ex: "He refused to answer my questions.", exTr: "Sorularımı cevaplamayı {reddetti}.", ex2: "She refused the offer politely.", ex2Tr: "Teklifi kibarca {reddetti}.", usage: "Yapılması istenen bir şeyi kabul etmemek, geri çevirmektir. Kendisinden sonra fiil gelirse 'to' alır (refuse to do).", synonyms: [] },
             { en: "regain", tr: "geri kazanmak", type: "v.", level: "C1", day: 1, mistakeCount: 0, ex: "She slowly regained her strength.", exTr: "Yavaşça gücünü {yeniden kazandı}.", ex2: "The team hopes to regain the lead in the second half.", ex2Tr: "Takım ikinci yarıda liderliği {yeniden kazanmayı} umuyor.", usage: "Kaybedileni yeniden elde etmek.", synonyms: [] },
@@ -5157,6 +5399,7 @@
             { en: "run", tr: "koşmak/çalıştırmak (makine)/yönetmek", type: "v., n.", level: "A1", day: 1, mistakeCount: 0, ex: "You should not run in the office corridors.", exTr: "Ofis koridorlarında {koşmamalısın}.", ex2: "He runs in the park every morning.", ex2Tr: "Her sabah parkta {koşar}.", usage: "Düzensiz bir fiildir (run, ran, run). İnsanların koşması (A1), makinenin çalışması veya şirket yönetmek (B2) anlamları vardır.", synonyms: [] },
             { en: "runner", tr: "koşucu", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "He is a very fast runner and won the marathon easily.", exTr: "Çok hızlı bir {koşucu} ve maratonu kolayca kazandı.", ex2: "The runners started at exactly nine.", ex2Tr: "{Koşucular} tam saat dokuzda başladı.", usage: "Koşu sporunu yapan veya yarışa katılan atletik kişidir.", synonyms: [] },
             { en: "running", tr: "koşma/çalışır durumda", type: "n.", level: "A2", day: 1, mistakeCount: 0, ex: "Leave the engine running for a few minutes to warm it up.", exTr: "Motoru ısıtmak için birkaç dakika {çalışır} durumda bırak.", ex2: "She goes running before breakfast.", ex2Tr: "Kahvaltıdan önce {koşuya} çıkar.", usage: "Koşu sporu (isim) veya kesintisiz çalışan motor/su akıntısı (running water) anlamlarında kullanılır.", synonyms: [] },
+            { en: "runway", tr: "pist", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "The plane is waiting at the end of the runway.", exTr: "Uçak {pistin} sonunda bekliyor.", ex2: "Snow closed the runway for three hours.", ex2Tr: "Kar, {pisti} üç saatliğine kapattı.", usage: "Uçakların kalkış ve iniş yaptığı uzun yol.", synonyms: [] },
             { en: "rural", tr: "kırsal/köy", type: "adj.", level: "B2", day: 1, mistakeCount: 0, ex: "They visited a peaceful rural village in the Black Sea region.", exTr: "Karadeniz bölgesinde huzurlu {kırsal} bir köyü ziyaret ettiler.", ex2: "Rural areas often have fewer job opportunities than cities.", ex2Tr: "{Kırsal} bölgelerde genellikle şehirlerden daha az iş fırsatı bulunur.", usage: "Şehirden uzak, tarım ve doğayla iç içe olan bölgeleri tanımlar. Şehirsel (urban) kelimesinin zıttıdır.", synonyms: [] },
             { en: "rush", tr: "acele etmek/telaş", type: "v., n.", level: "B2", day: 1, mistakeCount: 0, ex: "We had to rush to catch the morning flight.", exTr: "Sabah uçuşuna yetişmek için {aceleyle koşmak} zorunda kaldık.", ex2: "Traffic is always terrible during the evening rush hour.", ex2Tr: "Trafik akşam {yoğun saatlerde} her zaman berbat.", usage: "Hızlıca ve telaş içinde bir yere gitmek eylemi veya trafiğin yoğun olduğu 'rush hour' (iş çıkış saati) kalıbıdır.", synonyms: [] },
             { en: "résumé", tr: "özgeçmiş", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "Send your résumé with the application.", exTr: "Başvuruyla birlikte {özgeçmişinizi} gönderin.", ex2: "She updated her résumé before applying for the new position.", ex2Tr: "Yeni pozisyona başvurmadan önce {özgeçmişini} güncelledi.", usage: "Amerikan İngilizcesinde iş başvurusu belgesi; İngiliz İngilizcesinde 'CV' denir.", synonyms: [] },
@@ -5743,6 +5986,7 @@
             { en: "tag", tr: "etiket/etiketlemek", type: "n., v.", level: "B2", day: 1, mistakeCount: 0, ex: "The price tag says 20 dollars.", exTr: "Fiyat {etiketi} 20 dolar yazıyor.", ex2: "She tagged all her friends in the vacation photos online.", ex2Tr: "Tatil fotoğraflarında tüm arkadaşlarını çevrimiçi {etiketledi}.", usage: "Bilgi etiketi; sosyal medyada etiketleme.", synonyms: [] },
             { en: "tail", tr: "kuyruk", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "The dog wagged its tail when it saw its owner.", exTr: "Köpek sahibini görünce {kuyruğunu} salladı.", ex2: "The plane's tail was damaged during the storm.", ex2Tr: "Uçağın {kuyruğu} fırtına sırasında hasar gördü.", usage: "Hayvanların arka uzantısı olan kuyruk veya bir şeyin en arka kısmı anlamındadır.", synonyms: [] },
             { en: "take", tr: "almak/götürmek", type: "v.", level: "A1", day: 1, mistakeCount: 0, ex: "Do not forget to take your umbrella with you.", exTr: "Şemsiye {al}; yağmur yağabilir.", ex2: "Take an umbrella; it may rain.", ex2Tr: "Bir şemsiye {al}; yağmur yağabilir.", usage: "Düzensiz bir fiildir (take, took, taken). Almak, götürmek veya zaman almak (it takes time) gibi çok geniş kullanımları vardır.", synonyms: [] },
+            { en: "take off", tr: "havalanmak/kalkış yapmak", type: "v.", level: "B1", day: 1, mistakeCount: 0, ex: "The plane took off on time.", exTr: "Uçak zamanında {havalandı}.", ex2: "Please take off your shoes before you come in.", ex2Tr: "Lütfen içeri girmeden önce ayakkabılarını {çıkar}.", usage: "Uçak için kalkış yapmak; giysi için 'çıkarmak' anlamı da vardır. İsim hâli 'takeoff'tur.", synonyms: [] },
             { en: "tale", tr: "masal/hikaye", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "My grandmother used to tell us fairy tales before bed.", exTr: "Büyükannem yatmadan önce bize peri {masalları} anlatırdı.", ex2: "The old sailor loved to share tales of his adventures at sea.", ex2Tr: "Yaşlı denizci denizdeki maceralarının {hikayelerini} paylaşmayı severdi.", usage: "Özellikle olağanüstü olayları anlatan geleneksel veya kurgusal hikayelerdir.", synonyms: [] },
             { en: "talent", tr: "yetenek", type: "n.", level: "B1", day: 1, mistakeCount: 0, ex: "She has a natural talent for playing the piano.", exTr: "Piyano çalmakta doğal bir {yeteneği} var.", ex2: "The company is always looking for new talent.", ex2Tr: "Şirket her zaman yeni {yetenekler} arıyor.", usage: "Doğuştan gelen, öğrenilmeyen doğal beceri ve kabiliyettir. 'Skill' öğrenilebilen beceridir.", synonyms: [] },
             { en: "talented", tr: "yetenekli", type: "adj.", level: "B1", day: 1, mistakeCount: 0, ex: "He is a highly talented musician and singer.", exTr: "Son derece {yetenekli} bir müzisyen ve şarkıcı.", ex2: "She is one of the most talented young painters in the city.", ex2Tr: "Şehrin en {yetenekli} genç ressamlarından biri.", usage: "Bir konuda doğal olarak başarılı olan, kabiliyetli kişileri tanımlar.", synonyms: [] },
@@ -5995,6 +6239,7 @@
             { en: "tumor", tr: "tümör", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "The scan revealed a small tumor.", exTr: "Tarama küçük bir {tümör} ortaya çıkardı.", ex2: "Doctors continue to research new methods for detecting tumors early.", ex2Tr: "Doktorlar {tümörleri} erken tespit etmek için yeni yöntemler araştırmaya devam ediyor.", usage: "Anormal doku kitlesi; İngiliz İngilizcesinde 'tumour' yazılır.", synonyms: [] },
             { en: "tune", tr: "melodi/ezgi/akort etmek", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "She hummed a familiar tune.", exTr: "Tanıdık bir {ezgiyi} mırıldandı.", ex2: "The musician spent a few minutes tuning his guitar before the show.", ex2Tr: "Müzisyen gösteriden önce gitarını {akort etmek} için birkaç dakika harcadı.", usage: "Bir müziğin ezgisi; fiil olarak akort etmek demektir.", synonyms: [] },
             { en: "tunnel", tr: "tünel", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "The train went through a tunnel.", exTr: "Tren bir {tünelden} geçti.", ex2: "Workers spent years digging the tunnel under the mountain.", ex2Tr: "İşçiler dağın altındaki {tüneli} kazmak için yıllarını harcadı.", usage: "Yer altından geçen yol.", synonyms: [] },
+            { en: "turbulence", tr: "türbülans", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "Please fasten your seat belts; we are expecting some turbulence.", exTr: "Lütfen kemerlerinizi bağlayın; biraz {türbülans} bekliyoruz.", ex2: "The flight was smooth apart from a little turbulence over the mountains.", ex2Tr: "Dağların üzerindeki biraz {türbülans} dışında uçuş sakin geçti.", usage: "Havadaki düzensiz akımların uçağı sarsması.", synonyms: [] },
             { en: "turn", tr: "dönmek/döndürmek/sıra", type: "v., n.", level: "A1", day: 1, mistakeCount: 0, ex: "Turn left at the corner.", exTr: "Köşeden sola {dön}.", ex2: "Turn right after the bridge.", ex2Tr: "Köprüden sonra sağa {dön}.", usage: "Yön değiştirmek; isim olarak sıra (it's your turn), 'turn on/off' açmak/kapatmak demektir.", synonyms: [] },
             { en: "turnout", tr: "katılım oranı (seçim)", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "Voter turnout was over 80 percent.", exTr: "Seçmen {katılımı} yüzde 80'in üzerindeydi.", ex2: "The charity event had a great turnout despite the rain.", ex2Tr: "Hayır etkinliğine yağmura rağmen harika bir {katılım} oldu.", usage: "Katılan kişi sayısı.", synonyms: [] },
             { en: "turnover", tr: "ciro/personel devri", type: "n.", level: "C1", day: 1, mistakeCount: 0, ex: "The company has an annual turnover of 5 million.", exTr: "Şirketin yıllık 5 milyonluk bir {cirosu} var.", ex2: "The restaurant struggles with high staff turnover during the summer.", ex2Tr: "Restoran yaz aylarında yüksek personel {devir hızıyla} mücadele ediyor.", usage: "Toplam satış geliri veya çalışan değişim hızı.", synonyms: [] },
@@ -7778,7 +8023,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-10-05 · bildirim-2';
+        const YAPIM = '2026-10-06 · kelime-carki-1';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -11402,67 +11647,71 @@
             privacy: {
                 title: 'Gizlilik Politikası',
                 html:
-                    '<p style="font-size:12px;color:#8a8d91;">Son güncelleme: 5 Ağustos 2026</p>' +
+                    '<p style="font-size:12px;color:#8a8d91;">Son güncelleme: 6 Ekim 2026</p>' +
                     '<p>Word Memorizer bir eğitim uygulamasıdır; veri şirketi değildir. Gelir modelimiz kullanıcı verisi üzerine kurulu değildir. Bu politika, hangi verileri neden topladığımızı ve neleri hiç toplamadığımızı açıkça anlatır.</p>' +
                     '<h4>1. Taahhütlerimiz</h4>' +
                     '<ul>' +
                     '<li><b>Veri satışı yok.</b> Verileriniz hiçbir koşulda üçüncü taraflara satılmaz veya kiralanmaz.</li>' +
                     '<li><b>Reklam izleyicisi yok.</b> Uygulamada reklam ağı, davranışsal profilleme veya üçüncü taraf izleme kodu bulunmaz.</li>' +
                     '<li><b>Analitik yok.</b> Uygulama kullanımını ölçen bir analitik aracı çalıştırılmaz.</li>' +
-                    '<li><b>Gereksiz izin yok.</b> Kamera, mikrofon, konum, rehber veya galeri erişimi istenmez.</li>' +
+                    '<li><b>Gereksiz izin yok.</b> Kamera, mikrofon, konum, rehber veya galeri erişimi istenmez. Bildirim izni yalnızca günlük hatırlatma için istenir.</li>' +
                     '</ul>' +
                     '<h4>2. Misafir kullanım</h4>' +
-                    '<p>Uygulamayı hesap açmadan kullanabilirsin. Misafir modunda öğrenme verilerin <b>cihazından hiç çıkmaz</b> — sunucularımıza hiçbir şey gönderilmez. Bunun tek dezavantajı, ilerlemenin yedeklenmemesidir.</p>' +
+                    '<p>Uygulamayı hesap açmadan kullanabilirsin. Misafir modunda öğrenme verilerin <b>cihazından hiç çıkmaz</b>; sunucularımıza hiçbir şey gönderilmez. Bunun tek dezavantajı, ilerlemenin yedeklenmemesidir. Günlük hatırlatma için kullanılan bildirim kimliği 4. maddede anlatılmıştır.</p>' +
                     '<h4>3. Üyelikte toplanan bilgiler</h4>' +
                     '<p>En az veri ilkesiyle çalışıyoruz. Yalnızca uygulamanın çalışması için gerekli olanları topluyoruz:</p>' +
                     '<p><b>Hesap bilgileri:</b> E-posta adresin ve hitap için kullandığımız isim. Google ile giriş yaparsan Google bize yalnızca e-posta adresini ve hesap adını iletir; Google şifreni hiçbir şekilde görmeyiz.</p>' +
                     '<p><b>Öğrenme verileri:</b> Hangi kelimeleri çalıştığın, doğru/yanlış geçmişin, günlük hedefin ve seviye seçimin. Bu veriler yalnızca tekrar algoritmasının sana uygun kelimeleri seçmesi ve ilerlemenin yedeklenmesi için kullanılır.</p>' +
                     '<p><b>Hata bildirimleri:</b> Bir kelimede hata bildirdiğinde; kelimeyi, seçtiğin sorun türünü, yazdığın notu ve (giriş yapmışsan) e-posta adresini kaydederiz. Misafir olarak bildirim gönderirsen e-posta bilgisi kaydedilmez.</p>' +
-                    '<h4>4. Şifre güvenliği</h4>' +
+                    '<h4>4. Günlük hatırlatma bildirimleri</h4>' +
+                    '<p>Ana ekrandaki <b>Günlük hatırlatma</b> özelliği varsayılan olarak açıktır; misafir ya da üye olarak kullanılabilir. Çalışması için telefonunun bildirim iznini vermen gerekir; izni vermezsen bildirim kimliği oluşturulmaz.</p>' +
+                    '<p>Hatırlatma açıkken, sana bildirim gönderebilmek için Google Firebase Cloud Messaging hizmeti kullanılır. Bu amaçla cihazına özel bir bildirim kimliği oluşturulur ve Google sunucularında saklanır. Bu kimlik yalnızca hatırlatma göndermek için kullanılır; reklam, takip veya profil oluşturma amacıyla kullanılmaz, hesabınla eşleştirilmez ve üçüncü kişilerle paylaşılmaz.</p>' +
+                    '<p>Hatırlatmayı dilediğin an ana ekrandaki <b>Günlük hatırlatma</b> anahtarından kapatabilirsin; bu durumda bildirim kimliği silinir. Bildirimleri telefonunun <b>Ayarlar &gt; Uygulamalar &gt; Word Memorizer &gt; Bildirimler</b> menüsünden de kapatabilirsin. Uygulamayı kaldırdığında veya bildirim iznini geri aldığında kimlik kullanılamaz hâle gelir; uzun süre etkin olmayan kimlikler Google tarafından otomatik olarak geçersiz kılınır.</p>' +
+                    '<h4>5. Şifre güvenliği</h4>' +
                     '<p>E-posta ile kayıt olursan şifren, Google Firebase Authentication tarafından işlenir ve sektör standardı yöntemlerle korunur. Şifren bize hiçbir aşamada iletilmez; ne görebilir ne de sıfırlayabiliriz. Şifreni unutursan uygulama üzerinden e-postana sıfırlama bağlantısı gönderilir.</p>' +
-                    '<h4>5. Çerezler ve yerel depolama</h4>' +
+                    '<h4>6. Çerezler ve yerel depolama</h4>' +
                     '<p>Oturumunu açık tutmak, çalışma ilerlemeni cihazda saklamak ve uygulamanın internetsiz de açılabilmesi için tarayıcının yerel depolama alanını ve önbelleğini kullanırız. Bu teknolojiler seni internette takip etmek için kullanılmaz; reklam çerezi barındırmayız.</p>' +
-                    '<h4>6. Veri güvenliği</h4>' +
+                    '<h4>7. Veri güvenliği</h4>' +
                     '<p>Uygulamayla sunucu arasındaki tüm trafik SSL/TLS ile şifrelenir. Veri tabanı kuralları, her kullanıcının yalnızca kendi kaydına erişebileceği şekilde yapılandırılmıştır.</p>' +
                     '<p>Hiçbir sistem mutlak güvenlik garantisi veremez; ancak güvenliği etkileyen bir olay yaşanması hâlinde, etkilenen kullanıcıları ve ilgili kurumları mevzuatın öngördüğü sürede bilgilendireceğiz.</p>' +
-                    '<h4>7. Çocukların gizliliği</h4>' +
+                    '<h4>8. Çocukların gizliliği</h4>' +
                     '<p>Uygulama her yaştan kullanıcıya açıktır, ancak 13 yaşın altındaki kullanıcılardan bilerek kişisel veri toplamıyoruz. Ebeveynseniz ve çocuğunuzun onayınız olmadan hesap oluşturduğunu düşünüyorsanız info@glizwor.com adresinden bize ulaşın; ilgili hesap ve veriler silinecektir.</p>' +
-                    '<h4>8. Hesabını silme</h4>' +
+                    '<h4>9. Hesabını silme</h4>' +
                     '<p>Hesabını ve ona bağlı tüm verileri dilediğin an silebilirsin: Hesap panelindeki <b>Hesabımı ve tüm verilerimi sil</b> seçeneğini kullanman yeterli. Silme işlemi geri alınamaz; hesabın, buluttaki yedeğin ve cihazındaki ilerlemen kalıcı olarak kaldırılır.</p>' +
-                    '<h4>9. Politika değişiklikleri</h4>' +
+                    '<h4>10. Politika değişiklikleri</h4>' +
                     '<p>Bu politikada değişiklik yaparsak güncel sürümü uygulama içinde yayımlarız. Veri kullanımını genişleten önemli bir değişiklik olursa uygulama içi bildirim veya e-posta ile haber veririz.</p>' +
-                    '<h4>10. İletişim</h4>' +
+                    '<h4>11. İletişim</h4>' +
                     '<p>E-posta: info@glizwor.com<br>Web sitesi: glizwor.com</p>'
             },
             kvkk: {
                 title: 'KVKK Aydınlatma Metni',
                 html:
-                    '<p style="font-size:12px;color:#8a8d91;">Son güncelleme: 5 Ağustos 2026</p>' +
+                    '<p style="font-size:12px;color:#8a8d91;">Son güncelleme: 6 Ekim 2026</p>' +
                     '<h4>1. Veri sorumlusu</h4>' +
                     '<p>Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, Word Memorizer (Uygulama) kullanıcılarının kişisel verilerinin nasıl işlendiğini açıklamak amacıyla hazırlanmıştır.</p>' +
                     '<p>Veri sorumlusu: Word Memorizer<br>İletişim: info@glizwor.com</p>' +
                     '<h4>2. Üyelik zorunlu değildir</h4>' +
-                    '<p>Uygulamayı misafir olarak kullanabilirsin. Bu durumda hiçbir kişisel verin tarafımıza iletilmez; çalışma ilerlemen yalnızca kendi cihazının hafızasında saklanır. Cihazını değiştirirsen ya da uygulama verisini silersen ilerlemen geri getirilemez.</p>' +
-                    '<p>Aşağıdaki hükümler yalnızca üyelik oluşturmayı tercih eden kullanıcılar için geçerlidir.</p>' +
+                    '<p>Uygulamayı misafir olarak kullanabilirsin. Bu durumda, günlük hatırlatma için kullanılan bildirim kimliği dışında hiçbir kişisel verin tarafımıza iletilmez; çalışma ilerlemen yalnızca kendi cihazının hafızasında saklanır. Cihazını değiştirirsen ya da uygulama verisini silersen ilerlemen geri getirilemez.</p>' +
+                    '<p>Aşağıdaki hükümler yalnızca üyelik oluşturmayı tercih eden kullanıcılar için geçerlidir; <b>bildirim kimliğine</b> ilişkin hükümler ise günlük hatırlatması açık olan tüm kullanıcıları kapsar.</p>' +
                     '<h4>3. İşlenen kişisel veriler</h4>' +
                     '<ul>' +
                     '<li><b>Kimlik:</b> Belirlediğin ya da Google hesabından gelen ad — uygulama içinde sana hitap etmek için.</li>' +
                     '<li><b>İletişim:</b> E-posta adresin — hesabını tanımlamak ve şifre sıfırlama için.</li>' +
                     '<li><b>Kullanım:</b> Çalıştığın kelimeler, günlük hedefin, seviye seçimin ve doğru-yanlış geçmişin — ilerlemeni yedeklemek ve tekrar algoritmasını çalıştırmak için.</li>' +
-                    '<li><b>Bildirim:</b> Hata bildirdiğinde kelime, sorun türü, notun ve e-postan — içerik hatalarını düzeltmek için.</li>' +
+                    '<li><b>Hata bildirimi:</b> Hata bildirdiğinde kelime, sorun türü, notun ve e-postan — içerik hatalarını düzeltmek için.</li><li><b>Bildirim kimliği:</b> Günlük hatırlatma açıkken ve bildirim iznini verdiğinde cihazına özel oluşturulan kimlik — yalnızca hatırlatma göndermek için. Hesabınla eşleştirilmez.</li>' +
                     '</ul>' +
                     '<p><b>Şifreler hakkında:</b> E-posta ile kayıt olursan şifren doğrudan Google Firebase Authentication altyapısına iletilir. Şifren bizim tarafımızdan görülemez, saklanmaz ve hiçbir sistemimize kaydedilmez.</p>' +
                     '<p><b>Toplamadığımız veriler:</b> Konum, telefon numarası, kimlik numarası, cihaz rehberi, fotoğraflar, ödeme bilgisi ve reklam kimliği toplanmaz.</p>' +
                     '<h4>4. İşleme amacı ve hukuki sebep</h4>' +
                     '<p>Kişisel verilerin; hesabının oluşturulması, ilerlemenin yedeklenmesi ve farklı cihazlardan erişimin sağlanması amacıyla, KVKK m.5/2-c (sözleşmenin kurulması ve ifasıyla doğrudan ilgili olması) hukuki sebebine dayanılarak işlenir.</p>' +
-                    '<p>Hata bildirimlerin, KVKK m.5/2-f (meşru menfaat) kapsamında, uygulama içeriğinin düzeltilmesi amacıyla işlenir.</p>' +
+                    '<p>Hata bildirimlerin, KVKK m.5/2-f (meşru menfaat) kapsamında, uygulama içeriğinin düzeltilmesi amacıyla işlenir.</p><p>Bildirim kimliği, yalnızca günlük hatırlatma açıkken ve bildirim iznini vermen hâlinde, sana çalışma hatırlatması gönderilebilmesi amacıyla KVKK m.5/2-f (meşru menfaat) hukuki sebebine dayanılarak işlenir. Hatırlatmayı dilediğin an kapatabilirsin.</p>' +
                     '<h4>5. Verilerin saklandığı yer ve yurt dışına aktarım</h4>' +
                     '<p>Veriler, Google tarafından sağlanan Firebase altyapısında saklanır. Bu nedenle kişisel verilerin <b>yurt dışında bulunan sunuculara aktarılmaktadır.</b></p>' +
-                    '<p>Veriler aktarım sırasında (SSL/TLS) ve sunucuda şifreli olarak tutulur. Üyelik oluştururken verdiğin onay bu aktarımı da kapsamaktadır. Bunun dışında verilerin hiçbir üçüncü kişiye satılmaz, kiralanmaz veya pazarlama amacıyla paylaşılmaz.</p>' +
+                    '<p>Veriler aktarım sırasında (SSL/TLS) ve sunucuda şifreli olarak tutulur. Üyelik oluştururken verdiğin onay bu aktarımı da kapsamaktadır. Günlük hatırlatma açıkken bildirim kimliği de aynı altyapı aracılığıyla yurt dışındaki sunuculara iletilir. Bunun dışında verilerin hiçbir üçüncü kişiye satılmaz, kiralanmaz veya pazarlama amacıyla paylaşılmaz.</p>' +
                     '<h4>6. Kimlerin erişimi var</h4>' +
                     '<p>Çalışma ilerlemene yalnızca sen erişebilirsin; veri tabanı kuralları her kaydın yalnızca sahibi tarafından okunmasına izin verecek şekilde yapılandırılmıştır. Hata bildirimlerin, içerik düzeltmesi yapılabilmesi için uygulama ekibi tarafından incelenir.</p>' +
                     '<h4>7. Saklama süresi</h4>' +
-                    '<p>Verilerin, hesabın aktif olduğu sürece saklanır. Hesabını sildiğinde hesabına bağlı tüm ilerleme verisi kalıcı olarak silinir. Hata bildirimleri, ilgili içerik düzeltildikten sonra kişisel bağlantısı kaldırılarak saklanabilir.</p>' +
+                    '<p>Verilerin, hesabın aktif olduğu sürece saklanır. Hesabını sildiğinde hesabına bağlı tüm ilerleme verisi kalıcı olarak silinir. Hata bildirimleri, ilgili içerik düzeltildikten sonra kişisel bağlantısı kaldırılarak saklanabilir. Bildirim kimliği, hatırlatmayı uygulamadan kapattığında silinir; bildirim iznini geri aldığında veya uygulamayı kaldırdığında kullanılamaz hâle gelir; uzun süre etkin olmayan kimlikler Google tarafından otomatik olarak geçersiz kılınır.</p>' +
                     '<h4>8. KVKK m.11 kapsamındaki haklarınız</h4>' +
                     '<ul>' +
                     '<li>Kişisel verilerinin işlenip işlenmediğini öğrenme,</li>' +
@@ -11633,6 +11882,7 @@
 
         function updateAdminBadges() {
             const admin = isAdmin();
+            try { bkKodGoster(); } catch (e) {}
             const wb = document.getElementById('welcome-admin-badge');
             const hb = document.getElementById('header-admin-badge');
             if (wb) wb.style.display = admin ? 'flex' : 'none';
@@ -11899,45 +12149,62 @@
         });
 
         // --- Gunluk hatirlatma karti (push bildirimi) ---
-        // Izin yalnizca kullanici butona dokundugunda istenir; sayfa acilir acilmaz
-        // izin sormak tarayicilar tarafindan bastirilir ve kullaniciyi rahatsiz eder.
-        const BILDIRIM_KEY = 'wm_bildirim_v1';
+        // Varsayilan ACIK: kullanici anahtari kapatmadikca hatirlatma acik kalir.
+        // Android'de (Play uygulamasi ve Chrome) bildirim izni, ana ekran ilk kez
+        // gorundugunde bir kez kendiliginden istenir; telefon kendi izin penceresini
+        // gosterir. iPhone ve masaustu tarayicilari dokunmadan izin istemeye izin
+        // vermedigi icin orada anahtar elle acilir.
+        const BILDIRIM_KEY = 'wm_bildirim_v1';                 // son FCM jetonu
+        const BILDIRIM_KAPALI_KEY = 'wm_bildirim_kapali';      // kullanici kapattiysa '1'
+        const BILDIRIM_SORULDU_KEY = 'wm_bildirim_soruldu';    // otomatik istek yapildi
 
         function bkDurum(durum) {
             const kart = document.getElementById('bildirim-kart');
             const btn = document.getElementById('bk-btn');
             const alt = document.getElementById('bk-alt');
-            const kod = document.getElementById('bk-kod');
             if (!kart) return;
             kart.style.display = 'flex';
             kart.classList.toggle('acik', durum === 'acik');
             if (durum !== 'hata') { const ayr = document.getElementById('bk-hata'); if (ayr) ayr.style.display = 'none'; }
-            kod.style.display = (durum === 'acik') ? 'block' : 'none';
+            bkKodGoster(durum === 'acik');
+            btn.classList.toggle('bekliyor', durum === 'bekliyor');
+            // beklerken anahtar eski yerinde durur, sonuc gelince kayar
+            if (durum !== 'bekliyor') btn.setAttribute('aria-checked', durum === 'acik' ? 'true' : 'false');
+            btn.disabled = (durum === 'bekliyor' || durum === 'engelli');
             if (durum === 'acik') {
-                btn.textContent = 'Açık ✓'; btn.disabled = true;
-                alt.textContent = 'Her gün kelimelerin için hatırlatma alacaksın.';
+                alt.textContent = 'Açık · Her gün kelimelerin için hatırlatma alacaksın.';
             } else if (durum === 'engelli') {
-                btn.textContent = 'Kapalı'; btn.disabled = true;
-                alt.textContent = 'Bildirimler engellenmiş. Telefon ayarlarından uygulamanın bildirimlerini açabilirsin.';
+                alt.textContent = 'Bildirimler telefon ayarlarından kapalı. Açmak için: Ayarlar › Uygulamalar › Word Memorizer › Bildirimler.';
             } else if (durum === 'bekliyor') {
-                btn.textContent = '…'; btn.disabled = true;
+                alt.textContent = 'Bir saniye…';
             } else if (durum === 'hata') {
-                btn.textContent = 'Tekrar dene'; btn.disabled = false;
-                alt.textContent = 'Bildirim kaydı yapılamadı.';
+                alt.textContent = 'Bildirim kaydı yapılamadı. Tekrar denemek için anahtara dokun.';
                 const ayr = document.getElementById('bk-hata');
                 if (ayr) {
                     ayr.textContent = bkSonHata ? bkSonHata.slice(0, 320) : '';
                     ayr.style.display = bkSonHata ? 'block' : 'none';
                 }
             } else {
-                btn.textContent = 'Aç'; btn.disabled = false;
-                alt.textContent = 'Her gün kelimelerini çalışmayı unutma.';
+                alt.textContent = 'Kapalı · Açarsan her gün kelimelerini çalışmayı hatırlatırız.';
             }
         }
 
         // Son hata metni: telefonda gelistirici araclari olmadigi icin hatayi
         // ekranda gosteriyoruz, yoksa sebebi asla goremiyoruz.
         let bkSonHata = '';
+        // "test kodunu kopyala" yalnizca yonetici hesabinda gorunur; normal
+        // kullanicinin bu kodla isi yok. Giris bilgisi sayfa acildiktan sonra
+        // geldigi icin updateAdminBadges() de bunu yeniden cagiriyor.
+        function bkKodGoster(acik) {
+            const kod = document.getElementById('bk-kod');
+            if (!kod) return;
+            if (typeof acik !== 'boolean') {
+                acik = ('Notification' in window) && Notification.permission === 'granted' &&
+                       !!localStorage.getItem(BILDIRIM_KEY);
+            }
+            kod.style.display = (acik && isAdmin()) ? 'block' : 'none';
+        }
+
         async function bkJetonYenile() {
             // Jetonlar zamanla yenilenebilir; izin varsa sessizce guncel tutuyoruz.
             try {
@@ -11952,7 +12219,9 @@
             return null;
         }
 
-        async function bkAc() {
+        // otomatik === true: ana ekranda kendiliginden yapilan tek seferlik istek (ses calmaz)
+        async function bkAc(otomatik) {
+            if (otomatik === true) localStorage.setItem(BILDIRIM_SORULDU_KEY, '1');
             bkDurum('bekliyor');
             let izin;
             try { izin = await Notification.requestPermission(); }
@@ -11960,25 +12229,74 @@
             if (izin === 'denied') { bkDurum('engelli'); return; }
             if (izin !== 'granted') { bkDurum('kapali'); return; }
             const t = await bkJetonYenile();
-            if (t) { bkDurum('acik'); try { playCorrect(); } catch (e) {} }
-            else bkDurum('hata');
+            if (t) {
+                localStorage.removeItem(BILDIRIM_KAPALI_KEY);
+                bkDurum('acik');
+                if (otomatik !== true) { try { playCorrect(); } catch (e) {} }
+            } else bkDurum('hata');
+        }
+
+        async function bkKapat() {
+            bkDurum('bekliyor');
+            try {
+                await window.__bildirim.jetonSil();
+            } catch (e) {
+                // Silinemediyse acik gostermeye devam: yoksa kullanici kapattigini
+                // sanip bildirim almayi surdurur.
+                bkDurum('acik');
+                document.getElementById('bk-alt').textContent = 'Kapatılamadı. İnternet bağlantını kontrol edip tekrar dene.';
+                return;
+            }
+            localStorage.setItem(BILDIRIM_KAPALI_KEY, '1');
+            localStorage.removeItem(BILDIRIM_KEY);
+            bkDurum('kapali');
+        }
+
+        function bkAnahtar() {
+            const btn = document.getElementById('bk-btn');
+            if (btn.getAttribute('aria-checked') === 'true') bkKapat();
+            else bkAc(false);
+        }
+
+        // Giris kapisi gecilip ana ekran gorundugunde bir kez izin ister.
+        function bkAnaEkrandaSor() {
+            let n = 0;
+            (function bak() {
+                const kart = document.getElementById('bildirim-kart');
+                if (kart && kart.offsetParent !== null && document.visibilityState === 'visible') {
+                    setTimeout(function () {
+                        if (Notification.permission === 'default' &&
+                            localStorage.getItem(BILDIRIM_KAPALI_KEY) !== '1' &&
+                            !localStorage.getItem(BILDIRIM_SORULDU_KEY)) bkAc(true);
+                    }, 1200);
+                    return;
+                }
+                if (++n < 900) setTimeout(bak, 1000);
+            })();
         }
 
         async function bkBaslat() {
             if (!('Notification' in window) || !('serviceWorker' in navigator) || !window.__bildirim) return;
             if (!(await window.__bildirim.destek())) return;     // desteklenmeyen cihazda kart gizli kalir
-            document.getElementById('bk-btn').onclick = bkAc;
+            document.getElementById('bk-btn').onclick = bkAnahtar;
             document.getElementById('bk-kod').onclick = async function () {
                 const t = localStorage.getItem(BILDIRIM_KEY) || '';
                 try { await navigator.clipboard.writeText(t); this.textContent = 'kopyalandı ✓'; }
                 catch (e) { window.prompt('Test kodu:', t); }
             };
             const izin = Notification.permission;
-            if (izin === 'granted') {
+            const kapali = localStorage.getItem(BILDIRIM_KAPALI_KEY) === '1';
+            if (izin === 'denied') bkDurum('engelli');
+            else if (kapali) bkDurum('kapali');
+            else if (izin === 'granted') {
+                // izin zaten var (ornegin Android 12 ve oncesi): varsayilan acik, sessizce kaydol
                 bkDurum('acik');
-                bkJetonYenile();                                  // arka planda tazele
-            } else if (izin === 'denied') bkDurum('engelli');
-            else bkDurum('kapali');
+                const vardi = !!localStorage.getItem(BILDIRIM_KEY);
+                bkJetonYenile().then(function (t) { if (!t && !vardi) bkDurum('hata'); });
+            } else {
+                bkDurum('kapali');
+                if (/Android/i.test(navigator.userAgent) && !localStorage.getItem(BILDIRIM_SORULDU_KEY)) bkAnaEkrandaSor();
+            }
         }
 
         // Modul betigi (Firebase) bu betikten SONRA calisir; hazir olmasini bekliyoruz.
@@ -11989,6 +12307,738 @@
                 if (++deneme < 20) setTimeout(bekle, 250);
             })();
         });
+
+        // ==========================================
+        // KELIME CARKI: kelimeleri konu ailelerine gore halkalara dizen cark
+        // ==========================================
+        // Halka kurali: ic = ailenin ana kelimesi, orta = A1-B1, dis = B2-C1.
+        // Anlam, ornek ve kullanim notu wordDatabase'den okunur; burada yalnizca
+        // hangi kelimenin hangi aileye girdigi ve ailenin rengi (ton) durur.
+        (function () {
+          'use strict';
+          const CARKLAR = [{"ad":"Duygular","aileler":[["angry",0,["mad","annoyed","furious","bitter","anger","frustrated","hostile","rage"]],["embarrassed",16,["shy","guilty","embarrassing","ashamed","awkward","shame","guilt"]],["excited",30,["excitement","energetic","eager","enthusiastic","passionate","enthusiasm","impatient","keen"]],["happy",47,["pleased","smile","lucky","glad","cheerful","grateful","delighted","joy","satisfied","optimistic","content","thrilled","glory","hopeful","bliss"]],["calm",150,["quiet","relax","patient","comfortable","safe","rest","peace","relaxed","peaceful","gentle","relief","steady","harmony"]],["tired",186,["bored","boring","sleep","weak","lazy","stress","exhausted","overwhelmed"]],["sad",212,["cry","unhappy","disappointed","upset","lonely","depressed","hopeless","miserable","regret","depression","grief"]],["afraid",240,["scared","nervous","worried","fear","scary","frightened","tense","anxious","panic"]],["surprised",268,["surprise","confused","incredible","amazed","wonder","shocked","shock","curious","unexpected"]],["proud",298,["strong","successful","confident","brave","bold","pride","honor","dignity"]],["love",334,["enjoy","warm","care","romantic","passion","admire","fond","affection","tender","compassion"]]]},{"ad":"İş Hayatı","aileler":[["problem",2,["mistake","trouble","error","solve","solution","issue","difficulty","challenge","complaint","risk","crisis","conflict","obstacle"]],["busy",18,["stress","energy","hurry","pressure","rush","urgent","efficient","productive"]],["plan",34,["project","goal","target","strategy","purpose","aim","intend","intention","deadline","objective","priority","vision","mission"]],["money",140,["pay","cost","salary","earn","profit","invest","payment","tax","wage","income","budget","expense","revenue","investment","finance","bonus"]],["help",166,["advice","support","guide","training","assist","advise","assistance","cooperate","collaborate","collaboration","mentor"]],["email",192,["message","letter","report","note","send","document","reply","copy","file","contract","signature","attachment","memo"]],["job",212,["work","career","task","role","employee","employer","profession","duty","hire","unemployed","occupation"]],["company",232,["business","office","customer","organization","department","industry","client","branch","firm","corporation","headquarters","agency","enterprise"]],["meeting",262,["meet","interview","discuss","schedule","conference","discussion","presentation","appointment","agenda","negotiate","seminar","session","debate"]],["boss",290,["team","partner","manager","director","leader","assistant","secretary","colleague","staff","coworker","chief","executive","supervisor"]]]},{"ad":"Havacılık","aileler":[["flight",205,["fly","plane","airline","international","route","aircraft","jet","domestic","destination","take off","land","landing"]],["airport",185,["passport","gate","security","border","terminal","visa","immigration","customs","runway"]],["passenger",165,["ticket","seat","belt","luggage","suitcase","carry","baggage","aisle"]],["travel",140,["tourist","hotel","tourism","holiday","foreign","journey","reservation","abroad","currency","booking"]],["schedule",95,["arrive","late","early","wait","arrival","delay","announce","announcement","departure","depart","cancel"]],["pilot",48,["captain","staff","uniform","shift","flight attendant","crew","mechanic"]],["engine",30,["speed","wing","fuel","brake","radar","navigation"]],["repair",15,["check","fix","damage","inspect","inspection","maintenance"]],["safety",0,["accident","instruction","emergency","exit","alarm","warning","risk","crash","procedure","evacuate","oxygen","mask","hazard"]],["weather",285,["storm","wind","cloud","rain","snow","temperature","thunder","forecast","turbulence"]],["cargo",245,["weight","ship","package","container","deliver","delivery","transport","load","goods","warehouse"]]]},{"ad":"İnşaat","aileler":[["build",30,["site","project","develop","construction","development","architecture","dig","construct","install","installation"]],["building",50,["wall","floor","roof","ceiling","foundation","corridor","basement"]],["material",95,["metal","stone","wood","plastic","sand","cable","pipe","steel","brick","rubber","wire","cement","timber"]],["tool",140,["machine","truck","equipment","vehicle","device","nail","hammer","ladder","crane","drill","machinery"]],["worker",175,["engineer","architect","manager","shift","labor","contractor","supervisor"]],["safety",205,["protect","careful","training","warning","emergency","helmet","protection","protective"]],["measure",240,["meter","height","weight","length","width","depth","angle","measurement","accurate","precise"]],["plan",270,["design","drawing","cost","schedule","estimate","calculate","budget","deadline","calculation","sketch","layout"]],["repair",300,["fix","paint","replace","damage","destroy","crack","maintain","restore","leak","maintenance"]],["rule",330,["law","permission","standard","legal","contract","permit","regulation","approve","approval","inspector","inspect","inspection"]],["danger",355,["dangerous","fall","accident","injury","injure","risk","harm","hazard"]]]},{"ad":"Hizmet","aileler":[["customer",205,["visitor","guest","user","client","consumer","loyal","loyalty"]],["staff",240,["team","employee","manager","uniform","training","salary","shift","hire","wage","recruit","personnel"]],["hotel",270,["stay","room","reception","receptionist","view","reservation","accommodation","booking","suite"]],["polite",330,["friendly","welcome","smile","greet","helpful","rude","professional","manner","respect","attitude","patience","courtesy"]],["complain",0,["problem","sorry","solve","replace","complaint","apologize","apology","feedback"]],["restaurant",30,["waiter","menu","meal","order","cook","kitchen","chef","dish","tip","portion","vegetarian","flavor","beverage"]],["quality",50,["clean","fast","quick","fresh","excellent","recommend","reliable","standard","efficient","satisfied","satisfaction","rating"]],["delivery",95,["arrive","address","ship","deliver","package","supply","distribute","stock","shipping","warehouse"]],["pay",140,["price","cost","bill","cash","receipt","charge","tax","total","payment","discount","fee","refund","invoice"]],["service",180,["serve","offer","provide","support","available","request","wait","assist","assistance","facility"]]]}];
+          const NS = 'http://www.w3.org/2000/svg';
+          const R0 = 58, R1 = 142, R2 = 246, R3 = 374;     // merkez, ic, orta, dis halka sinirlari
+          const BOSLUK = 0.9;                               // aileler arasi derece
+          const KALIN = 14;                                 // pastanin yan yuz kalinligi
+          const SIRA = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5 };
+          const azHareket = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          const $ = id => document.getElementById('kc-' + id);
+          const ekran = $('ekran');
+          if (!ekran) return;
+          const cark = $('cark'), vp = $('vp'), dilim = $('dilim'), perde = $('perde'), cizim = $('cizim'),
+                dsvg = $('dsvg'), kart = $('kart'), ara = $('ara'), oneri = $('oneri'), ipucu = $('ipucu');
+
+          let VERI = null, K = null, YAZI = 'sans-serif';
+          const dizin = [];
+          let carkNo = 0, durum = 'cark', seciliAile = -1, dilimR3 = 400, duzen = [];
+          let k = 1, tx = 0, ty = 0;
+
+          // Cark yapisini veritabaniyla birlestirir (ilk acilista bir kez)
+          function veriKur() {
+            const M = {};
+            wordDatabase.forEach(w => { M[w.en.toLowerCase()] = w; });
+            K = {};
+            const al = w => { const x = M[w]; if (x) K[w] = x; return x; };
+            const sirala = a => a.sort((x, y) => SIRA[K[x].level] - SIRA[K[y].level] || x.localeCompare(y));
+            const carklar = CARKLAR.map(c => ({
+              ad: c.ad,
+              aileler: c.aileler.filter(a => al(a[0])).map(([hub, hue, uyeler]) => {
+                const bulunan = uyeler.filter(w => al(w) && w !== hub);
+                return { hub, hue,
+                         orta: sirala(bulunan.filter(w => (SIRA[K[w].level] || 3) <= 3)),
+                         dis: sirala(bulunan.filter(w => (SIRA[K[w].level] || 3) > 3)) };
+              })
+            }));
+            VERI = { carklar };
+            carklar.forEach((c, ci) => c.aileler.forEach((a, fi) =>
+              [a.hub, ...a.orta, ...a.dis].forEach(w => dizin.push({ w, ci, fi, hub: a.hub }))));
+          }
+
+          function svg(ad, oz, ust) {
+            const e = document.createElementNS(NS, ad);
+            for (const a in oz) e.setAttribute(a, oz[a]);
+            if (ust) ust.appendChild(e);
+            return e;
+          }
+          const kac = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+          const ilkAnlam = tr => String(tr).split(/[\/;,]/)[0].trim();
+
+          // Halka dilimi yolu; acilar SVG derecesi (0 = sag, saat yonu)
+          function yay(r0, r1, a0, a1) {
+            const rad = Math.PI / 180, b = a0 * rad, e = a1 * rad, buyuk = (a1 - a0) > 180 ? 1 : 0;
+            const n = (r, a) => (r * Math.cos(a)).toFixed(2) + ' ' + (r * Math.sin(a)).toFixed(2);
+            if (r0 <= 0) return 'M0 0L' + n(r1, b) + 'A' + r1 + ' ' + r1 + ' 0 ' + buyuk + ' 1 ' + n(r1, e) + 'Z';
+            return 'M' + n(r0, b) + 'L' + n(r1, b) + 'A' + r1 + ' ' + r1 + ' 0 ' + buyuk + ' 1 ' + n(r1, e) +
+                   'L' + n(r0, e) + 'A' + r0 + ' ' + r0 + ' 0 ' + buyuk + ' 0 ' + n(r0, b) + 'Z';
+          }
+          // Yalnizca yay cizgisi (pasta kenarindaki krema cizgisi icin)
+          function yayCizgi(r, a0, a1) {
+            const rad = Math.PI / 180, n = a => (r * Math.cos(a * rad)).toFixed(2) + ' ' + (r * Math.sin(a * rad)).toFixed(2);
+            return 'M' + n(a0) + 'A' + r + ' ' + r + ' 0 ' + ((a1 - a0) > 180 ? 1 : 0) + ' 1 ' + n(a1);
+          }
+
+          // ---------------- CARK ----------------
+          function etiket(ust, metin, r0, r1, a0, a1, enBuyuk) {
+            const am = (a0 + a1) / 2, rm = (r0 + r1) / 2, rad = Math.PI / 180;
+            const kalinlik = r1 - r0 - 12, th = (a1 - a0) * rad;
+            // yazi boyu halka kalinligina, yazi yuksekligi de yazinin ic ucundaki
+            // dilim genisligine sigmali
+            const w1 = gen(metin, 100, 600) / 100;
+            const f = Math.max(4, Math.min(enBuyuk, kalinlik / w1, rm * th * 0.78 / (1 + 0.39 * w1 * th)));
+            const n = ((am % 360) + 360) % 360;
+            const don = (n > 90 && n < 270) ? am + 180 : am;
+            const x = rm * Math.cos(am * rad), y = rm * Math.sin(am * rad);
+            const t = svg('text', {
+              x: x.toFixed(2), y: y.toFixed(2), 'font-size': f.toFixed(1), 'text-anchor': 'middle',
+              'dominant-baseline': 'central', class: 'yz', 'font-weight': 600,
+              transform: 'rotate(' + don.toFixed(2) + ' ' + x.toFixed(2) + ' ' + y.toFixed(2) + ')'
+            }, ust);
+            t.textContent = metin;
+          }
+
+          function hucre(ust, w, r0, r1, a0, a1, sinif, enBuyuk, fi, hub) {
+            const g = svg('g', { class: 'hucre' + (hub ? ' hub' : ''), 'data-f': fi, 'data-w': w }, ust);
+            svg('path', { d: yay(r0, r1, a0, a1), class: sinif }, g);
+            etiket(g, w, r0, r1, a0, a1, enBuyuk);
+            if (hub) {
+              g.setAttribute('tabindex', '0');
+              g.setAttribute('role', 'button');
+              g.setAttribute('aria-label', w + ' ailesini aç');
+            }
+          }
+
+          function halka(ust, liste, r0, r1, a0, a1, sinif, enBuyuk, fi) {
+            if (!liste.length) { svg('path', { d: yay(r0, r1, a0, a1), class: sinif }, ust); return; }
+            const s = (a1 - a0) / liste.length;
+            liste.forEach((w, i) => hucre(ust, w, r0, r1, a0 + i * s, a0 + (i + 1) * s, sinif, enBuyuk, fi, false));
+          }
+
+          function carkCiz() {
+            vp.textContent = '';
+            duzen = [];
+            const c = VERI.carklar[carkNo];
+            const agirlik = c.aileler.map(a => Math.max(a.orta.length, a.dis.length, 2) + 0.6);
+            const toplam = agirlik.reduce((s, x) => s + x, 0);
+            const kullan = 360 - BOSLUK * c.aileler.length;
+            // Pastanin yan yuzu: her ailenin dis kenari asagi kaydirilmis bir bant.
+            // Ust yuzlerin altinda kalir, yalnizca alt yarida gorunur.
+            svg('ellipse', { cx: 0, cy: KALIN + 10, rx: R3 + 26, ry: R3 + 18, class: 'golge-zemin' }, vp);
+            const taban = svg('g', { class: 'taban' }, vp);
+            let a = -90;
+            c.aileler.forEach((ai, fi) => {
+              const aci = agirlik[fi] / toplam * kullan;
+              const a0 = a + BOSLUK / 2, a1 = a0 + aci;
+              a = a1 + BOSLUK / 2;
+              const kenar = svg('g', { style: '--h:' + ai.hue }, taban);
+              // ust yarida yan yuz zaten gorunmez; aradaki bosluklardan sizmasin
+              const b0 = Math.max(a0, 0), b1 = Math.min(a1, 180);
+              if (b1 > b0) {
+                svg('path', { d: yay(R3 - 30, R3, b0, b1), class: 'kenar', transform: 'translate(0 ' + KALIN + ')' }, kenar);
+                svg('path', { d: yayCizgi(R3, b0, b1), class: 'krem', transform: 'translate(0 ' + (KALIN / 2) + ')' }, kenar);
+              }
+              duzen.push({ a0, a1, kenar });
+            });
+            c.aileler.forEach((ai, fi) => {
+              const { a0, a1 } = duzen[fi];
+              const g = svg('g', { class: 'aile', 'data-f': fi, style: '--h:' + ai.hue }, vp);
+              hucre(g, ai.hub, R0, R1, a0, a1, 'h1', 16, fi, true);
+              halka(g, ai.orta, R1, R2, a0, a1, 'h2', 16, fi);
+              halka(g, ai.dis, R2, R3, a0, a1, 'h3', 15, fi);
+              duzen[fi].g = g;
+            });
+            const m = svg('g', { class: 'merkez', id: 'kc-merkez' }, vp);
+            svg('circle', { cx: 0, cy: 0, r: R0 - 3 }, m);
+            const t1 = svg('text', { x: 0, y: -7, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': c.ad.length > 8 ? 15 : 18, class: 'm-ad' }, m);
+            t1.textContent = c.ad;
+            const say = c.aileler.reduce((s, x) => s + 1 + x.orta.length + x.dis.length, 0);
+            const t2 = svg('text', { x: 0, y: 15, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 11, class: 'm-alt' }, m);
+            t2.textContent = say + ' KELİME';
+          }
+
+          function sekmeCiz() {
+            const s = $('sekmeler');
+            s.textContent = '';
+            VERI.carklar.forEach((c, i) => {
+              const b = document.createElement('button');
+              b.type = 'button';
+              b.setAttribute('role', 'tab');
+              b.setAttribute('aria-selected', i === carkNo ? 'true' : 'false');
+              b.textContent = c.ad;
+              b.addEventListener('click', () => carkSec(i));
+              s.appendChild(b);
+            });
+            const secili = s.children[carkNo];
+            if (secili && s.scrollWidth > s.clientWidth) {
+              s.scrollLeft = Math.max(0, secili.offsetLeft - (s.clientWidth - secili.offsetWidth) / 2);
+            }
+          }
+
+          function carkSec(i) {
+            if (durum !== 'cark') aniden();
+            carkNo = i;
+            sekmeCiz();
+            k = 1; tx = 0; ty = 0;
+            carkCiz(); uygula();
+          }
+
+          // ---------------- YAKINLASTIRMA / KAYDIRMA ----------------
+          function uygula() { vp.setAttribute('transform', 'translate(' + tx.toFixed(2) + ' ' + ty.toFixed(2) + ') scale(' + k.toFixed(4) + ')'); }
+          function sinirla() {
+            k = Math.min(6, Math.max(1, k));
+            const L = 400 * (k - 1) + 50;
+            tx = Math.max(-L, Math.min(L, tx));
+            ty = Math.max(-L, Math.min(L, ty));
+          }
+          function svgNokta(cx, cy) {
+            const p = cark.createSVGPoint();
+            p.x = cx; p.y = cy;
+            return p.matrixTransform(cark.getScreenCTM().inverse());
+          }
+          function noktadanYakinlas(p, yeniK) {
+            const q = { x: (p.x - tx) / k, y: (p.y - ty) / k };
+            k = Math.min(6, Math.max(1, yeniK));
+            tx = p.x - k * q.x; ty = p.y - k * q.y;
+            sinirla(); uygula();
+          }
+          let tween = 0;
+          function animasyonla(k2, tx2, ty2) {
+            cancelAnimationFrame(tween);
+            if (azHareket) { k = k2; tx = tx2; ty = ty2; sinirla(); uygula(); return; }
+            const k1 = k, x1 = tx, y1 = ty, t0 = performance.now(), sure = 240;
+            const adim = t => {
+              const u = Math.min(1, (t - t0) / sure), e = 1 - Math.pow(1 - u, 3);
+              k = k1 + (k2 - k1) * e; tx = x1 + (tx2 - x1) * e; ty = y1 + (ty2 - y1) * e;
+              uygula();
+              if (u < 1) tween = requestAnimationFrame(adim);
+            };
+            tween = requestAnimationFrame(adim);
+          }
+          function merkezdenYakinlas(carpan) {
+            const k2 = Math.min(6, Math.max(1, k * carpan));
+            const q = { x: -tx / k, y: -ty / k };
+            let tx2 = -k2 * q.x, ty2 = -k2 * q.y;
+            const L = 400 * (k2 - 1) + 50;
+            tx2 = Math.max(-L, Math.min(L, tx2)); ty2 = Math.max(-L, Math.min(L, ty2));
+            animasyonla(k2, tx2, ty2);
+          }
+          $('zArti').addEventListener('click', () => merkezdenYakinlas(1.6));
+          $('zEksi').addEventListener('click', () => merkezdenYakinlas(1 / 1.6));
+          $('zSifir').addEventListener('click', () => animasyonla(1, 0, 0));
+
+          const parmak = new Map();
+          let jest = null;
+          function ipucuGizle() { ipucu.classList.add('gizli'); }
+
+          cark.addEventListener('pointerdown', e => {
+            if (durum !== 'cark') return;
+            cancelAnimationFrame(tween);
+            try { cark.setPointerCapture(e.pointerId); } catch (_) {}
+            parmak.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (parmak.size === 1) {
+              jest = { tip: 'tek', t0: performance.now(), x0: e.clientX, y0: e.clientY, tx0: tx, ty0: ty,
+                       p0: svgNokta(e.clientX, e.clientY), hedef: e.target, hareket: false };
+            } else if (parmak.size === 2) {
+              const [a, b] = [...parmak.values()];
+              const m = svgNokta((a.x + b.x) / 2, (a.y + b.y) / 2);
+              jest = { tip: 'iki', d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, k0: k, q: { x: (m.x - tx) / k, y: (m.y - ty) / k } };
+              ipucuGizle();
+            }
+          });
+          cark.addEventListener('pointermove', e => {
+            if (!parmak.has(e.pointerId) || !jest) return;
+            parmak.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (jest.tip === 'iki' && parmak.size >= 2) {
+              const [a, b] = [...parmak.values()];
+              k = Math.min(6, Math.max(1, jest.k0 * Math.hypot(a.x - b.x, a.y - b.y) / jest.d0));
+              const m = svgNokta((a.x + b.x) / 2, (a.y + b.y) / 2);
+              tx = m.x - k * jest.q.x; ty = m.y - k * jest.q.y;
+              sinirla(); uygula();
+            } else if (jest.tip === 'tek') {
+              if (!jest.hareket && Math.hypot(e.clientX - jest.x0, e.clientY - jest.y0) > 8) { jest.hareket = true; ipucuGizle(); }
+              if (jest.hareket) {
+                const p = svgNokta(e.clientX, e.clientY);
+                tx = jest.tx0 + (p.x - jest.p0.x); ty = jest.ty0 + (p.y - jest.p0.y);
+                sinirla(); uygula();
+              }
+            }
+          });
+          function birak(e) {
+            if (!parmak.has(e.pointerId)) return;
+            parmak.delete(e.pointerId);
+            if (jest && jest.tip === 'tek' && !jest.hareket && e.type === 'pointerup' && performance.now() - jest.t0 < 650) {
+              const h = jest.hedef && jest.hedef.closest ? jest.hedef.closest('.hucre') : null;
+              if (h) acDilim(+h.dataset.f, h.dataset.w);
+              else if (jest.hedef && jest.hedef.closest && jest.hedef.closest('#kc-merkez')) animasyonla(1, 0, 0);
+            }
+            if (parmak.size === 0) jest = null;
+            else if (parmak.size === 1 && jest && jest.tip === 'iki') {
+              const [p] = [...parmak.values()];
+              jest = { tip: 'tek', t0: 0, x0: p.x, y0: p.y, tx0: tx, ty0: ty, p0: svgNokta(p.x, p.y), hedef: null, hareket: true };
+            }
+          }
+          cark.addEventListener('pointerup', birak);
+          cark.addEventListener('pointercancel', birak);
+          cark.addEventListener('wheel', e => {
+            if (durum !== 'cark') return;
+            e.preventDefault();
+            ipucuGizle();
+            noktadanYakinlas(svgNokta(e.clientX, e.clientY), k * Math.pow(1.0018, -e.deltaY));
+          }, { passive: false });
+          cark.addEventListener('keydown', e => {
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('.hucre')) {
+              e.preventDefault();
+              const h = e.target.closest('.hucre');
+              acDilim(+h.dataset.f, h.dataset.w);
+            }
+          });
+
+          // ---------------- DILIM ----------------
+          // Dilimin yarim acisi ekrana gore secilir: dik telefonda daha ince ve uzun,
+          // genis ekranda daha acik bir dilim kelimeleri daha buyuk gosterir.
+          let A = 33, TAN = Math.tan(A * Math.PI / 180), SIN = Math.sin(A * Math.PI / 180);
+          const PH = 36, SATIR = 48, PAD = 16, KENAR = 14, ARA = 8, FW = 17, FL = 11.5;
+          const HF = 22, TF = 15, HT = 21;   // dilimdeki ana kelime: yazi boyu, Turkcesi, aradaki mesafe
+          const olcer = document.createElement('canvas').getContext('2d');
+          function gen(metin, px, kalinlik) {
+            olcer.font = kalinlik + ' ' + px + 'px ' + YAZI;
+            return olcer.measureText(metin).width;
+          }
+          const pillGen = w => gen(w, FW, 600) + 6 + gen(K[w].level, FL, 700) + 26;
+
+          // Bir halkanin kelimelerini dilimin icine satir satir yerlestirir.
+          // Dilim asagi dogru acildigi icin her satirin yeri, ust kenarinin
+          // yuksekligindeki dilim genisligiyle sinirlanir.
+          function bantKur(liste, rIc, tan) {
+            const satirlar = [];
+            const kalan = liste.slice();
+            let d = rIc + PAD + PH / 2;
+            while (kalan.length) {
+              const yarim = Math.max(40, (d - PH / 2) * tan - KENAR / 2);
+              const sat = [];
+              let top = 0;
+              while (kalan.length) {
+                const g = pillGen(kalan[0]);
+                const ek = (sat.length ? ARA : 0) + g;
+                if (sat.length && top + ek > 2 * yarim) break;
+                sat.push({ w: kalan.shift(), g });
+                top += ek;
+              }
+              let x = -top / 2;
+              sat.forEach(o => { o.x = x; x += o.g + ARA; });
+              satirlar.push({ d, ogeler: sat, top });
+              d += SATIR;
+            }
+            let rDis = rIc + PAD * 2 + PH * 0.6;
+            satirlar.forEach(s => {
+              rDis = Math.max(rDis, s.d + PH / 2 + PAD, Math.hypot(s.d + PH / 2, s.top / 2) + 10);
+            });
+            return { satirlar, rIc, rDis };
+          }
+
+          function yerlesim(ai, aci) {
+            const tan = Math.tan(aci * Math.PI / 180), sin = Math.sin(aci * Math.PI / 180);
+            const tr = ilkAnlam(K[ai.hub].tr);
+            const hubW = gen(ai.hub, HF, 600), trW = gen(tr, TF, 500);
+            const dHub = Math.max(80, (Math.max(hubW, trW) / 2 + 10) / tan + 14);
+            const r1 = Math.max(dHub + HT + 10 + PAD, Math.hypot(dHub + HT + 8, trW / 2) + PAD);
+            const b2 = bantKur(ai.orta, r1, tan);
+            const b3 = bantKur(ai.dis, b2.rDis, tan);
+            const r3 = b3.rDis, xMax = r3 * sin + 16;
+            return { aci, tan, sin, tr, hubW, trW, dHub, r1, b2, b3, r2: b2.rDis, r3, xMax, gen: 2 * xMax, yuk: r3 + 70 };
+          }
+          // Cizim alanina en buyuk olcekle sigan aciyi sec (30 dereceye yakin olanlar oncelikli)
+          function enIyiYerlesim(ai) {
+            const r = cizim.getBoundingClientRect();
+            const W = r.width || 360, H = r.height || 480;
+            let iyi = null;
+            [30, 28, 32, 26, 34, 24, 36, 22, 38, 20, 40].forEach(aci => {
+              const y = yerlesim(ai, aci);
+              y.olcek = Math.min(W / y.gen, H / y.yuk);
+              if (!iyi || y.olcek > iyi.olcek * 1.02) iyi = y;
+            });
+            return iyi;
+          }
+
+          function dilimCiz(fi) {
+            const c = VERI.carklar[carkNo], ai = c.aileler[fi];
+            const y = enIyiYerlesim(ai);
+            A = y.aci; TAN = y.tan; SIN = y.sin;
+            dsvg.textContent = '';
+            dsvg.setAttribute('style', '--h:' + ai.hue);
+            const { tr, hubW, trW, dHub, r1, b2, b3, r2, r3, xMax } = y;
+            dilimR3 = r3;
+            const a0 = 90 - A, a1 = 90 + A;
+            dsvg.setAttribute('viewBox', (-xMax).toFixed(1) + ' -18 ' + (2 * xMax).toFixed(1) + ' ' + y.yuk.toFixed(1));
+
+            const defs = svg('defs', {}, dsvg);
+            const rg = svg('radialGradient', { id: 'kc-zemin' }, defs);
+            svg('stop', { offset: '0', 'stop-color': '#000', 'stop-opacity': '.32' }, rg);
+            svg('stop', { offset: '1', 'stop-color': '#000', 'stop-opacity': '0' }, rg);
+            // zemin golgesi, kalinlik (pasta kenari), ust yuz bantlari
+            svg('ellipse', { cx: 0, cy: (r3 * Math.cos(A * Math.PI / 180) + r3) / 2 + 26, rx: xMax * 0.9, ry: 22, fill: 'url(#kc-zemin)' }, dsvg);
+            svg('path', { d: yay(0, r3, a0, a1), class: 'kenar', transform: 'translate(0 18)' }, dsvg);
+            const kes = svg('clipPath', { id: 'kc-kenarKes' }, defs);
+            svg('path', { d: yay(0, r3, a0, a1), transform: 'translate(0 18)' }, kes);
+            const kk = svg('g', { 'clip-path': 'url(#kc-kenarKes)' }, dsvg);
+            svg('path', { d: yayCizgi(r3, a0, a1), class: 'krem kalin', transform: 'translate(0 9)' }, kk);
+            svg('path', { d: yay(0, r1, a0, a1), class: 'h1 bant' }, dsvg);
+            svg('path', { d: yay(r1, r2, a0, a1), class: 'h2 bant' }, dsvg);
+            svg('path', { d: yay(r2, r3, a0, a1), class: 'h3 bant' }, dsvg);
+            const rad = Math.PI / 180;
+            const ux = r => (r * Math.cos(a0 * rad)).toFixed(2) + ' ' + (r * Math.sin(a0 * rad)).toFixed(2);
+            const vx = r => (r * Math.cos(a1 * rad)).toFixed(2) + ' ' + (r * Math.sin(a1 * rad)).toFixed(2);
+            svg('path', { d: 'M' + ux(r3 - 3) + 'A' + (r3 - 3) + ' ' + (r3 - 3) + ' 0 0 1 ' + vx(r3 - 3), class: 'parilti' }, dsvg);
+
+            // ana kelime
+            const hg = svg('g', { class: 'pill hubpill', 'data-w': ai.hub }, dsvg);
+            svg('rect', { x: -(Math.max(hubW, trW) / 2 + 14), y: dHub - 20, width: Math.max(hubW, trW) + 28, height: HT + 40, rx: 16 }, hg);
+            const ht = svg('text', { x: 0, y: dHub, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': HF, class: 'p-w' }, hg);
+            ht.textContent = ai.hub;
+            const tt = svg('text', { x: 0, y: dHub + HT, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': TF, class: 'p-tr' }, hg);
+            tt.textContent = tr;
+
+            [b2, b3].forEach(b => b.satirlar.forEach(s => s.ogeler.forEach(o => {
+              const g = svg('g', { class: 'pill', 'data-w': o.w }, dsvg);
+              svg('rect', { x: o.x.toFixed(1), y: (s.d - PH / 2).toFixed(1), width: o.g.toFixed(1), height: PH, rx: PH / 2 }, g);
+              const t = svg('text', { x: (o.x + 13).toFixed(1), y: s.d.toFixed(1), 'dominant-baseline': 'central', 'font-size': FW, class: 'p-w' }, g);
+              t.textContent = o.w;
+              const l = svg('text', { x: (o.x + 13 + gen(o.w, FW, 600) + 6).toFixed(1), y: s.d.toFixed(1), 'dominant-baseline': 'central', 'font-size': FL, class: 'p-l' }, g);
+              l.textContent = K[o.w].level;
+            })));
+
+            $('dilimAd').innerHTML = '<b>' + kac(ai.hub) + '</b> ' + kac(tr);
+          }
+
+          // Dilimi carktaki yerinden alip buyuterek getiren donusum (FLIP).
+          // Carkta dilimin ucu merkezde, burada dilim katmaninin ucunda; aradaki
+          // kaydirma, donme ve olcek bu iki noktadan hesaplaniyor.
+          function baslangicDonusumu(fi) {
+            const d = duzen[fi], am = (d.a0 + d.a1) / 2;
+            const Mw = vp.getScreenCTM(), Ms = dsvg.getScreenCTM();
+            if (!Mw || !Ms) return null;
+            const sW = Math.hypot(Mw.a, Mw.b), sS = Math.hypot(Ms.a, Ms.b);
+            const r = cizim.getBoundingClientRect();
+            // Carktaki dilim daha dar ya da genis olabilir: yatayda esneterek
+            // baslangic seklini o ailenin acisina yaklastir.
+            const s = (R3 * sW) / (dilimR3 * sS);
+            const yarimAci = Math.min(80, (d.a1 - d.a0) / 2) * Math.PI / 180;
+            const sx = s * Math.tan(yarimAci) / TAN;
+            return {
+              origin: (Ms.e - r.left).toFixed(1) + 'px ' + (Ms.f - r.top).toFixed(1) + 'px',
+              tf: 'translate(' + (Mw.e - Ms.e).toFixed(1) + 'px, ' + (Mw.f - Ms.f).toFixed(1) + 'px) rotate(' +
+                  (am - 90).toFixed(1) + 'deg) scale(' + sx.toFixed(3) + ', ' + s.toFixed(3) + ')'
+            };
+          }
+
+          function aileyiKaldir(fi, kalk) {
+            const d = duzen[fi], am = (d.a0 + d.a1) / 2 * Math.PI / 180;
+            const t = kalk ? 'translate(' + (Math.cos(am) * 16).toFixed(1) + 'px, ' + (Math.sin(am) * 16).toFixed(1) + 'px)' : '';
+            d.g.style.transform = t;
+            d.kenar.style.transform = t;
+            if (kalk) d.g.setAttribute('filter', 'url(#kc-golge)');
+            else d.g.removeAttribute('filter');
+          }
+          function soluklastir(fi) {
+            duzen.forEach((o, i) => {
+              const s = fi >= 0 && i !== fi;
+              o.g.classList.toggle('soluk', s);
+              o.kenar.classList.toggle('soluk', s);
+            });
+          }
+          function aileGorunur(fi, gorunur) {
+            const v = gorunur ? '' : '0';
+            duzen[fi].g.style.opacity = v;
+            duzen[fi].kenar.style.opacity = v;
+          }
+
+          // Her acilis/kapanis bir islem numarasi alir; araya baska islem girerse
+          // eski islemin gecikmeli adimlari hicbir sey yapmaz.
+          let islemNo = 0;
+          function sonra(no, fn, ms) { setTimeout(() => { if (no === islemNo) fn(); }, ms); }
+
+          function acDilim(fi, odak, kartla) {
+            if (durum !== 'cark') return;
+            const no = ++islemNo;
+            durum = 'aciliyor';
+            seciliAile = fi;
+            ipucuGizle();
+            oneriKapat();
+            $('sahne').classList.add('dilimde');
+            soluklastir(fi);
+            aileyiKaldir(fi, true);
+
+            sonra(no, () => {
+              cizim.style.transition = 'none';
+              cizim.style.transform = 'none';
+              cizim.style.opacity = '';
+              dilim.classList.remove('kartli');
+              kart.inert = true;
+              perde.style.transition = 'none';
+              perde.style.opacity = '0';
+              dilim.classList.add('gecis');
+              dilim.hidden = false;
+              dilimCiz(fi);              // olcum icin katman acik olmali
+              const b = azHareket ? null : baslangicDonusumu(fi);
+              if (b) {
+                cizim.style.transformOrigin = b.origin;
+                cizim.style.transform = b.tf;
+              }
+              aileGorunur(fi, false);   // dilim pastadan alindi: yerinde bosluk kalir
+              cizim.getBoundingClientRect();
+              requestAnimationFrame(() => {
+                if (no !== islemNo) return;
+                dilim.classList.remove('gecis');
+                cizim.style.transition = 'transform .46s cubic-bezier(.2,.8,.2,1)';
+                perde.style.transition = 'opacity .3s ease';
+                cizim.style.transform = 'none';
+                perde.style.opacity = '1';
+                sonra(no, () => {
+                  cizim.style.transition = '';   // kart acilinca yukseklik gecisi CSS'ten gelsin
+                  durum = 'dilim';
+                  if (kartla && odak) kartAc(odak);
+                  else if (odak) nabiz(odak);
+                  $('geri').focus({ preventScroll: true });
+                }, azHareket ? 0 : 470);
+              });
+            }, azHareket ? 0 : 230);
+          }
+
+          function nabiz(w) {
+            if (w === VERI.carklar[carkNo].aileler[seciliAile].hub) return;
+            const p = dsvg.querySelector('.pill[data-w="' + CSS.escape(w) + '"]');
+            if (!p) return;
+            p.classList.remove('nabiz');
+            p.getBoundingClientRect();
+            p.classList.add('nabiz');
+          }
+
+          function dilimKapat() {
+            if (durum !== 'dilim' && durum !== 'kart') return;
+            const fi = seciliAile, no = ++islemNo;
+            if (durum === 'kart') kartKapat(true);
+            durum = 'kapaniyor';
+            dilim.classList.add('gecis');
+            cizim.style.transition = 'none';
+            cizim.style.transform = 'none';
+            const b = azHareket ? null : baslangicDonusumu(fi);
+            soluklastir(-1);
+            aileyiKaldir(fi, false);
+            $('sahne').classList.remove('dilimde');
+            cizim.getBoundingClientRect();
+            if (b) {
+              cizim.style.transformOrigin = b.origin;
+              cizim.style.transition = 'transform .4s cubic-bezier(.4,0,.6,1), opacity .2s ease .2s';
+              cizim.style.transform = b.tf;
+              cizim.style.opacity = '0';
+            }
+            perde.style.transition = 'opacity .32s ease';
+            perde.style.opacity = '0';
+            // dilim yerine oturmak uzereyken pastadaki asli geri belirir
+            sonra(no, () => aileGorunur(fi, true), azHareket ? 0 : 170);
+            sonra(no, () => {
+              dilim.hidden = true;
+              cizim.style.transition = '';
+              cizim.style.transform = '';
+              cizim.style.opacity = '';
+              durum = 'cark';
+            }, azHareket ? 0 : 420);
+          }
+
+          // Animasyonsuz kapanis (sekme degisirken, ekrandan cikarken)
+          function aniden() {
+            islemNo++;
+            kartKapat(true);
+            dilim.hidden = true;
+            cizim.style.transition = '';
+            cizim.style.transform = '';
+            cizim.style.opacity = '';
+            if (seciliAile >= 0 && duzen[seciliAile]) { aileyiKaldir(seciliAile, false); aileGorunur(seciliAile, true); }
+            $('sahne').classList.remove('dilimde');
+            soluklastir(-1);
+            durum = 'cark';
+          }
+
+          $('geri').addEventListener('click', dilimKapat);
+          $('dilimX').addEventListener('click', dilimKapat);
+          dsvg.addEventListener('click', e => {
+            const p = e.target.closest && e.target.closest('.pill');
+            if (p && (durum === 'dilim' || durum === 'kart')) kartAc(p.dataset.w);
+          });
+
+          // ---------------- KART ----------------
+          function vurguluEn(cumle, w) {
+            const kok = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return kac(cumle).replace(new RegExp('\\b(' + kok + '[a-z]*)', 'i'), '<mark>$1</mark>');
+          }
+          function kartAc(w) {
+            const v = K[w];
+            if (!v) return;
+            const ai = VERI.carklar[carkNo].aileler[seciliAile];
+            let h = '<div class="k-ust"><span class="rozet">' + kac(v.level) + '</span><span class="tur">' + kac(v.type) + '</span>' +
+                    '<button class="yuvarlak" id="kc-kartX" aria-label="Kartı kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>' +
+                    '<div class="k-kelime"><h2>' + kac(v.en) + '</h2><button class="yuvarlak" id="kc-kartSes" aria-label="Telaffuzu dinle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16.5 8.5a5 5 0 0 1 0 7"></path></svg></button></div>' +
+                    '<p class="k-tr">' + kac(v.tr.replace(/\//g, ' / ')) + '</p>';
+            if (v.ex) {
+              h += '<div class="k-ornek"><p class="en">' + vurguluEn(v.ex, v.en) + '</p>' +
+                   '<p class="tr">' + kac(v.exTr || '').replace(/\{([^}]*)\}/g, '<mark>$1</mark>') + '</p></div>';
+            }
+            if (v.usage) h += '<p class="k-not">' + kac(v.usage) + '</p>';
+            if (w !== ai.hub) h += '<div class="k-aile">Ailesi <button type="button" data-w="' + kac(ai.hub) + '">' + kac(ai.hub) + '</button></div>';
+            kart.innerHTML = h;
+            kart.scrollTop = 0;
+            $('kartX').addEventListener('click', () => kartKapat(false));
+            $('kartSes').addEventListener('click', () => { try { speakWord(v.en); } catch (_) {} });
+            const ab = kart.querySelector('.k-aile button');
+            if (ab) ab.addEventListener('click', () => kartAc(ab.dataset.w));
+            dsvg.querySelectorAll('.pill.aktif, .pill.nabiz').forEach(p => p.classList.remove('aktif', 'nabiz'));
+            const p = dsvg.querySelector('.pill[data-w="' + CSS.escape(w) + '"]');
+            if (p) p.classList.add('aktif');
+            dilim.classList.add('kartli');
+            kart.inert = false;
+            durum = 'kart';
+            kartYerlesim();
+          }
+          const genisEkran = window.matchMedia('(min-width: 760px)');
+          // Telefonda kart icerigi kadar uzar (en fazla %66), dilim kalan yere sigar
+          function kartYerlesim() {
+            if (genisEkran.matches) { kart.style.height = ''; cizim.style.height = ''; return; }
+            const H = kart.parentElement.clientHeight;
+            kart.style.height = 'auto';
+            const ih = Math.min(Math.ceil(kart.scrollHeight) + 2, Math.round(H * 0.66));
+            kart.style.height = ih + 'px';
+            cizim.style.height = Math.max(Math.round(H * 0.3), H - ih - 8) + 'px';
+          }
+          window.addEventListener('resize', () => { if (durum === 'kart') kartYerlesim(); });
+          function kartKapat(sessiz) {
+            dilim.classList.remove('kartli');
+            cizim.style.height = '';
+            kart.inert = true;
+            dsvg.querySelectorAll('.pill.aktif').forEach(p => p.classList.remove('aktif'));
+            if (durum === 'kart') durum = 'dilim';
+            if (!sessiz) $('geri').focus({ preventScroll: true });
+          }
+
+          // ---------------- ARAMA ----------------
+          let sonuc = [];
+          function oneriKapat() { oneri.hidden = true; oneri.textContent = ''; }
+          function aramaYap() {
+            const q = ara.value.trim().toLocaleLowerCase('tr');
+            if (!q) { oneriKapat(); return; }
+            sonuc = dizin.map(o => {
+              const en = o.w.toLowerCase(), tr = K[o.w].tr.toLocaleLowerCase('tr');
+              const parcalar = tr.split(/[\/;,]/).map(x => x.trim());
+              let s = -1;
+              if (en === q) s = 0;
+              else if (en.startsWith(q)) s = 1;
+              else if (parcalar[0] === q) s = 1.2;
+              else if (parcalar.some(x => x === q)) s = 1.5;
+              else if (parcalar.some(x => x.startsWith(q))) s = 2;
+              else if (en.includes(q)) s = 3;
+              else if (tr.includes(q)) s = 4;
+              return { o, s };
+            }).filter(x => x.s >= 0).sort((a, b) => a.s - b.s || a.o.w.length - b.o.w.length).slice(0, 6).map(x => x.o);
+            oneri.textContent = '';
+            if (!sonuc.length) {
+              const li = document.createElement('li');
+              li.className = 'bos';
+              li.textContent = 'Bu çarklarda yok. İngilizce ya da Türkçe deneyebilirsin.';
+              oneri.appendChild(li);
+            }
+            sonuc.forEach((o, i) => {
+              const li = document.createElement('li');
+              const b = document.createElement('button');
+              b.type = 'button';
+              if (i === 0) b.className = 'ilk';
+              b.innerHTML = '<b>' + kac(o.w) + '</b><span class="o-tr">' + kac(ilkAnlam(K[o.w].tr)) + '</span><span class="o-aile">' +
+                            kac(K[o.w].level) + ' · ' + kac(VERI.carklar[o.ci].ad) + '</span>';
+              b.addEventListener('click', () => git(o));
+              li.appendChild(b);
+              oneri.appendChild(li);
+            });
+            oneri.hidden = false;
+          }
+          function git(o) {
+            oneriKapat();
+            ara.value = '';
+            ara.blur();
+            if (durum !== 'cark') aniden();
+            if (o.ci !== carkNo) carkSec(o.ci);
+            acDilim(o.fi, o.w, true);
+          }
+          ara.addEventListener('input', aramaYap);
+          ara.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && sonuc.length) { e.preventDefault(); git(sonuc[0]); }
+            if (e.key === 'Escape') { ara.value = ''; oneriKapat(); }
+          });
+          document.addEventListener('pointerdown', e => {
+            if (ekranAcik && !(e.target.closest && e.target.closest('#kc-ekran .arama'))) oneriKapat();
+          });
+
+          // ---------------- EKRAN, GERI TUSU ----------------
+          // Ekran acikken gecmise tek bir giris eklenir. Telefonun geri tusu once
+          // karti, sonra dilimi kapatir; en son ekrandan cikar. Ekrandaki "Geri"
+          // dugmesi de ayni girisi geri alarak cikar, boylece gecmis temiz kalir.
+          let ekranAcik = false, gecmisVar = false, cikiyor = false, kuruldu = false, anaGorunum = '';
+          function gecmisEkle() {
+            try { history.pushState({ kc: 1 }, ''); gecmisVar = true; } catch (_) { gecmisVar = false; }
+          }
+          function ekraniAc() {
+            if (ekranAcik) return;
+            const ws = document.getElementById('welcome-screen');
+            if (ws) { anaGorunum = ws.style.display; ws.style.display = 'none'; }
+            ekran.classList.add('acik');
+            ekran.setAttribute('aria-hidden', 'false');
+            ekranAcik = true;
+            if (!kuruldu) {
+              kuruldu = true;
+              YAZI = getComputedStyle(ekran).getPropertyValue('--kc-yazi').trim() || 'sans-serif';
+              veriKur();
+              carkCiz(); uygula();
+            }
+            sekmeCiz();                       // ekran gorunurken: secili sekme ortalansin
+            gecmisEkle();
+            try { window.scrollTo(0, 0); } catch (_) {}
+          }
+          function ekraniKapat() {
+            if (!ekranAcik) return;
+            aniden();
+            oneriKapat();
+            ara.value = '';
+            ekran.classList.remove('acik');
+            ekran.setAttribute('aria-hidden', 'true');
+            ekranAcik = false;
+            const ws = document.getElementById('welcome-screen');
+            if (ws) ws.style.display = anaGorunum === 'none' ? '' : anaGorunum;   // acilmadan onceki hali
+            try { window.scrollTo(0, 0); } catch (_) {}
+          }
+          function cikisIste() {
+            if (!gecmisVar) { ekraniKapat(); return; }
+            cikiyor = true;
+            history.back();
+            setTimeout(() => { if (cikiyor) { cikiyor = false; gecmisVar = false; ekraniKapat(); } }, 450);
+          }
+          window.addEventListener('popstate', () => {
+            if (!ekranAcik) return;
+            gecmisVar = false;
+            if (cikiyor) { cikiyor = false; ekraniKapat(); return; }
+            if (durum === 'kart') kartKapat(false);
+            else if (durum === 'dilim') dilimKapat();
+            else if (durum === 'aciliyor' || durum === 'kapaniyor') aniden();
+            else { ekraniKapat(); return; }
+            gecmisEkle();                     // ekran hala acik: sonraki geri tusu icin
+          });
+          document.addEventListener('keydown', e => {
+            if (!ekranAcik || e.key !== 'Escape' || document.activeElement === ara) return;
+            if (durum === 'kart') kartKapat(false);
+            else if (durum === 'dilim') dilimKapat();
+            else if (durum === 'cark') cikisIste();
+          });
+          $('kapat').addEventListener('click', cikisIste);
+          const anaDugme = document.getElementById('home-cark-btn');
+          if (anaDugme) anaDugme.addEventListener('click', ekraniAc);
+          window.__kc = { ac: ekraniAc, kapat: cikisIste, acDilim, kartAc, dilimKapat, durum: () => durum, acik: () => ekranAcik };
+        })();
 
         // --- PWA: service worker kaydi (cevrimdisi calisma icin) ---
         if ('serviceWorker' in navigator) {
