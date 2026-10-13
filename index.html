@@ -13,6 +13,112 @@
     <meta name="apple-mobile-web-app-title" content="Word Memorizer">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <script>
+        // --- Android uygulamasi (WebView) koprusu ---
+        // Uygulama sayfayi kendi penceresinde acar ve window.WMAndroid'i saglar.
+        // WebView'de tarayicinin seslendirmesi (speechSynthesis) yoktur; ayni
+        // arayuzu burada Android'in kendi metin okuma motoruna bagliyoruz. Sayfanin
+        // geri kalani hicbir sey fark etmeden window.speechSynthesis'i kullanir.
+        // Tarayicida ve eski (TWA) surumde WMAndroid olmadigi icin bu blok calismaz.
+        (function () {
+            var K = window.WMAndroid;
+            if (!K || typeof K.ttsKonus !== 'function') return;
+            window.__wmUygulama = true;
+
+            var sira = 0, bekleyen = {}, konusan = 0, sesler = [], dinleyici = {};
+
+            function sesleriOku() {
+                try {
+                    sesler = JSON.parse(K.ttsSesler() || '[]').map(function (o, i) {
+                        return { name: o.name, lang: o.lang, voiceURI: o.name, localService: true, 'default': i === 0 };
+                    });
+                } catch (e) { sesler = []; }
+            }
+
+            function Soz(metin) {
+                this.text = metin == null ? '' : String(metin);
+                this.lang = '';
+                this.voice = null;
+                this.rate = 1;
+                this.pitch = 1;
+                this.volume = 1;
+                this.onstart = this.onend = this.onerror = null;
+                this.onpause = this.onresume = this.onboundary = this.onmark = null;
+                this._d = {};
+            }
+            Soz.prototype.addEventListener = function (t, f) { (this._d[t] = this._d[t] || []).push(f); };
+            Soz.prototype.removeEventListener = function (t, f) {
+                var l = this._d[t]; if (!l) return;
+                var i = l.indexOf(f); if (i >= 0) l.splice(i, 1);
+            };
+            function tetikle(u, tur, ek) {
+                var e = { type: tur, utterance: u, target: u, charIndex: 0, elapsedTime: 0, name: '' };
+                if (ek) for (var k in ek) e[k] = ek[k];
+                var f = u['on' + tur];
+                try { if (typeof f === 'function') f.call(u, e); } catch (x) { setTimeout(function () { throw x; }); }
+                (u._d[tur] || []).slice().forEach(function (g) {
+                    try { g.call(u, e); } catch (x) { setTimeout(function () { throw x; }); }
+                });
+            }
+
+            var motor = {
+                pending: false,
+                paused: false,
+                onvoiceschanged: null,
+                getVoices: function () { if (!sesler.length) sesleriOku(); return sesler.slice(); },
+                speak: function (u) {
+                    if (!u) return;
+                    var metin = String(u.text || '');
+                    if (!metin.trim()) { setTimeout(function () { tetikle(u, 'end'); }, 0); return; }
+                    var id = 'wm' + (++sira);
+                    bekleyen[id] = u;
+                    konusan++;
+                    var dil = u.lang || (u.voice && u.voice.lang) || 'en-US';
+                    var ses = (u.voice && u.voice.name) || '';
+                    var seviye = (u.volume == null || isNaN(+u.volume)) ? 1 : +u.volume;
+                    try { K.ttsKonus(id, metin, dil, +u.rate || 1, +u.pitch || 1, seviye, ses); }
+                    catch (e) {
+                        delete bekleyen[id];
+                        konusan = Math.max(0, konusan - 1);
+                        setTimeout(function () { tetikle(u, 'error', { error: 'synthesis-failed' }); }, 0);
+                    }
+                },
+                cancel: function () { try { K.ttsDur(); } catch (e) {} },
+                pause: function () {},
+                resume: function () {},
+                addEventListener: function (t, f) { (dinleyici[t] = dinleyici[t] || []).push(f); },
+                removeEventListener: function (t, f) {
+                    var l = dinleyici[t]; if (!l) return;
+                    var i = l.indexOf(f); if (i >= 0) l.splice(i, 1);
+                }
+            };
+            Object.defineProperty(motor, 'speaking', { get: function () { return konusan > 0; } });
+
+            // Uygulama olaylari buraya bildirir: sesler hazir / basladi / bitti / hata
+            window.__wmTts = function (tur, id) {
+                if (tur === 'sesler') {
+                    sesleriOku();
+                    var e = { type: 'voiceschanged' };
+                    try { if (typeof motor.onvoiceschanged === 'function') motor.onvoiceschanged(e); } catch (x) {}
+                    (dinleyici.voiceschanged || []).slice().forEach(function (f) { try { f(e); } catch (x) {} });
+                    return;
+                }
+                var u = bekleyen[id];
+                if (!u) return;
+                if (tur === 'start') { tetikle(u, 'start'); return; }
+                delete bekleyen[id];
+                konusan = Math.max(0, konusan - 1);
+                if (tur === 'error') tetikle(u, 'error', { error: 'synthesis-failed' });
+                else tetikle(u, 'end');
+            };
+
+            try {
+                Object.defineProperty(window, 'speechSynthesis', { value: motor, configurable: true, writable: true });
+            } catch (e) { window.speechSynthesis = motor; }
+            window.SpeechSynthesisUtterance = Soz;
+            sesleriOku();
+        })();
+    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -8023,7 +8129,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-10-06 · kelime-carki-1';
+        const YAPIM = '2026-10-11 · webview-1';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -11413,8 +11519,10 @@
             body.innerHTML =
                 msgHtml +
                 consentHtml() +
-                '<button class="google-btn" onclick="handleGoogleSignIn()">🔵 Google ile devam et</button>' +
-                '<div class="account-divider">veya</div>' +
+                (window.__wmUygulama
+                    ? '<div class="account-sync-note" style="text-align:center;margin:0 0 14px;">Uygulamada e-posta ile giriş yapılır. Daha önce Google ile kayıt olduysan: <b>Giriş yap › Şifremi unuttum</b> ile e-postana gelen bağlantıdan kendine bir şifre belirle.</div>'
+                    : '<button class="google-btn" onclick="handleGoogleSignIn()">🔵 Google ile devam et</button>' +
+                      '<div class="account-divider">veya</div>') +
                 (isSignup ? '<input type="text" id="account-name-input" placeholder="İsmin" autocomplete="given-name" value="' + accountNameDraft.replace(/"/g, '&quot;') + '" oninput="accountNameDraft=this.value">' : '') +
                 '<input type="email" id="account-email-input" placeholder="E-posta" autocomplete="email" value="' + accountEmailDraft.replace(/"/g, '&quot;') + '" oninput="accountEmailDraft=this.value">' +
                 '<input type="password" id="account-pass-input" placeholder="Şifre" autocomplete="' + (isSignup ? 'new-password' : 'current-password') + '">' +
@@ -11666,6 +11774,7 @@
                     '<h4>4. Günlük hatırlatma bildirimleri</h4>' +
                     '<p>Ana ekrandaki <b>Günlük hatırlatma</b> özelliği varsayılan olarak açıktır; misafir ya da üye olarak kullanılabilir. Çalışması için telefonunun bildirim iznini vermen gerekir; izni vermezsen bildirim kimliği oluşturulmaz.</p>' +
                     '<p>Hatırlatma açıkken, sana bildirim gönderebilmek için Google Firebase Cloud Messaging hizmeti kullanılır. Bu amaçla cihazına özel bir bildirim kimliği oluşturulur ve Google sunucularında saklanır. Bu kimlik yalnızca hatırlatma göndermek için kullanılır; reklam, takip veya profil oluşturma amacıyla kullanılmaz, hesabınla eşleştirilmez ve üçüncü kişilerle paylaşılmaz.</p>' +
+                    '<p><b>Android uygulamasında</b> hatırlatma doğrudan telefonunda kurulur ve her akşam telefonun kendisi tarafından gösterilir. Bu durumda bildirim kimliği oluşturulmaz ve hatırlatma için sunucularımıza veya Google\'a hiçbir veri gönderilmez.</p>' +
                     '<p>Hatırlatmayı dilediğin an ana ekrandaki <b>Günlük hatırlatma</b> anahtarından kapatabilirsin; bu durumda bildirim kimliği silinir. Bildirimleri telefonunun <b>Ayarlar &gt; Uygulamalar &gt; Word Memorizer &gt; Bildirimler</b> menüsünden de kapatabilirsin. Uygulamayı kaldırdığında veya bildirim iznini geri aldığında kimlik kullanılamaz hâle gelir; uzun süre etkin olmayan kimlikler Google tarafından otomatik olarak geçersiz kılınır.</p>' +
                     '<h4>5. Şifre güvenliği</h4>' +
                     '<p>E-posta ile kayıt olursan şifren, Google Firebase Authentication tarafından işlenir ve sektör standardı yöntemlerle korunur. Şifren bize hiçbir aşamada iletilmez; ne görebilir ne de sıfırlayabiliriz. Şifreni unutursan uygulama üzerinden e-postana sıfırlama bağlantısı gönderilir.</p>' +
@@ -12299,8 +12408,85 @@
             }
         }
 
+        // --- Android uygulamasinda gunluk hatirlatma ---
+        // WebView'de web bildirimi (FCM) calismaz. Uygulama hatirlatmayi telefonda
+        // kendisi kurar; kart ayni gorunur, yalnizca anahtar uygulamaya baglanir.
+        // Durumlar: acik | kapali | engelli | sorulmadi (izin henuz hic istenmedi)
+        let bkUygulamaOtomatik = false;
+
+        function bkUygulamaDurum() {
+            try { return WMAndroid.hatirlatmaDurum(); } catch (e) { return 'kapali'; }
+        }
+
+        function bkUygulamaGoster(d) {
+            bkDurum(d === 'sorulmadi' ? 'kapali' : d);
+            const kod = document.getElementById('bk-kod');
+            if (kod) kod.style.display = 'none';
+            const btn = document.getElementById('bk-btn');
+            const alt = document.getElementById('bk-alt');
+            if (!btn || !alt) return;
+            if (d === 'acik') {
+                alt.textContent = 'Açık · Her akşam 20:00 civarı hatırlatırız. O gün uygulamaya girdiysen rahatsız etmeyiz.';
+            } else if (d === 'engelli') {
+                // tarayicidakinin aksine uygulamada anahtar calisir: izin ister ya da ayarlari acar
+                btn.disabled = false;
+                alt.textContent = 'Bildirim izni kapalı. Açmak için anahtara dokun.';
+            }
+        }
+
+        function bkUygulamaAc(otomatik) {
+            bkUygulamaOtomatik = otomatik === true;
+            bkDurum('bekliyor');
+            try { WMAndroid.hatirlatmaAc(bkUygulamaOtomatik); }
+            catch (e) { bkUygulamaGoster(bkUygulamaDurum()); }
+        }
+
+        function bkUygulamaSor() {
+            let n = 0;
+            (function bak() {
+                const kart = document.getElementById('bildirim-kart');
+                if (kart && kart.offsetParent !== null && document.visibilityState === 'visible') {
+                    setTimeout(function () {
+                        if (bkUygulamaDurum() === 'sorulmadi') bkUygulamaAc(true);
+                    }, 1200);
+                    return;
+                }
+                if (++n < 900) setTimeout(bak, 1000);
+            })();
+        }
+
+        function bkUygulamaBaslat() {
+            const btn = document.getElementById('bk-btn');
+            if (!btn || !window.WMAndroid || typeof WMAndroid.hatirlatmaDurum !== 'function') return;
+            btn.onclick = function () {
+                if (btn.classList.contains('bekliyor')) return;
+                if (bkUygulamaDurum() === 'acik') {
+                    let d = 'kapali';
+                    try { d = WMAndroid.hatirlatmaKapat(); } catch (e) {}
+                    bkUygulamaGoster(d);
+                } else {
+                    bkUygulamaAc(false);
+                }
+            };
+            // Uygulama izin sonucunu buraya bildirir
+            window.__wmHatirlatma = function (d) {
+                bkUygulamaGoster(d);
+                if (d === 'acik' && !bkUygulamaOtomatik) { try { playCorrect(); } catch (e) {} }
+                bkUygulamaOtomatik = false;
+            };
+            // Telefon ayarlarindan donunce (izin degismis olabilir) karti tazele
+            window.__wmUygulamaDondu = function () {
+                if (btn.classList.contains('bekliyor')) return;
+                bkUygulamaGoster(bkUygulamaDurum());
+            };
+            const d = bkUygulamaDurum();
+            bkUygulamaGoster(d);
+            if (d === 'sorulmadi') bkUygulamaSor();
+        }
+
         // Modul betigi (Firebase) bu betikten SONRA calisir; hazir olmasini bekliyoruz.
         window.addEventListener('load', function () {
+            if (window.__wmUygulama) { bkUygulamaBaslat(); return; }
             let deneme = 0;
             (function bekle() {
                 if (window.__bildirim) { bkBaslat(); return; }
