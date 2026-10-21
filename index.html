@@ -392,6 +392,11 @@
         .fb-word { font-size: 34px; font-weight: 800; color: #1c1e21; display: flex; align-items: center; justify-content: center; gap: 9px; flex-wrap: wrap; line-height: 1.15; }
         .fb-meaning { font-size: 18px; font-weight: 700; color: #3a5169; background: #eef2f7; padding: 8px 18px; border-radius: 10px; line-height: 1.35; }
         .fb-meaning.hi { color: #1a7f37; background: #e7f6ec; }
+        /* Kucuk yazim hatasi: dogru sayilir, hatali harf kirmizi gosterilir */
+        .fb-badge.warn { color: #9a6700; background: #fff4d6; }
+        .fb-uyari { font-size: 14px; font-weight: 700; color: #9a6700; line-height: 1.35; max-width: 320px; }
+        .fb-yazim .yh { color: #d93025; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 5px; }
+        .fb-yazim .yh-fazla { color: #d93025; text-decoration: line-through; text-decoration-thickness: 3px; font-size: .8em; opacity: .85; }
         /* Cizilen tik / carpi: sabit karakter yerine kendini cizen SVG */
         .fb-mark { width: 19px; height: 19px; flex: none; }
         .fb-mark path { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; }
@@ -7668,15 +7673,17 @@
         }
 
         // Cevap ekranini kurar: ustte durum rozeti, altinda Ingilizce kelime, altinda anlam
-        function showFeedback(isCorrect, wordObj) {
+        function showFeedback(isCorrect, wordObj, yakin) {
             const host = document.getElementById('english-word');
             const typeHtml = wordObj.type ? '<span class="type-tag">' + wordObj.type + '</span>' : '';
-            const rozet = isCorrect
+            const rozet = (isCorrect && yakin) ? yazimRozeti(yakin)
+                : isCorrect
                 ? '<div class="fb-badge ok">' + MARK_OK + ' Do\u011fru</div>'
                 : '<div class="fb-badge no">' + MARK_NO + ' Yanl\u0131\u015f</div>';
             const anlam = '<div class="fb-meaning' + (isCorrect ? '' : ' hi') + '">' + wordObj.tr + '</div>';
+            const kelime = (isCorrect && yakin) ? yakin.html : wordObj.en;
             host.classList.add('fb');
-            host.innerHTML = rozet + '<div class="fb-word">' + wordObj.en + ' ' + typeHtml + '</div>' + anlam;
+            host.innerHTML = rozet + '<div class="fb-word">' + kelime + ' ' + typeHtml + '</div>' + anlam;
             const badge = host.querySelector('.fb-badge');
             const word  = host.querySelector('.fb-word');
             if (isCorrect) { _animate(badge, 'anim-pop'); _animate(word, 'anim-rise'); playCorrect(); }
@@ -8129,7 +8136,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-10-11 · webview-1';
+        const YAPIM = '2026-10-21 · yazim-toleransi';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -8158,6 +8165,96 @@
         function normalizeAnswer(s) {
             // Yazma modu icin adil karsilastirma: kucuk harf, aksansiz, bosluksuz ve tiresiz
             return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\s\-]/g, '');
+        }
+
+        // --- Kucuk yazim hatasi toleransi ---
+        // Tek harf eksik, fazla ya da yanlis yazilmissa veya yan yana iki harfin yeri
+        // karismissa cevap dogru sayilir; dogru yazim hatali harf kirmizi olacak sekilde
+        // gosterilir. Korumalar: 4 harften kisa kelimelerde uygulanmaz, 6 harften kisa
+        // kelimelerde ilk harf hatasi affedilmez ve yazilan sey sozlukte BASKA bir
+        // kelimeyse (form / from gibi) yanlis sayilir.
+        let _sozlukSeti = null;
+        function _sozlukteVar(n) {
+            if (!_sozlukSeti) _sozlukSeti = new Set(wordDatabase.map(function (w) { return normalizeAnswer(w.en); }));
+            return _sozlukSeti.has(n);
+        }
+        // normalizeAnswer ile ayni donusum; ayrica her harfin asil metindeki yerini tutar
+        function _normHarita(s) {
+            let out = '';
+            const map = [];
+            for (let i = 0; i < s.length; i++) {
+                const n = s[i].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[\s\-]/g, '');
+                for (let k = 0; k < n.length; k++) { out += n[k]; map.push(i); }
+            }
+            return { s: out, map: map };
+        }
+        // a: yazilan, b: dogru. Aralarinda tam bir islem fark varsa o islemi dondurur.
+        function _tekHata(a, b) {
+            const n = a.length, m = b.length;
+            if (Math.abs(n - m) > 1) return null;
+            const d = [];
+            for (let i = 0; i <= n; i++) { d.push(new Array(m + 1).fill(0)); d[i][0] = i; }
+            for (let j = 0; j <= m; j++) d[0][j] = j;
+            for (let i = 1; i <= n; i++) {
+                for (let j = 1; j <= m; j++) {
+                    let v = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+                    if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, d[i - 2][j - 2] + 1);
+                    d[i][j] = v;
+                }
+            }
+            if (d[n][m] !== 1) return null;
+            let i = n, j = m;
+            while (i > 0 || j > 0) {
+                if (i > 0 && j > 0 && a[i - 1] === b[j - 1] && d[i][j] === d[i - 1][j - 1]) { i--; j--; continue; }
+                if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1] && d[i][j] === d[i - 2][j - 2] + 1)
+                    return { tur: 'takas', j: j - 2 };
+                if (i > 0 && j > 0 && d[i][j] === d[i - 1][j - 1] + 1) return { tur: 'yanlis', j: j - 1, harf: a[i - 1] };
+                if (j > 0 && d[i][j] === d[i][j - 1] + 1) return { tur: 'eksik', j: j - 1 };
+                if (i > 0 && d[i][j] === d[i - 1][j] + 1) return { tur: 'fazla', j: j, harf: a[i - 1] };
+                break;
+            }
+            return null;
+        }
+        function _kacis(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        // Yazilan cevap dogruya tek harf yakinsa { html, mesaj } dondurur; degilse null.
+        function yazimYakin(yazilan, dogru) {
+            const a = normalizeAnswer(yazilan);
+            const hd = _normHarita(dogru || '');
+            const b = hd.s;
+            if (!a || b.length < 4 || a === b) return null;
+            if (_sozlukteVar(a)) return null;
+            const op = _tekHata(a, b);
+            if (!op) return null;
+            if (b.length < 6 && op.j === 0) return null;
+
+            const isaret = {};
+            if (op.tur === 'eksik' || op.tur === 'yanlis') isaret[hd.map[op.j]] = 'yh';
+            if (op.tur === 'takas') { isaret[hd.map[op.j]] = 'yh'; isaret[hd.map[op.j + 1]] = 'yh'; }
+            // Fazla harf: dogru kelimede yerine ustu cizili kucuk kirmizi harf eklenir
+            const fazlaYeri = op.tur === 'fazla' ? (op.j < b.length ? hd.map[op.j] : dogru.length) : -1;
+            let html = '';
+            for (let k = 0; k <= dogru.length; k++) {
+                if (k === fazlaYeri) html += '<span class="yh-fazla">' + _kacis(op.harf) + '</span>';
+                if (k === dogru.length) break;
+                const c = _kacis(dogru[k]);
+                html += isaret[k] ? '<span class="' + isaret[k] + '">' + c + '</span>' : c;
+            }
+
+            let detay;
+            if (op.tur === 'eksik') detay = '“' + _kacis(b[op.j]) + '” harfi eksik';
+            else if (op.tur === 'yanlis') detay = '“' + _kacis(op.harf) + '” değil “' + _kacis(b[op.j]) + '” olacaktı';
+            else if (op.tur === 'fazla') detay = 'fazladan bir “' + _kacis(op.harf) + '” yazdın';
+            else detay = '“' + _kacis(b[op.j] + b[op.j + 1]) + '” harflerinin yeri karışmış';
+            return {
+                html: '<span class="fb-yazim">' + html + '</span>',
+                mesaj: 'Küçük bir yazım hatası: ' + detay + '. Daha dikkatli ol!'
+            };
+        }
+        function yazimRozeti(yakin) {
+            return '<div class="fb-badge warn">⚠️ Doğru sayıldı</div>' +
+                   '<div class="fb-uyari">' + yakin.mesaj + '</div>';
         }
 
         function loadState() {
@@ -8703,9 +8800,12 @@
             if (currentMode !== "typing") return;
             const raw = document.getElementById('turkish-input').value.trim();
             if (raw === "") return;
-            // Yazma modu 4. gunde: Ingilizce kelime beklenir; aksan/tire/bosluk toleransli karsilastirma
-            const dogruMu = normalizeAnswer(raw) === normalizeAnswer(dailyPool[currentIndex].en);
-            handleAnswer(dogruMu, dailyPool[currentIndex], document.getElementById('turkish-input'));
+            // Yazma modu 4. gunde: Ingilizce kelime beklenir; aksan/tire/bosluk toleransli karsilastirma.
+            // Tek harflik yazim hatasi dogru sayilir, ama hatali harf gosterilir.
+            const hedef = dailyPool[currentIndex];
+            const tam = normalizeAnswer(raw) === normalizeAnswer(hedef.en);
+            const yakin = tam ? null : yazimYakin(raw, hedef.en);
+            handleAnswer(tam || !!yakin, hedef, document.getElementById('turkish-input'), yakin);
         };
 
         let restartPending = false;
@@ -8722,7 +8822,7 @@
             return bas;
         }
 
-        function handleAnswer(isCorrect, wordObj, uiElement) {
+        function handleAnswer(isCorrect, wordObj, uiElement, yakin) {
             if (isCorrect) {
                 uiElement.classList.add('correct');
                 // Dogru cevap: hatalar sifirlanir. Gun ilerlemesi SADECE yeni takvim gununde olur (advanceIfNewDay).
@@ -8733,7 +8833,7 @@
                 document.getElementById('test-section').style.display = "none";
                 document.getElementById('check-btn').style.display = "none";
                 
-                showFeedback(true, wordObj);
+                showFeedback(true, wordObj, yakin);
                 setCardSpeak(wordObj.en);
                 document.getElementById('example-container').style.display = "block";
                 document.getElementById('next-btn').textContent = "Sıradaki Kelime";
@@ -9068,7 +9168,13 @@
             const yazilan = (inp.value || '').trim();
             if (yazilan === '') return;
             const hedefler = q.accepted.map(function(x){ return normalizeAnswer(x); });
-            const dogru = hedefler.indexOf(normalizeAnswer(yazilan)) >= 0;
+            const tam = hedefler.indexOf(normalizeAnswer(yazilan)) >= 0;
+            // Ilk denemede tek harflik yazim hatasi dogru sayilir (hatali harf gosterilir)
+            let yakin = null;
+            if (!tam && !writeRetry) {
+                for (let k = 0; k < q.accepted.length && !yakin; k++) yakin = yazimYakin(yazilan, q.accepted[k]);
+            }
+            const dogru = tam || !!yakin;
 
             // 2. asama: yanlis yapmisti, simdi dogrusunu yaziyor
             if (writeRetry) {
@@ -9097,8 +9203,8 @@
             if (dogru) {
                 quizScore++;
                 inp.className = 'correct';
-                host.innerHTML = '<div class="fb-badge ok">' + MARK_OK + ' Do\u011fru</div>' +
-                                 '<div class="fb-word">' + q.word.en + '</div>' +
+                host.innerHTML = (yakin ? yazimRozeti(yakin) : '<div class="fb-badge ok">' + MARK_OK + ' Do\u011fru</div>') +
+                                 '<div class="fb-word">' + (yakin ? yakin.html : q.word.en) + '</div>' +
                                  '<div class="fb-meaning">' + q.word.tr + '</div>';
                 _animate(host.querySelector('.fb-badge'), 'anim-pop');
                 playCorrect();
