@@ -19,3 +19,5 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
           projectId: word-memorizer-718b5
+          # firebase-tools 15.34.1 ve sonrasi ek bir Google izni istiyor; o izin verilene kadar bu surumde kal
+          firebaseToolsVersion: 15.34.0
