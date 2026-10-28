@@ -755,7 +755,9 @@
         .ab-avatar.misafir { background: #dfe6f0; color: #66728a; box-shadow: none; }
         .ab-avatar svg { width: 22px; height: 22px; }
         #welcome-screen .ab-sag .welcome-admin-badge { margin: 0 2px 0 0; padding: 6px 9px; font-size: 13px; border-width: 1.5px; }
-        .ab-arama { margin: 2px 0 6px !important; }
+        .ab-arama { margin: 0 0 16px !important; }
+        #welcome-screen #dict-search-input { background: #fff; border-color: #e1e7f0; box-shadow: 0 4px 14px rgba(23, 42, 84, .05); font-size: 15px; }
+        #welcome-screen #dict-search-input:focus { border-color: #1877f2; box-shadow: 0 4px 14px rgba(24, 119, 242, .14); }
         #welcome-screen .welcome-title { font-size: 30px; margin: 4px 0 2px; }
         #welcome-screen .welcome-account-link { margin-bottom: 18px; font-size: 14px; }
 
@@ -1452,20 +1454,19 @@
             <div class="ab-ust">
                 <button class="ab-ikon" id="ab-menu" onclick="cekmeceAc()" aria-label="Menüyü aç" aria-controls="cekmece" aria-expanded="false"><i data-ikon="menu"></i></button>
                 <div class="ab-sag">
-                    <button class="ab-ikon" id="ab-ara" onclick="aramaDegistir()" aria-label="Sözlükte ara" aria-expanded="false"><i data-ikon="ara"></i></button>
                     <div class="welcome-admin-badge" id="welcome-admin-badge" title="Bildirimler">⚑ <span class="count-bubble" id="welcome-admin-count">0</span></div>
                     <button class="ab-avatar misafir" id="ab-avatar" onclick="openAccount('signin')" aria-label="Hesabım"></button>
                 </div>
             </div>
-            <div class="search-container ab-arama" id="ab-arama" hidden>
+            <h1 class="welcome-title">Word Memorizer</h1>
+            <div class="welcome-account-link" id="welcome-account-link">🔐 Giriş yap / Kayıt ol</div>
+            <div class="search-container ab-arama" id="ab-arama">
                 <div class="search-input-wrap">
                     <span class="search-icon">🔍</span>
                     <input type="text" id="dict-search-input" class="search-input" placeholder="Sözlük: İngilizce veya Türkçe ara..." autocomplete="off" oninput="handleDictionarySearch(event)">
                 </div>
                 <div id="search-results"></div>
             </div>
-            <h1 class="welcome-title">Word Memorizer</h1>
-            <div class="welcome-account-link" id="welcome-account-link">🔐 Giriş yap / Kayıt ol</div>
             <div id="ana-pano"></div>
             <div class="ap-cta" id="ap-cta"></div>
             <div id="eski-dugmeler" hidden>
@@ -8513,7 +8514,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-10-27 · yeni-ana-ekran';
+        const YAPIM = '2026-10-28 · yeni-ana-ekran-sozluk';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -14324,19 +14325,12 @@
         })();
 
         // ---- ust cubuk: arama ve hesap ----
+        // Sozluk ana ekranda hep gorunur; menuden gelince kutuya gidip imleci oraya koyar
         function aramaAc() {
-            const a = document.getElementById('ab-arama');
-            if (!a) return;
-            a.hidden = false;
-            document.getElementById('ab-ara').setAttribute('aria-expanded', 'true');
-            setTimeout(function () { try { document.getElementById('dict-search-input').focus(); } catch (e) { } }, 60);
-        }
-        function aramaDegistir() {
-            const a = document.getElementById('ab-arama');
-            if (a.hidden) { aramaAc(); return; }
-            a.hidden = true;
-            document.getElementById('ab-ara').setAttribute('aria-expanded', 'false');
-            document.getElementById('search-results').style.display = 'none';
+            const i = document.getElementById('dict-search-input');
+            if (!i) return;
+            try { i.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { }
+            setTimeout(function () { try { i.focus({ preventScroll: true }); } catch (e) { } }, 250);
         }
         function hesapGorunumu() {
             const u = window.__fb && window.__fb.auth && window.__fb.auth.currentUser;
