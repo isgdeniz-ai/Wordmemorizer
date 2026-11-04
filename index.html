@@ -1442,7 +1442,7 @@
             <div class="gate-cap">İlerlemen yedeklenir, telefon değişse de kaybolmaz</div>
             <button class="gate-btn guest" id="gate-guest-btn">Misafir olarak devam et</button>
             <div class="gate-cap">İlerlemen yalnızca bu cihazda saklanır</div>
-            <button id="gate-install-btn">📲 Uygulamayı telefona yükle</button>
+            <button id="gate-install-btn">📲 Google Play’den yükle</button>
             <div id="gate-ios-hint">📲 Ana ekrana eklemek için: alttaki <b>Paylaş</b> simgesine <span style="font-size:15px;">&#x2191;</span> dokun, ardından <b>Ana Ekrana Ekle</b> seçeneğini seç.</div>
             <div class="gate-legal">
                 <span id="gate-privacy-link">Gizlilik Politikası</span> · <span id="gate-kvkk-link">KVKK Aydınlatma Metni</span>
@@ -1470,7 +1470,7 @@
             <div id="ana-pano"></div>
             <div class="ap-cta" id="ap-cta"></div>
             <div id="eski-dugmeler" hidden>
-                <button id="install-btn">📲 Uygulamayı telefona yükle</button>
+                <button id="install-btn">📲 Google Play’den yükle</button>
                 <button id="home-story-btn" class="primary-btn" style="background-color: #e08a1e; margin-top: 12px;">📖 Metinler</button>
             <button id="home-ifade-btn" class="primary-btn" style="background-color: #6b3fd4; margin-top: 12px;">🗂️ Gramer & Deyimler Listesi</button>
             <button id="home-cark-btn" class="primary-btn" style="background-color: #0f8b8d; margin-top: 12px;">🎡 Kelime Çarkı</button>
@@ -1821,7 +1821,7 @@
             <button class="ck-oge" onclick="cekmeceGit('ayar')"><span class="ck-ik" style="background:#eef1f6;color:#44506a"><i data-ikon="ayar"></i></span><span><b>Ayarlar</b><small>Hatırlatma, görünüm, ses</small></span></button>
             <button class="ck-oge" onclick="cekmeceGit('paylas')"><span class="ck-ik" style="background:#e7f0fe;color:#1767d8"><i data-ikon="paylas"></i></span><span><b>Uygulamayı paylaş</b></span></button>
             <button class="ck-oge" onclick="cekmeceGit('degerlendir')" id="ck-degerlendir" hidden><span class="ck-ik" style="background:#fff6d6;color:#b07800"><i data-ikon="yildiz"></i></span><span><b>Değerlendir</b><small>Google Play’de görüşünü yaz</small></span></button>
-            <button class="ck-oge" onclick="cekmeceGit('yukle')" id="ck-yukle" hidden><span class="ck-ik" style="background:#e7f0fe;color:#1767d8"><i data-ikon="telefon"></i></span><span><b>Uygulamayı telefona yükle</b></span></button>
+            <button class="ck-oge" onclick="cekmeceGit('yukle')" id="ck-yukle" hidden><span class="ck-ik" style="background:#e7f0fe;color:#1767d8"><i data-ikon="telefon"></i></span><span><b>Android uygulamasını yükle</b><small>Google Play’den indir</small></span></button>
             <button class="ck-oge" onclick="cekmeceGit('nasil')"><span class="ck-ik" style="background:#eef1f6;color:#44506a"><i data-ikon="soru"></i></span><span><b>Nasıl çalışıyor?</b></span></button>
         </div>
         <div class="ck-alt">
@@ -8514,7 +8514,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-10-28 · yeni-ana-ekran-sozluk';
+        const YAPIM = '2026-11-04 · play-baglantisi';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -13817,37 +13817,32 @@
             });
         }
 
-        window.addEventListener('beforeinstallprompt', function(e) {
-            e.preventDefault();
-            deferredInstall = e;
-            showInstallUI(true);
-        });
-
-        async function promptInstall() {
-            if (!deferredInstall) return;
-            deferredInstall.prompt();
-            try { await deferredInstall.userChoice; } catch (e) {}
-            deferredInstall = null;
-            showInstallUI(false);
+        // Android uygulamasi Google Play'de yayinda (Kasim 2026). Tarayicidaki "yukle"
+        // dugmeleri artik ana ekrana ekleme istemi yerine Play Store sayfasini acar.
+        // iPhone'da Play olmadigi icin eski "ana ekrana ekle" talimati kalir; uygulamanin
+        // kendi icinde bu dugmeler hic gorunmez.
+        function playdenYukle() {
+            if (/Android/i.test(navigator.userAgent)) window.location.href = PLAY_LINKI;
+            else window.open(PLAY_LINKI, '_blank');
         }
-        if (installBtn) installBtn.addEventListener('click', promptInstall);
-        if (gateInstallBtn) gateInstallBtn.addEventListener('click', promptInstall);
-
-        window.addEventListener('appinstalled', function() {
-            deferredInstall = null;
-            showInstallUI(false);
-            if (gateIosHint) gateIosHint.style.display = 'none';
+        [installBtn, gateInstallBtn].forEach(function (b) {
+            if (!b) return;
+            b.textContent = '📲 Google Play’den yükle';
+            b.addEventListener('click', playdenYukle);
         });
+        showInstallUI(!window.__wmUygulama && !isIOS());
+        // Tarayicinin kendi "uygulama olarak yukle" istemi cikmasin; Play uygulamasi tercih edilir
+        window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); });
 
-        // iOS'ta beforeinstallprompt yok; zaten kurulu degilse elle ekleme talimatini goster
-        if (gateIosHint && isIOS() && !isStandalone()) {
+        // iOS'ta Play yok; zaten kurulu degilse elle ekleme talimatini goster
+        if (gateIosHint && isIOS() && !isStandalone() && !window.__wmUygulama) {
             gateIosHint.style.display = 'block';
         }
 
         // --- Testers Community geri bildirimi (Ekim 2026) ---
         // Paylas / Degerlendir, ilk acilis tanitim turu, Android uygulamasinda Google ile giris.
         var PLAY_LINKI = 'https://play.google.com/store/apps/details?id=com.glizwor.wordmemorizer';
-        var PAYLAS_METNI = 'Word Memorizer ile her gün İngilizce kelime öğreniyorum. Sen de dene: https://glizwor.com';
+        var PAYLAS_METNI = 'Word Memorizer ile her gün İngilizce kelime öğreniyorum. Sen de dene 👉 ' + PLAY_LINKI + '\n(iPhone ve bilgisayarda: glizwor.com)';
         // Firebase > Authentication > Google > "Web SDK configuration" icindeki Web istemci kimligi.
         // Bos kaldikca uygulamada Google dugmesi gizli kalir (e-posta ile giris notu gorunur).
         var GOOGLE_WEB_ISTEMCI = '';
@@ -14572,7 +14567,7 @@
             c.textAlign = 'left'; c.fillStyle = '#ffffff';
             c.font = '800 36px ' + PK_FONT; c.fillText('Word Memorizer', tx, y + 56);
             c.fillStyle = 'rgba(255,255,255,0.82)';
-            c.font = '600 27px ' + PK_FONT; c.fillText('glizwor.com · ' + slogan, tx, y + 94);
+            c.font = '600 27px ' + PK_FONT; c.fillText('Google Play’den indir · glizwor.com', tx, y + 94);
         }
         function pkSigdir(c, metin, agirlik, buyuk, kucuk, maxG) {
             for (let b = buyuk; b > kucuk; b -= 4) {
@@ -14909,7 +14904,7 @@
             const D = STORY_DATA.idioms[wsDeyim.id];
             if (D) paylasimAc('ifade', { tip: 'deyim', v: D, k: wsDeyim.id });
         }
-        var LINK = 'https://glizwor.com';
+        var LINK = PLAY_LINKI + '\n(iPhone ve bilgisayarda: glizwor.com)';
         function pkMetinHazirla(tur, veri) {
             if (tur === 'kelime') {
                 const w = veri.w;
