@@ -6,6 +6,7 @@
     <title>Word Memorizer</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1877f2">
+    <script>try{if(localStorage.getItem('wm_tema')==='koyu')document.documentElement.classList.add('karanlik')}catch(e){}</script>
     <meta name="description" content="İngilizce kelimeleri kalıcı olarak öğrenmeniz için aralıklı tekrar uygulaması.">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1428,6 +1429,573 @@
         .dy-btn { flex: 1; border: 0; background: #0f7a5c; color: #fff; font-weight: 700; border-radius: 12px; padding: 12px; font-size: 14.5px; cursor: pointer; font-family: inherit; }
         .dy-btn.ikincil { background: #e3e8ef; color: #172033; }
         .ck-yeni { font-size: 10px; font-weight: 800; letter-spacing: .05em; color: #fff; background: #e0452b; padding: 2px 6px; border-radius: 99px; margin-left: 6px; vertical-align: 2px; }
+
+        /* ---- KARANLIK MOD: otomatik uretilmis katman + elle duzeltmeler ---- */
+        html.karanlik { color-scheme: dark; }
+        html.karanlik body { background-color:#1a1d21 }
+        html.karanlik .app-container { background-color:#101217 }
+        html.karanlik .welcome-title { color:#dadcdf }
+        html.karanlik #dict-search-input { border:2px solid #35383e; background-color:#16181a; color:#dadcdf }
+        html.karanlik .search-input:focus { border-color:#1877f2; background-color:#101217 }
+        html.karanlik .search-icon { color:#aeb3ba }
+        html.karanlik #search-results { background:#101217; border:1px solid #35383e }
+        html.karanlik .search-result-card { background:#16181a; border-left:4px solid #1877f2 }
+        html.karanlik .res-header { color:#dadcdf }
+        html.karanlik .res-sub { color:#8adc9e }
+        html.karanlik .res-ex { color:#aeb3ba }
+        html.karanlik .res-ex.has-tr::after { color:#989ea7 }
+        html.karanlik .res-tr { color:#aec0d2; border-left:3px solid #3e4247 }
+        html.karanlik .res-detail { border-top:1px solid #313439 }
+        html.karanlik .res-usage { color:#1877f2 }
+        html.karanlik .res-syn { color:#8adc9e }
+        html.karanlik .res-toggle { color:#989ea7 }
+        html.karanlik .speak-btn:active { background:#10202b }
+        html.karanlik .info-box { background-color:#10202b; border-left:4px solid #1877f2; color:#dadcdf }
+        html.karanlik .level-form { background:#101217; border:1px solid #343d4b }
+        html.karanlik .level-form label { color:#aeb3ba }
+        html.karanlik select { border:2px solid #35383e; background-color:#191b1c; color:#dadcdf }
+        html.karanlik select:focus { border-color:#1877f2 }
+        html.karanlik .badge { background-color:#24262a; color:#dadcdf }
+        html.karanlik #english-word { color:#dadcdf }
+        html.karanlik .level-tag { background:#10202b; color:#1877f2; border:1px solid #24445e }
+        html.karanlik .type-tag { background:#1a1d21; color:#aeb3ba; border:1px solid #35383e }
+        html.karanlik .info-card { background:#191b1c; border:1px solid #35383e }
+        html.karanlik .info-card.note { background:#0b1928; border-color:#223752 }
+        html.karanlik .info-label { background:#101217; color:#989ea7 }
+        html.karanlik .info-card.note .info-label { color:#1877f2 }
+        html.karanlik .example-en { color:#dadcdf }
+        html.karanlik .usage-note { color:#1877f2 }
+        html.karanlik #synonyms-section { border-top:1px solid #343d4b }
+        html.karanlik .synonym-title { color:#aeb3ba }
+        html.karanlik .synonym-tag { background-color:#24262a }
+        html.karanlik .synonym-tag:hover, html.karanlik .synonym-tag.active { background-color:#31a24c; color:white }
+        html.karanlik .synonym-level-tag { background:rgba(0,0,0,0.06) }
+        html.karanlik #synonym-details { background-color:#162b13; border-left:4px solid #31a24c }
+        html.karanlik #synonym-word-title { color:#b3e6bf }
+        html.karanlik input[type="text"] { border:2px solid #35383e }
+        html.karanlik input[type="text"]:focus { border-color:#1877f2 }
+        html.karanlik .option-btn { background-color:#191b1c; border:2px solid #35383e; color:#dadcdf }
+        @media (hover: hover) and (pointer: fine) {
+        html.karanlik .option-btn:hover { background-color:#24262a }
+        }
+        html.karanlik .primary-btn { color:white; background-color:#1877f2 }
+        html.karanlik .correct { background-color:#162b13 !important; border-color:#31a24c !important; color:#b3e6bf !important }
+        html.karanlik .incorrect { background-color:#2a1313 !important; border-color:#e41e3f !important; color:#e4a0ac !important }
+        html.karanlik #test-question-text { color:#dadcdf }
+        html.karanlik #test-question-type { color:#1877f2 }
+        html.karanlik .test-option { background-color:#101217; border:2px solid #35383e; color:#dadcdf }
+        @media (hover: hover) and (pointer: fine) {
+        html.karanlik .test-option:hover { border-color:#1877f2; background-color:#1a1d21 }
+        }
+        html.karanlik #level-breakdown { color:#aeb3ba }
+        html.karanlik .score-circle { background:#1877f2; color:white }
+        html.karanlik .final-level-text { color:#dadcdf }
+        html.karanlik .analysis-list { background:#191b1c; border:1px solid #35383e }
+        html.karanlik .analysis-item { border-bottom:1px solid #343d4b }
+        html.karanlik .ans-correct { color:#8adc9e }
+        html.karanlik .ans-wrong { color:#e41e3f }
+        html.karanlik #stats-panel { background:rgba(0,0,0,0.45) }
+        html.karanlik .stats-card { background:#101217 }
+        html.karanlik .stats-head span { color:#dadcdf }
+        html.karanlik .stats-close { background:#1a1d21; color:#cdd0d5 }
+        html.karanlik .stat-item { background:#0b1928 }
+        html.karanlik .stat-val { color:#1877f2 }
+        html.karanlik .stat-lbl { color:#aeb3ba }
+        html.karanlik .stat-bar-wrap { background:#24262a }
+        html.karanlik .stat-bar { background:#31a24c }
+        html.karanlik .stat-bar-label { color:#aeb3ba }
+        html.karanlik .accordion { border:1px solid #35383e }
+        html.karanlik .acc-head { color:#dadcdf; background:#16181a }
+        html.karanlik .acc-arrow { color:#1877f2 }
+        html.karanlik .stat-word { border-top:1px solid #2e3238 }
+        html.karanlik .stat-word b { color:#dadcdf }
+        html.karanlik .stat-word span { color:#aeb3ba }
+        html.karanlik .stat-empty { color:#aeb3ba }
+        html.karanlik .warn-banner { background:#31290e; border:1px solid #6a5323; border-left:4px solid #f5a623; color:#e9dab2 }
+        html.karanlik .warn-banner b { color:#1877f2 }
+        html.karanlik .welcome-account-link { color:#1877f2 }
+        html.karanlik #account-panel { background:rgba(0,0,0,0.45) }
+        html.karanlik .account-card { background:#101217 }
+        html.karanlik .account-head span { color:#dadcdf }
+        html.karanlik .account-close { background:#1a1d21; color:#cdd0d5 }
+        html.karanlik input[type="email"], html.karanlik input[type="password"] { border:2px solid #35383e; background-color:#16181a; color:#dadcdf }
+        html.karanlik input[type="email"]:focus, html.karanlik input[type="password"]:focus { border-color:#1877f2; background-color:#101217 }
+        html.karanlik .google-btn { background:#101217; border:2px solid #35383e; color:#dadcdf }
+        html.karanlik .account-divider { color:#989ea7 }
+        html.karanlik .account-divider::before, html.karanlik .account-divider::after { border-top:1px solid #35383e }
+        html.karanlik .account-toggle { color:#aeb3ba }
+        html.karanlik .account-toggle b { color:#1877f2 }
+        html.karanlik .account-error { background:#2a1313; border-left:4px solid #e41e3f; color:#e4a0ac }
+        html.karanlik .account-msg { background:#162b13; border-left:4px solid #31a24c; color:#b3e6bf }
+        html.karanlik .account-avatar { background:#10202b; color:#1877f2 }
+        html.karanlik .account-name { color:#dadcdf }
+        html.karanlik .account-email { color:#989ea7 }
+        html.karanlik .account-name-edit { color:#1877f2 }
+        html.karanlik .account-sync-note { color:#aeb3ba }
+        html.karanlik .account-forgot { color:#1877f2 }
+        html.karanlik .danger-link { color:#e41e3f }
+        html.karanlik .danger-box { background:#2a1313; border:1px solid #58292e }
+        html.karanlik .danger-box h4 { color:#e4a0ac }
+        html.karanlik .danger-box p { color:#e7aeb7 }
+        html.karanlik .danger-box ul { color:#e7aeb7 }
+        html.karanlik .danger-btn { background:#e41e3f; color:#fff }
+        html.karanlik .danger-btn:disabled { background:#642730 }
+        html.karanlik .cancel-btn { border:2px solid #35383e; background:#101217; color:#dadcdf }
+        html.karanlik #report-link { color:#989ea7 }
+        html.karanlik #report-link:active { color:#1877f2 }
+        html.karanlik #report-panel { background:rgba(0,0,0,0.45) }
+        html.karanlik .report-card { background:#101217 }
+        html.karanlik .report-word { background:#1a1d21; color:#dadcdf }
+        html.karanlik .report-opt { border:2px solid #35383e; color:#dadcdf }
+        html.karanlik .report-opt.sel { border-color:#1877f2; background:#10202b; color:#1877f2 }
+        html.karanlik #report-note { border:2px solid #35383e; background:#16181a; color:#dadcdf }
+        html.karanlik #report-note:focus { border-color:#1877f2; background:#101217 }
+        html.karanlik .gate-title { color:#dadcdf }
+        html.karanlik .gate-domain { color:#989ea7 }
+        html.karanlik .gate-card { background:#101217; border:1px solid #32363d }
+        html.karanlik .gate-card::after { background:linear-gradient(100deg, transparent, rgba(245,196,81,0.4), transparent) }
+        html.karanlik .gate-card-lvl { color:#1877f2; background:#10202b }
+        html.karanlik .gate-card-en { color:#dadcdf }
+        html.karanlik .gate-card-tr { color:#aeb3ba }
+        html.karanlik .gate-btn.main { background:#1877f2; color:#fff }
+        html.karanlik .gate-btn.main:active { background:#1568d8 }
+        html.karanlik .gate-btn.guest { background:#101217; color:#dadcdf; border:2px solid #35383e }
+        html.karanlik .gate-btn.guest:active { background:#191b1c }
+        html.karanlik .gate-cap { color:#989ea7 }
+        html.karanlik .gate-legal { color:#a3a6ab }
+        html.karanlik .gate-legal span { color:#989ea7 }
+        html.karanlik #gate-install-btn { color:#1877f2; background:#10202b }
+        html.karanlik #gate-install-btn:active { background:#152838 }
+        html.karanlik #gate-ios-hint { color:#a3c3e4; background:#10202b }
+        html.karanlik .consent-row { color:#bcc0c6 }
+        html.karanlik .consent-box { border:2px solid #44474b }
+        html.karanlik .consent-row.on .consent-box { background:#1877f2; border-color:#1877f2; color:#fff }
+        html.karanlik .consent-row u { color:#1877f2; border-bottom:1px solid #1877f2 }
+        html.karanlik #policy-panel { background:rgba(0,0,0,0.45) }
+        html.karanlik .policy-card { background:#101217 }
+        html.karanlik .policy-text { color:#c9ccd1 }
+        html.karanlik .policy-text h4 { color:#dadcdf }
+        html.karanlik .policy-draft { background:#31290e; border-left:4px solid #f5a623; color:#e9dab2 }
+        html.karanlik .admin-btn { background:#32240f; color:#e1c397; border:2px solid #6f5125 }
+        html.karanlik #admin-panel { background:rgba(0,0,0,0.45) }
+        html.karanlik .admin-card { background:#101217 }
+        html.karanlik .admin-filter button { border:2px solid #35383e; background:#101217; color:#aeb3ba }
+        html.karanlik .admin-filter button.on { border-color:#1877f2; background:#10202b; color:#1877f2 }
+        html.karanlik .rep-item { border:1px solid #35383e }
+        html.karanlik .rep-item.done { background:#16181c }
+        html.karanlik .rep-word { color:#dadcdf }
+        html.karanlik .rep-lvl { color:#1877f2; background:#10202b }
+        html.karanlik .rep-reason { color:#e41e3f }
+        html.karanlik .rep-note { color:#c9ccd1; background:#16181c }
+        html.karanlik .rep-meta { color:#989ea7 }
+        html.karanlik .rep-action { color:#8adc9e }
+        html.karanlik .rep-action.undo { color:#989ea7 }
+        html.karanlik .count-bubble { background:#e41e3f; color:#fff }
+        html.karanlik .count-bubble.zero { background:#5f6f88 }
+        html.karanlik .welcome-admin-badge { color:#e1c397; background:#32240f; border:2px solid #6f5125 }
+        html.karanlik .rep-check { color:#bcc0c6 }
+        html.karanlik .rep-check.on { color:#8adc9e }
+        html.karanlik .rep-check.on .consent-box { background:#31a24c; border-color:#31a24c; color:#fff }
+        html.karanlik .admin-save-wrap { background:#101217 }
+        html.karanlik .admin-save-btn { background:#31a24c; color:#fff }
+        html.karanlik .admin-save-btn:disabled { background:#24262a; color:#989ea7 }
+        html.karanlik .fb-badge.ok { color:#a2e4b5; background:#19291e }
+        html.karanlik .fb-badge.no { color:#c1352c; background:#291110 }
+        html.karanlik .fb-word { color:#dadcdf }
+        html.karanlik .fb-meaning { color:#aec0d2; background:#181d24 }
+        html.karanlik .fb-meaning.hi { color:#a2e4b5; background:#19291e }
+        html.karanlik .fb-badge.warn { color:#e4cea2; background:#392e10 }
+        html.karanlik .fb-uyari { color:#e4cea2 }
+        html.karanlik .fb-yazim .yh { color:#d93025 }
+        html.karanlik .fb-yazim .yh-fazla { color:#d93025 }
+        html.karanlik .fb-badge.ok .fb-mark path { stroke:#a2e4b5 }
+        html.karanlik .fb-badge.no .fb-mark path.m1 { stroke:#c1352c }
+        html.karanlik .fb-badge.no .fb-mark path.m2 { stroke:#c1352c }
+        html.karanlik .quiz-q { color:#aeb3ba }
+        html.karanlik .hl { color:#dfa78f }
+        html.karanlik .ex-line.has-tr::after { color:#989ea7 }
+        html.karanlik .ex-tr { color:#aec0d2; border-left:3px solid #3e4247 }
+        html.karanlik .ex-line:last-child { color:#a5aab4 }
+        html.karanlik .guess-text { color:#aeb3ba }
+        html.karanlik #reveal-btn { background-color:#74859e }
+        html.karanlik #game-bar { color:#aeb3ba }
+        html.karanlik .gcard { border:2px solid #35383e; background:#191b1c; color:#dadcdf }
+        html.karanlik .gcard.en { color:#1877f2 }
+        html.karanlik .gcard.sel { background:#10202b; border-color:#1877f2 }
+        html.karanlik .gcard.done { background:#162b13; border-color:#31a24c; color:#b3e6bf }
+        html.karanlik .gcard.wrong { background:#2a1313; border-color:#e41e3f; color:#e4a0ac }
+        html.karanlik .pz-l { color:#fff; background:#e0335c }
+        html.karanlik .pz-l.ok { background:#31a24c }
+        html.karanlik .pz-l.no { background:#515f75 }
+        html.karanlik .pz-l.cur { background:#f5b301; color:#f0e6cb }
+        html.karanlik .pz-sure { color:#dadcdf }
+        html.karanlik .pz-sure.az { color:#e41e3f }
+        html.karanlik .pz-sure-l { color:#969ca5 }
+        html.karanlik .pz-puan { color:#6b3fd4 }
+        html.karanlik .pz-ilerleme { color:#969ca5 }
+        html.karanlik .pz-soru { background:#6b3fd4; color:#fff }
+        html.karanlik .pz-slot { background:#191b1c; color:#dadcdf }
+        html.karanlik .pz-slot.pz-first { background:#162b13; color:#b3e6bf; border:2px solid #31a24c }
+        html.karanlik .pz-slot.pz-buy { background:#362c10; color:#e8d9af; border:2px solid #f5b301 }
+        html.karanlik .pz-slot.pz-dot { border-bottom:3px solid #46494d; color:#c8ccd2 }
+        html.karanlik .pz-bilgi { color:#969ca5 }
+        html.karanlik .pz-bilgi b { color:#6b3fd4 }
+        html.karanlik .pz-mini.pz-harf { background:#f5b301; border-color:#d99a00; color:#f0e6cb }
+        html.karanlik .pz-mini.pz-pas { background:#6b3fd4; border-color:#5730b3; color:#fff }
+        html.karanlik .cw-ust h2 { color:#dadcdf }
+        html.karanlik .cw-rozet { background:#191d23; color:#b9c1d0 }
+        html.karanlik .cw-rozet.vurgu { background:#6b3fd4; color:#fff }
+        html.karanlik .cw-h { background:#101217; border:1.5px solid #40454d; color:#dadcdf }
+        html.karanlik .cw-h.aktif { background:#362c10; border-color:#f5b301 }
+        html.karanlik .cw-h.bitti { background:#162b13; border-color:#31a24c; color:#b3e6bf }
+        html.karanlik .cw-h .cw-no { color:#969ca5 }
+        html.karanlik .cw-ip-baslik { color:#969ca5 }
+        html.karanlik .cw-ip { background:#101217; border:1px solid #323741; color:#b9c1d0 }
+        html.karanlik .cw-ip.aktif { border-color:#f5b301; background:#2c240d }
+        html.karanlik .cw-ip.bitti { border-color:#31a24c; background:#132213; color:#b3e6bf }
+        html.karanlik .cw-ip .cw-ip-no { color:#6b3fd4 }
+        html.karanlik .cw-ip.bitti .cw-ip-no { color:#8adc9e }
+        html.karanlik .cw-ip .cw-ip-uz { color:#969ca5 }
+        html.karanlik .cw-vurgu { color:#6b3fd4 }
+        html.karanlik .cw-ip.bitti .cw-vurgu { color:#b3e6bf }
+        html.karanlik .cw-cevap { background:#101217; border-top:1px solid #30353e }
+        html.karanlik .cw-cevap-ip { color:#aeb3ba }
+        html.karanlik .cw-cevap-sat input { border:2px solid #3e4145 }
+        html.karanlik .cw-cevap-sat input:focus { border-color:#6b3fd4 }
+        html.karanlik .cw-cevap-sat button { background:#6b3fd4; color:#fff }
+        html.karanlik .cw-bitis .cw-b-ust { color:#b3e6bf }
+        html.karanlik .cw-bitis .cw-b-alt { color:#aeb3ba }
+        html.karanlik .sb-ust h2 { color:#dadcdf }
+        html.karanlik .sb-rozet { background:#191d23; color:#b9c1d0 }
+        html.karanlik .sb-rozet.vurgu { background:#0f7b6c; color:#fff }
+        html.karanlik .sb-soru { background:#0f7b6c; color:#fff }
+        html.karanlik .sb-ses button { border:2px solid #0f7b6c; background:#101217; color:#a9e6dd }
+        html.karanlik .sb-ses button.dolu { background:#0f7b6c; color:#fff }
+        html.karanlik .sb-cevap { border:2px dashed #40454d; background:#13171a }
+        html.karanlik .sb-cevap.dogru { border-color:#31a24c; background:#132213 }
+        html.karanlik .sb-cevap.yanlis { border-color:#e41e3f; background:#230f11 }
+        html.karanlik .sb-cip { border:1.5px solid #3e4145; background:#101217; color:#dadcdf }
+        html.karanlik .sb-cevap .sb-cip { background:#0f7b6c; border-color:#0f7b6c; color:#fff }
+        html.karanlik .sb-cevap.dogru .sb-cip { background:#31a24c; border-color:#31a24c }
+        html.karanlik .sb-alt .sb-temizle { background:#1a1d21; color:#b9c1d0 }
+        html.karanlik .sb-alt .sb-ileri { background:#0f7b6c; color:#fff }
+        html.karanlik .sb-cozum { color:#aeb3ba }
+        html.karanlik .sb-cozum b { color:#dadcdf }
+        html.karanlik .sb-bitis .sb-b-ust { color:#a9e6dd }
+        html.karanlik .sb-bitis .sb-b-alt { color:#aeb3ba }
+        html.karanlik .bk-kart { background:#2e250d; border:1.5px solid #f2d27a }
+        html.karanlik .bk-metin b { color:#ece0bd }
+        html.karanlik .bk-metin span { color:#dac899 }
+        html.karanlik .bk-btn { background:#333c42 }
+        html.karanlik .bk-btn::after { background:#101217 }
+        html.karanlik .bk-btn[aria-checked="true"] { background:#31a24c }
+        html.karanlik .bk-btn:focus-visible { outline:2px solid #1877f2 }
+        html.karanlik .bk-kart.acik { background:#142518; border-color:#3f6649 }
+        html.karanlik .bk-kart.acik .bk-metin b { color:#b3e6bf }
+        html.karanlik .bk-kart.acik .bk-metin span { color:#a6c6ae }
+        html.karanlik .bk-hata { background:#25110f; border:1px solid #55322e; color:#e2a29a }
+        html.karanlik .bk-kod { color:#9aa3ab }
+        html.karanlik #fun-overlay { background:rgba(0,0,0,.45) }
+        html.karanlik .fun-kutu { background:#101217 }
+        html.karanlik .fun-baslik { color:#dadcdf }
+        html.karanlik .fun-sec { border:1px solid #323741; background:#101217 }
+        html.karanlik .fun-sec .fs-ad { color:#dadcdf }
+        html.karanlik .fun-sec .fs-alt { color:#969ca5 }
+        html.karanlik .fun-kapat { background:#1a1d21; color:#b9c1d0 }
+        html.karanlik .quiz-sentence { color:#dadcdf }
+        html.karanlik .quiz-target { color:#dadcdf }
+        html.karanlik .quiz-hint { color:#989ea7 }
+        html.karanlik #quiz-result-list { background:#230a0a; border:1px solid #502929 }
+        html.karanlik #quiz-result-list .qr-item { border-top:1px solid #482121 }
+        html.karanlik #quiz-result-list b { color:#dadcdf }
+        html.karanlik #quiz-result-list span { color:#aeb3ba }
+        html.karanlik #quiz-result-head { color:#e4a0ac }
+        html.karanlik .bar-btn { color:#dadcdf; background:#101217; border:1px solid #3a3d42 }
+        html.karanlik .bar-btn.practice { background:#1877f2; color:#fff; border-color:#1877f2 }
+        html.karanlik #practice-menu { background:#101217; border:1px solid #35383e }
+        html.karanlik .menu-item { color:#dadcdf; background:#191b1c; border:1px solid #34363b }
+        html.karanlik .menu-item:active { background:#24262a }
+        html.karanlik #install-btn { color:#1877f2; background:#10202b; border:2px solid #1877f2 }
+        html.karanlik #install-btn:active { background:#152838 }
+        html.karanlik .nasil-h { background:#171a20; border:1px solid #323741 }
+        html.karanlik .nasil-h .ok { color:#98a1b0 }
+        html.karanlik .nasil-h .ad { color:#b9c1d0 }
+        html.karanlik .pr-btn { color:#1877f2; background:#10202b }
+        html.karanlik .pr-btn:active { background:#152838 }
+        html.karanlik .dg-kart { background:#0b1524; border:1.5px solid #223854 }
+        html.karanlik .dg-kart b { color:#a9c1e6 }
+        html.karanlik .dg-kart span { color:#a4afbe }
+        html.karanlik #kisa-bildirim { background:#1c1e21; color:#fff }
+        html.karanlik #tanitim { background:rgba(15,23,42,.55) }
+        html.karanlik .tn-kart { background:#101217 }
+        html.karanlik .tn-kart h3 { color:#dadcdf }
+        html.karanlik .tn-kart p { color:#b4bcc6 }
+        html.karanlik .tn-nokta i { background:#2b2f35 }
+        html.karanlik .tn-nokta i.on { background:#1877f2 }
+        html.karanlik .tn-atla { background:#1a1d21; color:#b4bcc6 }
+        html.karanlik .tn-ileri { background:#1877f2; color:#fff }
+        html.karanlik .tn-tekrar { color:#1877f2; background:#10202b }
+        html.karanlik { --ap-zemin:#131821; --ap-kart:#101217; --ap-yazi:#cad4e7; --ap-soluk:#778194; --ap-cizgi:#1c212a }
+        html.karanlik .ab-ust { background:rgba(19,24,33,0.94) }
+        html.karanlik .ab-ikon:active { background:rgba(23, 32, 51, .07) }
+        html.karanlik .ab-avatar { color:#fff; background:linear-gradient(135deg, #3b82f6, #7c4dff) }
+        html.karanlik .ab-avatar.misafir { background:#1f262f; color:#9fa7b8 }
+        html.karanlik #welcome-screen #dict-search-input { background:#101217; border-color:#2f3742 }
+        html.karanlik #welcome-screen #dict-search-input:focus { border-color:#1877f2 }
+        html.karanlik .ap-satir + .ap-satir { border-top:1px solid #29303b }
+        html.karanlik .ap-bar { background:#191f28 }
+        html.karanlik .ap-sv { background:#12161f }
+        html.karanlik .ap-sv i { background:#1c222c }
+        html.karanlik .gk-kelime h3 { color:#c0cded }
+        html.karanlik .gk-ses { border:1px solid #2b3648; background:#0d1624; color:#1767d8 }
+        html.karanlik .gk-etiket span { background:#111926; color:#1d5fd1 }
+        html.karanlik .gk-etiket span.lv { background:#453b14; color:#e8d5af }
+        html.karanlik .gk-tr { color:#bdc7de }
+        html.karanlik .gk-ornek { background:#12161f }
+        html.karanlik .gk-ornek .en { color:#c3cde5 }
+        html.karanlik .gk-ornek .en mark { color:#1767d8 }
+        html.karanlik .gk-ornek .tr { color:#a4acbd }
+        html.karanlik .gk-ornek .tr b { color:#b5c0d6 }
+        html.karanlik .gk-ogren { background:#0f1b2c; color:#1767d8 }
+        html.karanlik .gk-ogren:disabled { background:#18271e; color:#a3e4be }
+        html.karanlik .gk-paylas { background:linear-gradient(135deg, #1877f2, #7c4dff); color:#fff }
+        html.karanlik .ap-cta { background:linear-gradient(180deg, rgba(243, 246, 251, 0) 0, var(--ap-zemin) 20px) }
+        html.karanlik .ap-basla.bitti { background:#22a35a }
+        html.karanlik #card-share-btn { color:#1767d8; background:#0f1b2c }
+        html.karanlik .pk-mini:active { background:#10202b }
+        html.karanlik .pk-genis { color:#fff; background:linear-gradient(135deg, #1877f2, #7c4dff) }
+        html.karanlik .sc-okundu { color:#a3e4be }
+        html.karanlik .ez-ozet { background:#0d1624; border:1px solid #25344b }
+        html.karanlik .ez-ozet > b { color:#bcc9eb }
+        html.karanlik .ez-ozet > span { color:#a7b2c8 }
+        html.karanlik .ez-satir span { color:#9fa9bd }
+        html.karanlik .ez-satir b { color:#bcc9eb }
+        html.karanlik .ez-son { border-top:1px solid #25344b }
+        html.karanlik .ez-son > span { color:#9fa9bd }
+        html.karanlik .ez-son i { color:#1767d8; background:#101217; border:1px solid #27364e }
+        html.karanlik .ez-uyari { color:#e6d1a9; background:#2e240d }
+        html.karanlik .ez-test { border:1.5px solid #394b40; background:#142219; color:#a3e4be }
+        html.karanlik #cekmece-perde, html.karanlik #ab-perde, html.karanlik #gp-perde { background:rgba(15, 23, 42, .45) }
+        html.karanlik #cekmece { background:#101217 }
+        html.karanlik .ck-ust { background:linear-gradient(135deg, #1877f2, #6a4dff); color:#fff }
+        html.karanlik .ck-avatar { background:rgba(255, 255, 255, .22); color:#fff }
+        html.karanlik .ck-ust .ab-ikon { color:#fff }
+        html.karanlik .ck-grup { border-bottom:1px solid #2b313b }
+        html.karanlik .ck-gb { color:#8a94a8 }
+        html.karanlik .ck-oge:active { background:#161a22 }
+        @media (hover: hover) {
+        html.karanlik .ck-oge:hover { background:#15181f }
+        }
+        html.karanlik .ck-oge small { color:#949dae }
+        html.karanlik .ck-alt { color:#8a94a8 }
+        html.karanlik .ck-alt button { color:#9ba3b5 }
+        html.karanlik .ab-sayfa { background:#101217 }
+        html.karanlik .ab-tutamak { background:#232830 }
+        html.karanlik .ay-gb { color:#8a94a8 }
+        html.karanlik .ay-satir { background:#12161f }
+        html.karanlik .ay-ik { color:#fff }
+        html.karanlik .ay-ad small { color:#949dae }
+        html.karanlik .ay-yakinda { color:#6d3fe0; background:#150d2c }
+        html.karanlik .ay-anahtar { background:#2b323e }
+        html.karanlik .ay-anahtar::after { background:#101217 }
+        html.karanlik .ay-anahtar[aria-checked="true"] { background:#1877f2 }
+        html.karanlik .ay-anahtar.deniyor { background:#7c4dff }
+        html.karanlik .ay-not { color:#6d3fe0; background:#130b27 }
+        html.karanlik .ay-surum { color:#9aa3b5 }
+        html.karanlik .ay-ok { color:#a0aabb }
+        html.karanlik .pk-hedef:active { background:#141921 }
+        html.karanlik .pk-hedef i { color:#fff }
+        html.karanlik #gp-pencere { background:#101217 }
+        html.karanlik #gp-pencere p { color:#b4bcc6 }
+        html.karanlik .gp-sonra { color:#9fa7b8 }
+        html.karanlik .if-sekme button { border:1px solid #323741; background:#171a20; color:#a4acbd }
+        html.karanlik .if-sekme button.on { background:#13224A; border-color:#13224A; color:#fff }
+        html.karanlik #if-ara { border:2px solid #35383e; background:#16181a; color:#dadcdf }
+        html.karanlik #if-ara:focus { border-color:#1877f2; background:#101217 }
+        html.karanlik .if-sayi { color:#989ea7 }
+        html.karanlik .if-kart { background:#101217; border:1px solid #35383e }
+        html.karanlik .if-kart:active { background:#16181c }
+        html.karanlik .if-kart b { color:#dadcdf }
+        html.karanlik .if-kart .if-tr { color:#a4acbd }
+        html.karanlik .if-kart.dy b { color:#a58fde }
+        html.karanlik .if-kart.gr b { color:#ade7c3 }
+        html.karanlik .if-kart.sk b { color:#e6cba9 }
+        html.karanlik .if-bos { color:#989ea7 }
+        html.karanlik .if-uyari { color:#e3cfa0; background:#2f2711; border:1px solid #594d2e }
+        html.karanlik .story-back { background:#13224A; color:#fff }
+        html.karanlik .story-back:active { background:#0d1836 }
+        html.karanlik .story-top h2 { color:#dadcdf }
+        html.karanlik .ana-h { background:#13224A }
+        html.karanlik .ana-h .ok { color:#8fb4ee }
+        html.karanlik .ana-h .ad { color:#fff }
+        html.karanlik .ana-h .sy { color:#8fb4ee }
+        html.karanlik .orta-h { background:#2c3e6e }
+        html.karanlik .orta-h .ok { color:#aebfe8 }
+        html.karanlik .orta-h .ad { color:#fff }
+        html.karanlik .orta-h .sy { color:#aebfe8 }
+        html.karanlik .alt-h { background:#171a20; border:1px solid #323741 }
+        html.karanlik .alt-h .ok { color:#98a1b0 }
+        html.karanlik .alt-h .ad { color:#b9c1d0 }
+        html.karanlik .alt-h .sy { color:#98a1b0 }
+        html.karanlik .alt-govde { border-left:2px solid #30353e }
+        html.karanlik .cat-h { color:#989ea7 }
+        html.karanlik .cat-h span { color:#c0c4cb }
+        html.karanlik .story-card { background:linear-gradient(135deg,#2a1e0c 0%,#101217 62%); border:1px solid #57462e; border-left:5px solid #e08a1e }
+        html.karanlik .story-card:active { background:#2f2311 }
+        html.karanlik .story-card h3 { color:#dadcdf }
+        html.karanlik .story-card .sc-title-tr { color:#a9aeb6 }
+        html.karanlik .story-card .sc-sub { color:#a98246 }
+        html.karanlik .sc-min { color:#aeb3ba }
+        html.karanlik .lv-A1 { color:#a3e4ba; background:#192b1e }
+        html.karanlik .lv-A2 { color:#a9e6e6; background:#1a2f2f }
+        html.karanlik .lv-B1 { color:#1877f2; background:#10202b }
+        html.karanlik .lv-B2 { color:#6b3fd4; background:#18102b }
+        html.karanlik .lv-C1 { color:#dfbb91; background:#312411 }
+        html.karanlik .reader-head { color:#a98246; background:#291e10 }
+        html.karanlik #reader-body { color:#dadcdf }
+        html.karanlik .rs.on { background:#654b0b }
+        html.karanlik .rw { border-bottom:1px dotted #474b52 }
+        html.karanlik .rw:active { background:#10202b }
+        html.karanlik .rw.pick { background:#1877f2; color:#fff }
+        html.karanlik .sl-s { background:linear-gradient(transparent 50%, #1a426c 50%) }
+        html.karanlik .sl-c { background:linear-gradient(transparent 50%, #2c7044 50%) }
+        html.karanlik .sl-o { background:linear-gradient(transparent 50%, #f0bd6d 50%) }
+        html.karanlik .reader-nav { border-top:1px solid #35383e }
+        html.karanlik .reader-nav button { background:#1a1d21; color:#dadcdf }
+        html.karanlik .reader-nav .rn-page { color:#989ea7 }
+        html.karanlik #ws-back { background:rgba(0,0,0,.4) }
+        html.karanlik #ws-sheet { background:#101217 }
+        html.karanlik .ws-grip { background:#2e333a }
+        html.karanlik .ws-head { background:linear-gradient(135deg,#30230e 0%,#21180a 100%); border:1px solid #5c492f }
+        html.karanlik .ws-w b { color:#e6cba9 }
+        html.karanlik .ws-typ { color:#a4acbd; background:#1c1f22; border:1px solid #373b41 }
+        html.karanlik .ws-tr { color:#dadcdf }
+        html.karanlik .ws-none { color:#989ea7 }
+        html.karanlik .ws-row.r-tr { background:#2b1e0d; border:1px solid #5c492f; color:#e6cba9 }
+        html.karanlik .ws-row.r-gr { background:#132218; border:1px solid #344c3d; color:#ade7c3 }
+        html.karanlik .ws-open { background:#101217; border:1px solid #35383e }
+        html.karanlik .ws-open .sent-en { color:#a4acbd; border-bottom:1px solid #313439 }
+        html.karanlik .ws-open .sent-tr { color:#dadcdf }
+        html.karanlik .gr-pill { color:#c5dab1; background:#242718; border:1px solid #4b533b }
+        html.karanlik .gr-pill.on { background:#4d6b33; color:#fff; border-color:#4d6b33 }
+        html.karanlik .ses-btn { border:1px solid #373b41; background:#16191f; color:#a4acbd }
+        html.karanlik .ses-btn:active { background:#202429 }
+        html.karanlik .ses-row { border:1px solid #35383e; background:#101217 }
+        html.karanlik .ses-row.on { border-color:#1877f2; background:#0b1425 }
+        html.karanlik .ses-row .ses-ad { color:#dadcdf }
+        html.karanlik .ses-row .ses-alt { color:#989ea7 }
+        html.karanlik .ses-row .ses-tik { color:#1877f2 }
+        html.karanlik .ses-not { color:#989ea7 }
+        html.karanlik .ses-rozet { color:#a3e4ba; background:#192b1e; border:1px solid #375542 }
+        html.karanlik .tr-k0 { background:#10202b; color:#1462c4; border:1px solid #233b53 }
+        html.karanlik .tr-k1 { background:#181029; color:#6b3fd4; border:1px solid #322351 }
+        html.karanlik .tr-k2 { background:#192a1d; color:#a3e4ba; border:1px solid #35503e }
+        html.karanlik #player { background:#2b1e0d; border:1px solid #5c492f }
+        html.karanlik .pl-btn { background:#8a4d00; color:#fff }
+        html.karanlik .pl-btn:active { background:#6d3d00 }
+        html.karanlik .pl-bar::-webkit-slider-runnable-track { background:#553d1b }
+        html.karanlik .pl-bar::-webkit-slider-thumb { background:#8a4d00 }
+        html.karanlik .pl-bar::-moz-range-track { background:#553d1b }
+        html.karanlik .pl-bar::-moz-range-thumb { background:#8a4d00 }
+        html.karanlik .pl-sure { color:#a98246 }
+        html.karanlik .pl-hiz { border:1px solid #68583d; background:#101217; color:#e6cba9 }
+        html.karanlik .pl-hiz:active { background:#362712 }
+        html.karanlik .ws-oynat { background:#2b1e0d; border:1px solid #5c492f; color:#e6cba9 }
+        html.karanlik .ws-oynat:active { background:#362712 }
+        html.karanlik .oku-btn { border:1px solid #5c492f; background:#2b1e0d; color:#e6cba9 }
+        html.karanlik .oku-btn:active { background:#362712 }
+        html.karanlik .oku-btn.on { background:#8a4d00; border-color:#8a4d00; color:#fff }
+        html.karanlik .rs.play::before { background:#2f6df6 }
+        html.karanlik .sp-btn { border:1px solid #373b41; background:#16191f; color:#a4acbd }
+        html.karanlik .sp-btn:active { background:#202429 }
+        html.karanlik .sent-en-row { border-bottom:1px solid #313439 }
+        html.karanlik .rw.ri { background:linear-gradient(transparent 52%, #201538 52%) }
+        html.karanlik .rs.on .rw.ri { background:linear-gradient(transparent 52%, #281947 52%) }
+        html.karanlik .dy-head { background:linear-gradient(135deg,#140c29 0%,#130a21 100%); border:1px solid #352751 }
+        html.karanlik .dy-et { color:#6b3fd4; background:#190e30 }
+        html.karanlik .dy-head b { color:#a58fde }
+        html.karanlik .dy-tr { color:#dadcdf }
+        html.karanlik .dy-duz { color:#948bae }
+        html.karanlik .dy-duz span { color:#6b3fd4 }
+        html.karanlik .pad { background:repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 29px, #212830 29px 30px),
+                      #251f0f; border:1px solid #544c38 }
+        html.karanlik .pad::before { background:#532121 }
+        html.karanlik .pad-h { color:#beaa7f }
+        html.karanlik .pad-p { color:#acbdde }
+        html.karanlik .pad-fold { border-top:1px dashed #5e553f }
+        html.karanlik .pat-w .pw { color:#b2c6e9 }
+        html.karanlik .pat-w .pl { color:#bbae93 }
+        html.karanlik .pw-s { border-bottom:3px solid #7fa8e0 }
+        html.karanlik .pw-c { border-bottom:3px solid #6cbf8c }
+        html.karanlik .pw-o { border-bottom:3px solid #e3a95e }
+        html.karanlik .pat-plus { color:#c3b494 }
+        html.karanlik .vf-h { color:#beaa7f }
+        html.karanlik .vf-c { background:#272213; border:1px solid #544a35 }
+        html.karanlik .vf-c b { color:#a4acbd }
+        html.karanlik .vf-c i { color:#b0a48e }
+        html.karanlik .vf-c.on { background:#3d3112; border-color:#e0bd6a }
+        html.karanlik .vf-c.on b { color:#b2c6e9 }
+        html.karanlik .vf-c.on i { color:#e3cfa0 }
+        html.karanlik .gen-f { color:#b2c6e9; background:linear-gradient(transparent 60%, #6b520c 60%) }
+        html.karanlik .pad-ex .ex-en { color:#acbdde }
+        html.karanlik .pad-ex .ex-tr { color:#c0b8a4 }
+        html.karanlik .pad-n { color:#e4d3a2; border-left:3px solid #726339 }
+        html.karanlik .ws-learn { background:#1877f2; color:#fff }
+        html.karanlik .ws-know { background:#1a1d21; color:#aeb3ba }
+        html.karanlik .ws-state.q { background:#10202b; color:#1877f2; border:1px solid #233b53 }
+        html.karanlik .ws-state.d { background:#192b1e; color:#a3e4ba; border:1px solid #36513f }
+        html.karanlik #kc-ekran { --kc-bg:#101217; --kc-yuzey:#16181a; --kc-fg:#dadcdf; --kc-soluk:#8090a7; --kc-cizgi:#24262a; --kc-hap:#101217 }
+        html.karanlik #kc-ekran .sekmeler button { border:1px solid #323741; background:#171a20; color:#a4acbd }
+        html.karanlik #kc-ekran .sekmeler button[aria-selected="true"] { background:#13224A; border-color:#13224A; color:#fff }
+        html.karanlik #kc-ara:focus { background:#101217 }
+        html.karanlik #kc-ekran .oneri { background:#101217 }
+        html.karanlik #kc-ekran .merkez circle { fill:#fff }
+        html.karanlik #kc-ekran .yuvarlak { background:#101217 }
+        html.karanlik #kc-ekran .geri { background:#101217 }
+        html.karanlik #kc-ekran .bant { stroke:#fff }
+        html.karanlik #kc-ekran .parilti { stroke:rgba(255, 255, 255, .45) }
+        html.karanlik #kc-ekran .kart { background:#101217 }
+        html.karanlik #dy-ekran { background:#1d2127 }
+        html.karanlik .dy-kap { background:#15181f }
+        html.karanlik .dy-bas { background:#0f7a5c; color:#fff }
+        html.karanlik .dy-bas .ab-ikon { color:#fff }
+        html.karanlik .dy-av { background:#f4b740; color:#ecdbbd }
+        html.karanlik .dy-sevrozet { background:rgba(255,255,255,.2) }
+        html.karanlik .dy-giris { color:#a6b0bd }
+        html.karanlik .dy-grup { color:#a6b0bd }
+        html.karanlik .dy-grup span { color:#8a94a8 }
+        html.karanlik .dy-kart { background:#101217; border:1px solid #313740; color:var(--ap-yazi, #cad4e7) }
+        html.karanlik .dy-kart:active { background:#161a22 }
+        html.karanlik .dy-bilgi b { color:#cad4e7 !important }
+        html.karanlik .dy-bilgi small { color:#949dae }
+        html.karanlik .dy-tamam { color:#a3e4be }
+        html.karanlik .dy-sev { color:#1767d8; background:#0f1a2d }
+        html.karanlik #dy-akis { background:#312a20 }
+        html.karanlik .dy-m { color:#d5e2ea }
+        html.karanlik .dy-m.gel { background:#101217 }
+        html.karanlik .dy-m.git { background:#193a13 }
+        html.karanlik .dy-tr { color:#a6b0bd }
+        html.karanlik .dy-cevir { color:#a6b0bd }
+        html.karanlik .dy-etk { background:#0d192d; color:#1d4ed8 }
+        html.karanlik .dy-acik { background:#0c1629; color:#cad4e7 }
+        html.karanlik .dy-acik b { color:#1d4ed8 }
+        html.karanlik .dy-sistem { background:rgba(16,18,23,0.75); color:#a6b0bd }
+        html.karanlik #dy-panel { border-top:1px solid #373e47; background:#15181f }
+        html.karanlik .dy-yaziyor { color:#949dae }
+        html.karanlik .dy-sec { border:1px solid #373e47; background:#101217; color:#cad4e7 }
+        html.karanlik .dy-sec:active { background:#161a22 }
+        html.karanlik .dy-sec.yanlis { border-color:#e57373; background:#291010 }
+        html.karanlik .dy-uyari { color:#c62828 }
+        html.karanlik .dy-son { color:#cad4e7 }
+        html.karanlik .dy-kel-bas { color:#8a94a8 }
+        html.karanlik .dy-son td { border-bottom:1px solid #313740 }
+        html.karanlik .dy-ekle { background:#0f1a2d; color:#1767d8 }
+        html.karanlik .dy-ekle:disabled { background:#192a1f; color:#a3e4be }
+        html.karanlik .dy-btn { background:#0f7a5c; color:#fff }
+        html.karanlik .dy-btn.ikincil { background:#20252b; color:#cad4e7 }
+        html.karanlik .ck-yeni { color:#fff; background:#e0452b }
+        
+        html.karanlik .ay-anahtar::after { background: #f1f4f9; }
     </style>
 </head>
 <body>
@@ -1914,10 +2482,9 @@
         <div class="ay-gb">GÖRÜNÜM</div>
         <div class="ay-satir">
             <span class="ay-ik" style="background:#1f2937"><i data-ikon="ay"></i></span>
-            <div class="ay-ad"><b>Karanlık mod <span class="ay-yakinda">YAKINDA</span></b><small>Gözünü yormayan koyu tema</small></div>
+            <div class="ay-ad"><b>Karanlık mod</b><small>Gözünü yormayan koyu tema</small></div>
             <button class="ay-anahtar" id="ay-karanlik" role="switch" aria-checked="false" aria-label="Karanlık mod" onclick="karanlikModDene()"></button>
         </div>
-        <div class="ay-not" id="ay-karanlik-not" hidden>🌙 Karanlık mod üzerinde çalışıyoruz; bir sonraki güncellemelerden birinde geliyor.</div>
         <div id="ay-bildirim">
             <div class="ay-gb">BİLDİRİMLER</div>
             <div id="bildirim-kart" class="bk-kart" style="display:none;">
@@ -8591,7 +9158,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-11-13 · diyaloglar-21';
+        const YAPIM = '2026-11-13 · karanlik-mod';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -14551,16 +15118,112 @@
             if (not) not.hidden = true;
             altSayfaAc('ayar-sayfa');
         }
-        function karanlikModDene() {
-            const b = document.getElementById('ay-karanlik');
-            if (!b || b.classList.contains('deniyor')) return;
-            b.setAttribute('aria-checked', 'true');
-            b.classList.add('deniyor');
-            const not = document.getElementById('ay-karanlik-not');
-            if (not) not.hidden = false;
-            kisaBildirim('🌙 Karanlık mod çok yakında geliyor!');
-            setTimeout(function () { b.setAttribute('aria-checked', 'false'); b.classList.remove('deniyor'); }, 900);
+        // ==========================================
+        // KARANLIK MOD (Kasim 2026)
+        // Sabit CSS kurallari icin "html.karanlik" altinda uretilmis bir stil katmani var.
+        // Bu kod ise JS ile verilen satir ici renkleri (style="...") ayni kurala gore cevirir.
+        // ==========================================
+        var TEMA_KEY = 'wm_tema';
+        function _kHls(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            var mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, h = 0, s = 0, d = mx - mn;
+            if (d) {
+                s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+                h = mx === r ? ((g - b) / d + (g < b ? 6 : 0)) : mx === g ? ((b - r) / d + 2) : ((r - g) / d + 4);
+                h /= 6;
+            }
+            return [h, l, s];
         }
+        function _kRgb(h, l, s) {
+            function f(p, q, t) { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1 / 6) return p + (q - p) * 6 * t; if (t < 1 / 2) return q; if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6; return p; }
+            if (!s) return [l * 255, l * 255, l * 255];
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+            return [f(p, q, h + 1 / 3) * 255, f(p, q, h) * 255, f(p, q, h - 1 / 3) * 255];
+        }
+        function _kRenk(c, tur) {
+            var m = /rgba?\(([^)]*)\)/.exec(c), r, g, b, a = 1;
+            if (m) { var p = m[1].split(/[ ,\/]+/).filter(Boolean).map(parseFloat); r = p[0]; g = p[1]; b = p[2]; if (p.length > 3) a = p[3]; }
+            else if (/^#/.test(c)) { var hx = c.slice(1); if (hx.length === 3) hx = hx.replace(/./g, '$&$&'); r = parseInt(hx.slice(0, 2), 16); g = parseInt(hx.slice(2, 4), 16); b = parseInt(hx.slice(4, 6), 16); }
+            else if (c === 'white') { r = g = b = 255; } else if (c === 'black') { r = g = b = 0; } else return c;
+            var hls = _kHls(r, g, b), h = hls[0], l = hls[1], s = hls[2], l2, s2;
+            if (a < 1 && (l < 0.15 || (l > 0.85 && !(tur === 'zemin' && a >= 0.6)))) return c;
+            var canli = s > 0.38 && l > 0.28 && l < 0.72;
+            if (tur === 'yazi') { if (l > 0.62 || (canli && l > 0.42)) return c; l2 = 0.93 - l * 0.55; s2 = Math.min(s, 0.55); }
+            else if (tur === 'zemin') { if (l < 0.36 || canli) return c; l2 = 0.075 + (1 - l) * 0.85; s2 = s * (l > 0.85 ? 0.55 : 0.8); }
+            else { if (l < 0.36 || canli) return c; l2 = 0.17 + (1 - l) * 0.6; s2 = s * 0.5; }
+            if (s < 0.08) { h = 0.6; s2 = tur === 'yazi' ? 0.08 : 0.18; }
+            var o = _kRgb(h, Math.max(0, Math.min(1, l2)), Math.max(0, Math.min(1, s2)));
+            o = o.map(function (x) { return Math.round(Math.max(0, Math.min(255, x))); });
+            return a < 1 ? 'rgba(' + o.join(',') + ',' + a + ')' : 'rgb(' + o.join(',') + ')';
+        }
+        function _kTur(p) {
+            if (/^(color|fill|stroke|caret-color|-webkit-text-fill-color)$/.test(p)) return 'yazi';
+            if (/^background/.test(p)) return 'zemin';
+            if (/^(border|outline)/.test(p)) return 'cizgi';
+            return null;
+        }
+        var _K_RX = /#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b|rgba?\([^)]*\)|\bwhite\b|\bblack\b/g;
+        function _kEleman(el) {
+            if (!el.getAttribute || el.closest && el.closest('.k-dokunma')) return;
+            var st = el.getAttribute('style');
+            if (!st || !/#|rgb|white|black/i.test(st)) return;
+            if (el.__kYeni === st) return;           // kendi yazdigimiz hal
+            el.__kOrj = st;
+            for (var i = el.style.length - 1; i >= 0; i--) {
+                var p = el.style[i], t = _kTur(p);
+                if (!t) continue;
+                var v = el.style.getPropertyValue(p), y = v.replace(_K_RX, function (c) { return _kRenk(c, t); });
+                if (y !== v) el.style.setProperty(p, y, el.style.getPropertyPriority(p));
+            }
+            el.__kYeni = el.getAttribute('style');
+        }
+        function _kAgac(kok) {
+            if (kok.nodeType !== 1) return;
+            _kEleman(kok);
+            var l = kok.querySelectorAll('[style]');
+            for (var i = 0; i < l.length; i++) _kEleman(l[i]);
+        }
+        var _kGozcu = null;
+        function karanlikUygula(acik) {
+            var html = document.documentElement;
+            html.classList.toggle('karanlik', !!acik);
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', acik ? '#101217' : '#1877f2');
+            if (acik) {
+                _kAgac(document.body);
+                if (!_kGozcu && window.MutationObserver) {
+                    _kGozcu = new MutationObserver(function (ml) {
+                        for (var i = 0; i < ml.length; i++) {
+                            var m = ml[i];
+                            if (m.type === 'attributes') _kEleman(m.target);
+                            else for (var j = 0; j < m.addedNodes.length; j++) _kAgac(m.addedNodes[j]);
+                        }
+                    });
+                    _kGozcu.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
+                }
+            } else {
+                if (_kGozcu) { _kGozcu.disconnect(); _kGozcu = null; }
+                var l = document.querySelectorAll('[style]');
+                for (var i = 0; i < l.length; i++) {
+                    var el = l[i];
+                    if (el.__kOrj !== undefined && el.getAttribute('style') === el.__kYeni) el.setAttribute('style', el.__kOrj);
+                    el.__kOrj = undefined; el.__kYeni = undefined;
+                }
+            }
+            var b = document.getElementById('ay-karanlik');
+            if (b) b.setAttribute('aria-checked', acik ? 'true' : 'false');
+        }
+        function karanlikModDene() {
+            var acik = !document.documentElement.classList.contains('karanlik');
+            try { localStorage.setItem(TEMA_KEY, acik ? 'koyu' : 'acik'); } catch (e) { }
+            karanlikUygula(acik);
+            kisaBildirim(acik ? '🌙 Karanlık mod açıldı' : '☀️ Aydınlık mod açıldı');
+        }
+        (function () {
+            var k = null;
+            try { k = localStorage.getItem(TEMA_KEY); } catch (e) { }
+            if (k === 'koyu') karanlikUygula(true);
+        })();
         function sesDegistir() {
             soundOn = !soundOn;
             try { localStorage.setItem('wm_sound', soundOn ? '1' : '0'); } catch (e) { }
