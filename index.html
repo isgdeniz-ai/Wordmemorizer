@@ -22,7 +22,8 @@
             es: { ad: 'İspanyolca', bayrak: '🇪🇸', tts: 'es-ES', rx: /^es/i, test: true, alt: 'İspanya İspanyolcası · A1–C1' },
             ko: { ad: 'Korece', bayrak: '🇰🇷', tts: 'ko-KR', rx: /^ko/i, test: true, alt: 'TOPIK 1–6 · okunuşlu' }
         };
-        window.DIL_PAKET_SURUM = '16';
+        window.DIL_PAKET_SURUM = '21';
+        window.GRAMER_SURUM = '3';
         (function () {
             var d = 'en', test = false;
             try {
@@ -37,7 +38,7 @@
             if (d === 'en') return;
             document.documentElement.classList.add('dil-yeni', 'dil-' + d);
             var DIL_ANAHTARLAR = ['gunlukKelime_v1', 'wm_starred_v1', 'wm_cw_v1', 'wm_diyalog_v1', 'wm_okunan_v1',
-                'wm_bugun_v1', 'wm_gunun_kelimesi_v1', 'wm_voice_v1', 'wm_tanitim_v1', 'wm_ilk_akis_v1', 'wm_seviye_v1'];
+                'wm_bugun_v1', 'wm_gunun_kelimesi_v1', 'wm_voice_v1', 'wm_tanitim_v1', 'wm_ilk_akis_v1', 'wm_seviye_v1', 'wm_gramer_v1'];
             function cevir(k) { return DIL_ANAHTARLAR.indexOf(k) > -1 ? k + '__' + d : k; }
             var P = Storage.prototype, g = P.getItem, s = P.setItem, r = P.removeItem;
             P.getItem = function (k) { return g.call(this, this === window.localStorage ? cevir(k) : k); };
@@ -2090,6 +2091,126 @@
         html.karanlik .ay-anahtar::after { background: #f1f4f9; }
             /* ---- Cok dilli ---- */
         html.dil-yeni .sadece-en { display: none !important; }
+        /* ---- Gramer dersleri ---- */
+        #gramer-ekran { position: fixed; inset: 0; z-index: 1200; background: #f4f6fa; display: flex; flex-direction: column; }
+        #gramer-ekran[hidden] { display: none; }
+        body.gr-acik { overflow: hidden; }
+        .gr-bar { display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 10px; background: #fff; border-bottom: 1px solid #e3e8f1; }
+        .gr-geri-btn { border: 0; background: #eef1f6; color: #33415a; width: 38px; height: 38px; border-radius: 50%; font-size: 20px; cursor: pointer; flex: none; }
+        #gr-baslik { flex: 1; min-width: 0; font-size: 16px; font-weight: 800; color: #172033; line-height: 1.25; }
+        #gr-baslik small { display: block; font-size: 12.5px; font-weight: 600; color: #6b7385; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #gr-bayrak { font-size: 24px; flex: none; }
+        #gr-govde { flex: 1; overflow-y: auto; padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 24px); -webkit-overflow-scrolling: touch; }
+        #gr-govde > * { max-width: 620px; margin-left: auto; margin-right: auto; }
+        .gr-yukleniyor { text-align: center; color: #6b7385; padding: 40px 10px; }
+        .gr-giris { font-size: 14px; color: #556072; line-height: 1.55; margin: 0 auto 12px; }
+        .gr-ilerleme { height: 6px; background: #e3e8f1; border-radius: 99px; overflow: hidden; margin-bottom: 14px; }
+        .gr-ilerleme i { display: block; height: 100%; background: #0f8a77; border-radius: 99px; transition: width .3s; }
+        .gr-liste { display: flex; flex-direction: column; gap: 10px; }
+        .gr-ders { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; border: 1.5px solid #e3e8f1; border-radius: 16px; background: #fff; cursor: pointer; text-align: left; font-family: inherit; }
+        .gr-ders.siradaki { border-color: #0f8a77; box-shadow: 0 6px 18px rgba(15, 138, 119, .12); }
+        .gr-ders.yakinda { opacity: .55; cursor: default; background: transparent; border-style: dashed; }
+        .gr-no { flex: none; width: 36px; height: 36px; border-radius: 12px; background: #e3f5ee; color: #0b6457; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .gr-ders.bitti .gr-no { background: #0f8a77; color: #fff; }
+        .gr-ders.yakinda .gr-no { background: #eef1f6; color: #8a93a3; }
+        .gr-yazi { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .gr-yazi b { font-size: 15px; color: #172033; line-height: 1.3; }
+        .gr-yazi small { font-size: 12.5px; color: #6b7385; }
+        .gr-sag em { font-style: normal; font-size: 12px; font-weight: 700; color: #6b7385; white-space: nowrap; }
+        .gr-ders.bitti .gr-sag em { color: #0b6457; }
+        .gr-ders-ust { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #6b7385; }
+        .gr-sv { font-weight: 800; color: #0b6457; background: #e3f5ee; padding: 3px 9px; border-radius: 99px; }
+        .gr-h2 { font-size: 22px; line-height: 1.3; color: #172033; margin: 8px auto 14px; text-wrap: balance; }
+        .gr-metin h3, .gr-tablo-k h3, .gr-ornekler h3 { font-size: 15.5px; color: #172033; margin: 0 0 6px; }
+        .gr-metin { margin-bottom: 14px; }
+        .gr-metin p, .gr-ipucu p { margin: 0; font-size: 15px; line-height: 1.65; color: #2c3546; }
+        .gr-ipucu { background: #fff7e8; border: 1px solid #f6dfb3; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; }
+        .gr-ipucu > b { display: block; font-size: 14px; color: #8a4d00; margin-bottom: 4px; }
+        .gr-ipucu p { font-size: 14.5px; }
+        .gr-tablo-k { margin-bottom: 16px; }
+        .gr-tablo-sar { overflow-x: auto; border-radius: 12px; border: 1px solid #e3e8f1; background: #fff; }
+        .gr-tablo { border-collapse: collapse; width: 100%; font-size: 14px; }
+        .gr-tablo th { background: #eef6f4; color: #0b6457; text-align: left; padding: 9px 10px; font-size: 12.5px; font-weight: 800; white-space: nowrap; }
+        .gr-tablo td { padding: 9px 10px; border-top: 1px solid #eef1f6; color: #2c3546; vertical-align: top; }
+        .gr-tablo td:first-child { font-weight: 700; color: #172033; }
+        .gr-ornekler { margin-bottom: 18px; }
+        .gr-ornek { position: relative; display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; padding: 11px 40px 11px 13px; margin-bottom: 8px; border: 1px solid #e3e8f1; border-radius: 13px; background: #fff; cursor: pointer; font-family: inherit; }
+        .gr-ornek:active { background: #f2f7ff; }
+        .gr-o-y { font-size: 16px; font-weight: 700; color: #172033; }
+        .gr-o-r { font-size: 13px; color: #6b7385; font-style: italic; }
+        .gr-o-t { font-size: 13.5px; color: #6b7385; }
+        .gr-ses { position: absolute; top: 11px; right: 12px; font-size: 15px; opacity: .7; }
+        #gramer-ekran .hl { color: #c0392b; }
+        #gramer-ekran .kk { color: #1767d8; }
+        .gr-tablo .kk, .gr-tablo .hl { font-weight: 700; }
+        .gr-rom { display: block; margin-top: 2px; font-size: 12px; font-weight: 500; font-style: italic; color: #6b7385; letter-spacing: .01em; }
+        .gr-rom .kk, .gr-rom .hl { font-weight: 600; }
+        .gr-o-t .kk, .gr-o-t .hl { font-weight: 700; }
+        .gr-lejant { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; font-weight: 600; color: #6b7385; margin: -6px auto 14px; }
+        .gr-lejant span { display: inline-flex; align-items: center; gap: 6px; }
+        .gr-lejant i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+        .gr-lejant .kk-n { background: #1767d8; } .gr-lejant .hl-n { background: #c0392b; }
+        .gr-kiyas { margin-bottom: 16px; padding: 12px 12px 6px; border-radius: 14px; background: #f3f6fd; border: 1px solid #dbe4f6; }
+        .gr-kiyas h3 { font-size: 14px; color: #33415a; margin: 0 0 6px; }
+        .gr-kiyas p { margin: 0 0 10px; font-size: 14px; line-height: 1.55; color: #2c3546; }
+        .gr-ky { display: flex; align-items: stretch; gap: 6px; margin-bottom: 6px; }
+        .gr-ky-h { flex: 1 1 0; min-width: 0; display: flex; align-items: flex-start; gap: 7px; padding: 8px 10px; border-radius: 10px; background: #fff; border: 1px solid #e3e8f1; font-size: 15px; line-height: 1.35; color: #172033; overflow-wrap: anywhere; }
+        .gr-ky-h i { font-style: normal; font-size: 14px; flex: none; }
+        .gr-ky-h b { font-weight: 600; min-width: 0; }
+        .gr-ky-h .kk, .gr-ky-h .hl { font-weight: 800; }
+        .gr-ky-ok { flex: none; align-self: center; color: #8a93a3; font-size: 14px; }
+        .gr-alt { margin-top: 6px; }
+        .gr-basla { width: 100%; margin-top: 12px; background: #0f8a77 !important; }
+        .gr-ikincil { width: 100%; margin-top: 10px; border: 0; background: #e8ecf3; color: #33415a; font-weight: 700; font-size: 15px; padding: 13px; border-radius: 12px; cursor: pointer; font-family: inherit; }
+        .gr-t-ust { display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 700; color: #6b7385; }
+        .gr-soru { font-size: 19px; font-weight: 800; color: #172033; line-height: 1.4; margin: 4px auto 16px; }
+        .gr-secenekler { display: flex; flex-direction: column; gap: 10px; }
+        .gr-sec { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; color: #172033; background: #fff; border: 2px solid #e3e8f1; border-radius: 14px; cursor: pointer; text-align: left; font-family: inherit; }
+        .gr-sec.dogru { border-color: #31a24c; background: #eaf7ee; color: #1f6b33; }
+        .gr-sec.yanlis { border-color: #e5484d; background: #fdecec; color: #a3262a; }
+        .gr-sec.soluk { opacity: .5; }
+        .gr-geri { margin-top: 14px; padding: 12px 14px; border-radius: 14px; }
+        .gr-geri.iyi { background: #eaf7ee; }
+        .gr-geri.kotu { background: #fdecec; }
+        .gr-geri b { font-size: 15px; color: #172033; }
+        .gr-geri p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.55; color: #2c3546; }
+        .gr-sonuc { text-align: center; padding-top: 20px; }
+        .gr-sonuc-ikon { font-size: 54px; }
+        .gr-sonuc h2 { font-size: 24px; color: #172033; margin: 8px 0; }
+        .gr-sonuc p { font-size: 15px; color: #556072; line-height: 1.55; }
+        .gr-not { font-weight: 700; }
+        .gr-pano-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; margin-top: 10px; padding: 12px 14px; border: 0; border-radius: 14px; background: #e3f5ee; color: #0b6457; cursor: pointer; text-align: left; font-family: inherit; font-size: 14px; }
+        .gr-pano-btn span { min-width: 0; }
+        .gr-pano-btn em { font-style: normal; font-weight: 800; white-space: nowrap; }
+        html:not(.dil-yeni) .sadece-yeni { display: none !important; }
+
+        html.karanlik #gramer-ekran { background: #0d1015; }
+        html.karanlik .gr-bar { background: #101217; border-color: #222936; }
+        html.karanlik .gr-geri-btn, html.karanlik .gr-ikincil { background: #222936; color: #c9d1de; }
+        html.karanlik #gr-baslik, html.karanlik .gr-yazi b, html.karanlik .gr-h2, html.karanlik .gr-metin h3, html.karanlik .gr-tablo-k h3, html.karanlik .gr-ornekler h3, html.karanlik .gr-o-y, html.karanlik .gr-soru, html.karanlik .gr-sec, html.karanlik .gr-sonuc h2, html.karanlik .gr-geri b, html.karanlik .gr-tablo td:first-child { color: #e8ecf3; }
+        html.karanlik .gr-metin p, html.karanlik .gr-ipucu p, html.karanlik .gr-tablo td, html.karanlik .gr-geri p { color: #c9d1de; }
+        html.karanlik .gr-giris, html.karanlik #gr-baslik small, html.karanlik .gr-yazi small, html.karanlik .gr-o-t, html.karanlik .gr-sonuc p { color: #9aa4b5; }
+        html.karanlik .gr-ders, html.karanlik .gr-ornek, html.karanlik .gr-tablo-sar, html.karanlik .gr-sec { background: #161b24; border-color: #2a3240; }
+        html.karanlik .gr-ders.yakinda { background: transparent; }
+        html.karanlik .gr-tablo th { background: #12302b; color: #7fe0cd; }
+        html.karanlik .gr-tablo td { border-color: #222936; }
+        html.karanlik .gr-ipucu { background: #2a2110; border-color: #5a4320; }
+        html.karanlik .gr-ipucu b { color: #f0c06a; }
+        html.karanlik .gr-no, html.karanlik .gr-sv, html.karanlik .gr-pano-btn { background: #12302b; color: #7fe0cd; }
+        html.karanlik .gr-ders.bitti .gr-no { background: #0f8a77; color: #fff; }
+        html.karanlik .gr-ilerleme { background: #222936; }
+        html.karanlik .gr-o-r { color: #9aa4b5; }
+        html.karanlik #gramer-ekran .hl { color: #ff8a80; }
+        html.karanlik #gramer-ekran .kk { color: #7fb0ff; }
+        html.karanlik .gr-rom, html.karanlik .gr-lejant { color: #9aa4b5; }
+        html.karanlik .gr-lejant .kk-n { background: #7fb0ff; } html.karanlik .gr-lejant .hl-n { background: #ff8a80; }
+        html.karanlik .gr-kiyas { background: #131a26; border-color: #26324a; }
+        html.karanlik .gr-kiyas h3, html.karanlik .gr-kiyas p { color: #c9d1de; }
+        html.karanlik .gr-ky-h { background: #161b24; border-color: #2a3240; color: #e8ecf3; }
+        html.karanlik .gr-sec.dogru { background: #12301c; border-color: #31a24c; color: #8adc9e; }
+        html.karanlik .gr-sec.yanlis { background: #3a1416; border-color: #e5484d; color: #ff9a9d; }
+        html.karanlik .gr-geri.iyi { background: #12301c; }
+        html.karanlik .gr-geri.kotu { background: #3a1416; }
         .dil-test-et { font-size: 9px; background: #fde68a; color: #7a5200; border-radius: 6px; padding: 1px 6px; margin-left: 6px; letter-spacing: .04em; vertical-align: middle; }
         .ay-ok { margin-left: auto; font-size: 22px; color: #9aa3b2; }
         .ab-dil-rozet { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e3e7ef; background: #fff; font-size: 19px; line-height: 1; cursor: pointer; margin-right: 6px; }
@@ -2170,6 +2291,9 @@
         .tr-y { font-size: 19px; font-weight: 700; color: #172033; word-break: break-word; padding-right: 20px; }
         .tr-o { font-size: 13.5px; color: #1767d8; font-weight: 600; font-style: italic; word-break: break-word; }
         .tr-t { font-size: 12.5px; color: #6b7385; line-height: 1.35; }
+        .tr-kk { color: #1767d8; font-weight: 800; }
+        .tr-hl { color: #c0392b; font-weight: 800; }
+        .tr-m .tr-kk, .tr-m .tr-hl { font-weight: 700; }
         .tr-ses { position: absolute; top: 9px; right: 9px; font-size: 14px; opacity: .7; }
         .tr-blok { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 2px; }
         .tr-ipucu { margin: -2px 0 0; font-size: 12px; color: #8a93a3; text-align: center; }
@@ -2221,6 +2345,8 @@
         html.karanlik .tr-cubuk { background: #222936; }
         html.karanlik .tr-alt { background: linear-gradient(transparent, #0d1015 30%); }
         html.karanlik .tr-o { color: #7fb0ff; }
+        html.karanlik .tr-kk { color: #7fb0ff; }
+        html.karanlik .tr-hl { color: #ff8a80; }
         html.karanlik .hb { background: #11161e; border-color: #2f3846; }
         html.karanlik .hb .k, html.karanlik .hb-k, html.karanlik .hh-hece i.k { color: #ff6b6f; }
         html.karanlik .hb .u, html.karanlik .hb-u, html.karanlik .hh-hece i.u { color: #5b9bff; }
@@ -2387,6 +2513,15 @@
             <button class="ez-test" onclick="ezberdenTest()">🎯 Seviyemi belirle (kısa test)</button>
         </div>
 
+        <!-- GRAMER DERSLERI -->
+        <div id="gramer-ekran" hidden>
+            <div class="gr-bar">
+                <button class="gr-geri-btn" onclick="gramerGeri()" aria-label="Geri">←</button>
+                <div id="gr-baslik">Gramer Dersleri</div>
+                <span id="gr-bayrak"></span>
+            </div>
+            <div id="gr-govde"></div>
+        </div>
         <!-- IFADELER -->
         <div id="ifade-screen">
             <div class="story-top">
@@ -2672,6 +2807,7 @@
         <div class="ck-grup">
             <div class="ck-gb">OKU VE ÖĞREN</div>
             <button class="ck-oge sadece-en" onclick="cekmeceGit('metin')"><span class="ck-ik" style="background:#fff1e0;color:#c46a00"><i data-ikon="kitap"></i></span><span><b>Metinler</b><small>Sesli hikâyeler ve podcastler</small></span></button>
+            <button class="ck-oge sadece-yeni" onclick="cekmeceGit('gramer')"><span class="ck-ik" style="background:#e3f5ee;color:#0f8a77"><i data-ikon="katman"></i></span><span><b>Gramer Dersleri<span class="ck-yeni">YENİ</span></b><small>Kısa dersler ve alıştırmalar</small></span></button>
             <button class="ck-oge sadece-en" onclick="cekmeceGit('ifade')"><span class="ck-ik" style="background:#f0eaff;color:#6b3fd4"><i data-ikon="katman"></i></span><span><b>Gramer & Deyimler</b><small>Deyimler, gramer, sokak ağzı</small></span></button>
             <button class="ck-oge sadece-en" onclick="cekmeceGit('diyalog')"><span class="ck-ik" style="background:#e3f5ee;color:#0f7a5c"><i data-ikon="sohbet"></i></span><span><b>Diyaloglar<span class="ck-yeni">YENİ</span></b><small>Konuşmaya katıl, gramerle öğren</small></span></button>
         </div>
@@ -8231,14 +8367,16 @@
                         { y: 'pero', o: 'pero', t: 'ama' }, { y: 'perro', o: 'pe-rro (titrek r)', t: 'köpek' }, { y: 'caro', o: 'karo', t: 'pahalı' }, { y: 'carro', o: 'ka-rro (titrek r)', t: 'el arabası, alışveriş arabası' }, { y: 'rojo', o: 'rroho', t: 'kırmızı' }] },
                     { i: '🍫', b: 'CH = "ç"', m: '<b>ch</b> Türkçedeki "ç" sesidir.', ornek: [
                         { y: 'chico', o: 'çiko', t: 'oğlan, genç' }, { y: 'mucho', o: 'muço', t: 'çok' }, { y: 'noche', o: 'noçe', t: 'gece' }] },
-                    { i: '🎯', b: 'Vurgu nerede?', m: 'Üç kural yeter: (1) Kelime ünlüyle, <b>n</b> ya da <b>s</b> ile bitiyorsa vurgu <b>sondan ikinci</b> hecededir. (2) Başka ünsüzle bitiyorsa <b>son</b> hecededir. (3) Üstünde işaret (á, é, í, ó, ú) varsa vurgu oradadır.', ornek: [
-                        { y: 'CA-sa', o: 'KA-sa', t: 'ev', s: 'casa' }, { y: 'ha-BLAR', o: 'a-BLAR', t: 'konuşmak', s: 'hablar' }, { y: 'ca-FÉ', o: 'ka-FE', t: 'kahve', s: 'café' }, { y: 'te-LÉ-fo-no', o: 'te-LE-fo-no', t: 'telefon', s: 'teléfono' }] },
+                    { i: '🎯', b: 'Vurgu nerede?', m: 'Üç kural yeter: (1) Kelime ünlüyle, <b>n</b> ya da <b>s</b> ile bitiyorsa vurgu <b>sondan ikinci</b> hecededir. (2) Başka ünsüzle bitiyorsa <b>son</b> hecededir. (3) Üstünde işaret (á, é, í, ó, ú) varsa vurgu oradadır. Örneklerde vurgulu hece <span class="tr-hl">kırmızı</span>.', ornek: [
+                        { y: '{ca}·sa', o: '{KA}-sa', t: 'ev', s: 'casa' }, { y: 'ha·{blar}', o: 'a-{BLAR}', t: 'konuşmak', s: 'hablar' }, { y: 'ca·{fé}', o: 'ka-{FE}', t: 'kahve', s: 'café' }, { y: 'te·{lé}·fo·no', o: 'te-{LE}-fo-no', t: 'telefon', s: 'teléfono' }] },
                     { i: '☝️', b: 'İşaret anlam da ayırır', m: 'Bazı kelimeler sadece vurgu işaretiyle ayrılır. Yazarken işareti unutma.', ornek: [
                         { y: 'sí', o: 'si', t: 'evet' }, { y: 'si', o: 'si', t: 'eğer' }, { y: 'él', o: 'el', t: 'o (erkek)' }, { y: 'el', o: 'el', t: '(eril artikel)' }] },
                     { i: '¿', b: 'Ters soru ve ünlem işareti', m: 'Soru ve ünlem cümleleri başta da ters işaretle açılır: <b>¿ … ?</b> ve <b>¡ … !</b>. Cümleyi okurken tonunu baştan ayarlamaya yarar.', ornek: [
                         { y: '¿Cómo estás?', o: 'komo estas', t: 'Nasılsın?' }, { y: '¡Hola!', o: 'ola', t: 'Merhaba!' }] },
-                    { i: '⚖️', b: 'Her ismin cinsiyeti var', m: 'İsimler eril (<b>el</b>) ya da dişildir (<b>la</b>). -o ile bitenler çoğunlukla eril, -a ile bitenler dişildir ama istisnalar vardır. Bu yüzden kartlarda kelimeleri artikeliyle birlikte öğren.', ornek: [
-                        { y: 'el libro', o: 'el libro', t: 'kitap (eril)' }, { y: 'la mesa', o: 'la mesa', t: 'masa (dişil)' }, { y: 'el día', o: 'el dia', t: 'gün (istisna: eril)' }, { y: 'la mano', o: 'la mano', t: 'el (istisna: dişil)' }] },
+                    { i: '⚖️', b: 'Her ismin cinsiyeti var', m: 'İsimler eril (<b>el</b>) ya da dişildir (<b>la</b>). -o ile bitenler çoğunlukla eril, -a ile bitenler dişildir ama istisnalar vardır. Bu yüzden kartlarda kelimeleri artikeliyle birlikte öğren. Örneklerde kelime sonu <span class="tr-hl">kırmızı</span>.', ornek: [
+                        { y: 'el [libr]{o}', o: 'el libro', t: 'kitap (eril)', s: 'el libro' }, { y: 'la [mes]{a}', o: 'la mesa', t: 'masa (dişil)', s: 'la mesa' }, { y: 'el [dí]{a}', o: 'el dia', t: 'gün (istisna: eril)', s: 'el día' }, { y: 'la [man]{o}', o: 'la mano', t: 'el (istisna: dişil)', s: 'la mano' }] },
+                    { i: '🧱', b: 'Kök + ek: fiiller Türkçe gibi çekilir', m: 'Fiilin <span class="tr-kk">kökü</span> aynı kalır, sona gelen <span class="tr-hl">ek</span> kimin yaptığını söyler; tıpkı Türkçedeki "konuş-uyorum, konuş-uyorsun" gibi. Bu yüzden İspanyolcada "ben, sen" demeye çoğu zaman gerek kalmaz. Gramer derslerinde aynı renkleri göreceksin.', ornek: [
+                        { y: '[habl]{o}', o: 'ablo', t: '[konuş]{uyorum}', s: 'hablo' }, { y: '[habl]{as}', o: 'ablas', t: '[konuş]{uyorsun}', s: 'hablas' }, { y: '[habl]{amos}', o: 'ablamos', t: '[konuş]{uyoruz}', s: 'hablamos' }, { y: '[com]{o}', o: 'komo', t: '[yi]{yorum}', s: 'como' }] },
                     { i: '🤝', b: 'Sen mi, siz mi?', m: 'Samimi konuşmada <b>tú</b> (sen), resmî konuşmada <b>usted</b> (siz) kullanılır. İspanya\'da arkadaş grubuna <b>vosotros</b> (sizler) denir; Latin Amerika\'da bunun yerine ustedes kullanılır.', ornek: [
                         { y: '¿Cómo estás?', o: 'komo estas', t: 'Nasılsın? (tú)' }, { y: '¿Cómo está usted?', o: 'komo esta usted', t: 'Nasılsınız? (usted)' }] },
                     { i: '✅', b: 'Hazırsın!', m: 'Kartlarda her kelimeyi dinle ve sesli tekrar et. İsimleri artikeliyle (el / la) öğren. Bu turu istediğin zaman <b>Ayarlar → Başlangıç turu</b>\'ndan yeniden açabilirsin.' }
@@ -8288,8 +8426,8 @@
                         { y: '감사합니다', o: 'gamsahamnida', t: 'teşekkür ederim', blok: true }, { y: '입니다', o: 'imnida', t: '…dır', blok: true }, { y: '한국말', o: 'hangungmal', t: 'Korece (dil)', blok: true }, { y: '작년', o: 'jangnyeon', t: 'geçen yıl', blok: true }] },
                     { i: '🌫️', b: 'ㅎ zayıflar', m: '<b>ㅎ</b> iki ünlü arasında ya da ㄴ, ㄹ, ㅁ\'den sonra çok zayıflar, çoğu zaman hiç duyulmaz. ㄱ, ㄷ, ㅂ, ㅈ ile yan yana gelince onları nefesli yapar.', ornek: [
                         { y: '좋아요', o: 'joayo', t: 'iyi; beğeniyorum', blok: true }, { y: '괜찮아요', o: 'gwaenchanayo', t: 'sorun yok', blok: true }, { y: '좋다', o: 'jota', t: 'iyi olmak', blok: true }, { y: '축하해요', o: 'chukahaeyo', t: 'tebrikler', blok: true }] },
-                    { i: '📝', b: 'Kelimeler ve ekler', m: 'Korece soldan sağa yazılır; kelimeler arasında boşluk vardır. Türkçe gibi ekler kelimeye <b>bitişik</b> yazılır ve fiil cümlenin <b>sonunda</b> gelir. Bu açıdan Korece, Türkçe konuşanlar için çok tanıdıktır.', ornek: [
-                        { y: '저는 학생이에요', o: 'jeoneun haksaengieyo', t: 'Ben öğrenciyim' }, { y: '물을 마셔요', o: 'mureul masyeoyo', t: 'Su içiyorum' }] },
+                    { i: '📝', b: 'Kelimeler ve ekler', m: 'Korece soldan sağa yazılır; kelimeler arasında boşluk vardır. Türkçe gibi ekler kelimeye <b>bitişik</b> yazılır ve fiil cümlenin <b>sonunda</b> gelir. Bu açıdan Korece, Türkçe konuşanlar için çok tanıdıktır. Bu adımda renkler farklı: <span class="tr-kk">mavi</span> = kök, <span class="tr-hl">kırmızı</span> = ek. Türkçe çeviride de aynı renkleri gör; gramer derslerinde de böyle gösterilir.', ornek: [
+                        { y: '[저]{는} [학생]{이에요}', o: '[jeo]{neun} [haksaeng]{ieyo}', t: '[Ben] [öğrenci]{yim}' }, { y: '[물]{을} [마]{셔요}', o: '[mur]{eul} [ma]{syeoyo}', t: '[Su]{yu} [iç]{iyorum}' }, { y: '[학교]{에} [가]{요}', o: '[hakgyo]{e} [ga]{yo}', t: '[Okul]{a} [gid]{iyorum}' }, { y: '[친구]{하고} [먹]{어요}', o: '[chingu]{hago} [meog]{eoyo}', t: '[Arkadaşım]{la} [yi]{yorum}' }] },
                     { i: '✅', b: 'Hazırsın!', m: 'TOPIK 1 kartlarında her kelimenin altında heceler harf harf ayrılmış olarak duruyor; okurken bu şeride bak. Kelimeyi dinle, sesli tekrar et. Bu turu istediğin zaman <b>Ayarlar → Başlangıç turu</b>\'ndan yeniden açabilirsin.' }
                 ]
             }
@@ -8462,16 +8600,18 @@
             if (akista !== true) { _ia.akista = false; window.__tanitimAcik = true; }
             _iaGoster('tur');
         }
+        // Tur orneklerinde [kok] mavi, {ek / vurgulu hece} kirmizi gosterilir
+        function _trRenk(s) { return String(s == null ? '' : s).replace(/\[([^\]<>]*)\]/g, '<span class="tr-kk">$1</span>').replace(/\{([^}<>]*)\}/g, '<span class="tr-hl">$1</span>'); }
         function _iaTurHtml() {
             var T = BASLANGIC_TURLARI[window.DIL] || BASLANGIC_TURLARI.en, A = T.adimlar, a = A[_ia.adim], son = _ia.adim === A.length - 1;
             var oran = Math.round((_ia.adim + 1) / A.length * 100);
             var ornekler = (a.ornek || []).map(function (o, i) {
-                var ses = (o.s || o.y).replace(/'/g, "\\'");
+                var ses = String(o.s || o.y).replace(/[\[\]{}]/g, '').replace(/'/g, "\\'");
                 return '<button class="tr-ornek" onclick="speakWord(\'' + ses + '\')">' +
-                    '<span class="tr-y">' + o.y + '</span>' +
+                    '<span class="tr-y">' + _trRenk(o.y) + '</span>' +
                     (o.blok ? '<span class="tr-blok">' + hangulBlokHtml(o.y) + '</span>' : '') +
-                    '<span class="tr-o">' + o.o + '</span>' +
-                    '<span class="tr-t">' + o.t + '</span>' +
+                    '<span class="tr-o">' + _trRenk(o.o) + '</span>' +
+                    '<span class="tr-t">' + _trRenk(o.t) + '</span>' +
                     '<span class="tr-ses" aria-hidden="true">🔊</span></button>';
             }).join('');
             return '<div class="ia-kart ia-tur">' +
@@ -10157,7 +10297,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-11-16 · parti-16';
+        const YAPIM = '2026-11-16 · a2-p21';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -16206,6 +16346,9 @@
             }
             h += '</section>';
 
+            // 2b) gramer dersleri (yeni diller)
+            h += gramerPanoKart();
+
             // 3) gunun kelimesi
             const w = gununKelimesi();
             _gk = w;
@@ -16228,6 +16371,190 @@
             pano.innerHTML = h;
             ctaCiz(v);
         }
+
+        // ==========================================
+        // GRAMER DERSLERI (yeni diller): gramer-xx.js paketinden okunur
+        // ==========================================
+        var GRAMER_KEY = 'wm_gramer_v1';
+        var _grYukleniyor = false, _grBekleyen = [];
+        function gramerPaketYukle(cb) {
+            if (window.GRAMER_PAKET && window.GRAMER_PAKET.dil === window.DIL) { if (cb) cb(true); return; }
+            if (cb) _grBekleyen.push(cb);
+            if (_grYukleniyor) return;
+            _grYukleniyor = true;
+            var s = document.createElement('script');
+            s.src = 'gramer-' + window.DIL + '.js?v=' + (window.GRAMER_SURUM || '1');
+            s.onload = function () { _grYukleniyor = false; var b = _grBekleyen; _grBekleyen = []; b.forEach(function (f) { f(true); }); };
+            s.onerror = function () { _grYukleniyor = false; var b = _grBekleyen; _grBekleyen = []; b.forEach(function (f) { f(false); }); };
+            document.head.appendChild(s);
+        }
+        function gramerDurum() {
+            try { return JSON.parse(localStorage.getItem(GRAMER_KEY) || '{}') || {}; } catch (e) { return {}; }
+        }
+        function gramerKaydet(d) { try { localStorage.setItem(GRAMER_KEY, JSON.stringify(d)); } catch (e) { } }
+        function gramerOzet() {
+            var P = window.GRAMER_PAKET;
+            if (!P || P.dil !== window.DIL) return null;
+            var d = gramerDurum(), tamam = 0, sonraki = null;
+            P.dersler.forEach(function (x) { if (d[x.id]) tamam++; else if (!sonraki) sonraki = x; });
+            return { toplam: P.dersler.length, tamam: tamam, sonraki: sonraki, plan: (P.plan || []).length };
+        }
+        function _grVurgu(s) { return _kacis(String(s || '')).replace(/\{([^}]*)\}/g, '<span class="hl">$1</span>'); }
+        // Tablo hucresi: [kok] mavi, {ek} kirmizi; '|' sonrasi okunus (Latin harfli) satiri
+        function _grRenk(s) { return _kacis(String(s || '')).replace(/\[([^\]]*)\]/g, '<span class="kk">$1</span>').replace(/\{([^}]*)\}/g, '<span class="hl">$1</span>'); }
+        function _grHucre(c) { var p = String(c == null ? '' : c).split('|'); return _grRenk(p[0]) + (p[1] ? '<small class="gr-rom">' + _grRenk(p[1]) + '</small>' : ''); }
+        function _grDuz(s) { return String(s || '').replace(/[{}\[\]]/g, ''); }
+        function _grMetin(s) { return String(s || '').replace(/\[([^\]<>]*)\]/g, '<span class="kk">$1</span>').replace(/\{([^}<>]*)\}/g, '<span class="hl">$1</span>'); }
+        function _grRenkliMi(v) { if (typeof v === 'string') return /\[[^\]]+\]/.test(v); if (v && typeof v === 'object') { for (var k in v) { if (_grRenkliMi(v[k])) return true; } } return false; }
+
+        var _grDers = null, _grTest = null;
+        function gramerAc(dersId) {
+            var ekran = document.getElementById('gramer-ekran');
+            ekran.hidden = false;
+            document.body.classList.add('gr-acik');
+            katmanAc('gramer', gramerGizle);
+            document.getElementById('gr-govde').innerHTML = '<div class="gr-yukleniyor">Yükleniyor…</div>';
+            gramerPaketYukle(function (ok) {
+                if (!ok) { document.getElementById('gr-govde').innerHTML = '<div class="gr-yukleniyor">Dersler yüklenemedi. İnternet bağlantını kontrol edip tekrar dene.</div>'; return; }
+                if (dersId) gramerDersAc(dersId); else gramerListe();
+            });
+        }
+        function gramerGizle() {
+            document.getElementById('gramer-ekran').hidden = true;
+            document.body.classList.remove('gr-acik');
+            _grDers = null; _grTest = null;
+            try { anaSayfaCiz(); } catch (e) { }
+        }
+        function gramerKapat() { katmanKapat('gramer'); }
+        function gramerGeri() {
+            if (_grTest) { _grTest = null; gramerDersAc(_grDers.id); return; }
+            if (_grDers) { _grDers = null; gramerListe(); return; }
+            gramerKapat();
+        }
+        function _grUst(baslik, alt) {
+            var b = (window.DIL_BILGI || {}).bayrak || '';
+            document.getElementById('gr-baslik').innerHTML = _kacis(baslik) + (alt ? '<small>' + _kacis(alt) + '</small>' : '');
+            document.getElementById('gr-bayrak').textContent = b;
+        }
+        function gramerListe() {
+            _grDers = null; _grTest = null;
+            var P = window.GRAMER_PAKET, d = gramerDurum(), oz = gramerOzet();
+            _grUst('Gramer Dersleri', dilAd() + ' · ' + oz.tamam + ' / ' + oz.toplam + ' ders tamamlandı');
+            var h = '<p class="gr-giris">Kelime kartlarındaki "gramer dersi" notları burada. Her ders birkaç dakika sürer ve sonunda kısa bir alıştırma var.</p>';
+            h += '<div class="gr-ilerleme"><i style="width:' + Math.round(oz.toplam ? oz.tamam / oz.toplam * 100 : 0) + '%"></i></div>';
+            h += '<div class="gr-liste">' + P.dersler.map(function (x, i) {
+                var t = d[x.id];
+                return '<button class="gr-ders' + (t ? ' bitti' : '') + (oz.sonraki && oz.sonraki.id === x.id ? ' siradaki' : '') + '" onclick="gramerDersAc(\'' + x.id + '\')">' +
+                    '<span class="gr-no">' + (t ? '✓' : (i + 1)) + '</span>' +
+                    '<span class="gr-yazi"><b>' + _kacis(x.baslik) + '</b><small>' + _kacis(x.kisa || '') + '</small></span>' +
+                    '<span class="gr-sag">' + (t ? '<em>' + t.skor + '/' + t.toplam + '</em>' : '<em>' + (x.sure || 5) + ' dk</em>') + '</span></button>';
+            }).join('');
+            (P.plan || []).forEach(function (ad, i) {
+                h += '<div class="gr-ders yakinda"><span class="gr-no">' + (P.dersler.length + i + 1) + '</span>' +
+                     '<span class="gr-yazi"><b>' + _kacis(ad) + '</b><small>Yakında</small></span></div>';
+            });
+            h += '</div>';
+            var g = document.getElementById('gr-govde');
+            g.innerHTML = h; g.scrollTop = 0;
+        }
+        function _grDersBul(id) { return (window.GRAMER_PAKET.dersler || []).filter(function (x) { return x.id === id; })[0]; }
+        function gramerDersAc(id) {
+            var x = _grDersBul(id); if (!x) return gramerListe();
+            _grDers = x; _grTest = null;
+            var sira = window.GRAMER_PAKET.dersler.indexOf(x) + 1;
+            _grUst('Ders ' + sira, x.baslik);
+            var ko = window.DIL === 'ko';
+            var h = '<div class="gr-ders-ust"><span class="gr-sv">' + _kacis(x.seviye || '') + '</span><span>~' + (x.sure || 5) + ' dakika</span></div>';
+            h += '<h2 class="gr-h2">' + _kacis(x.baslik) + '</h2>';
+            if (_grRenkliMi(x.bolumler)) h += '<div class="gr-lejant"><span><i class="kk-n"></i>kök</span><span><i class="hl-n"></i>ek ya da değişen kısım</span></div>';
+            (x.bolumler || []).forEach(function (b) {
+                if (b.t === 'metin') {
+                    h += '<section class="gr-metin">' + (b.h ? '<h3>' + _kacis(b.h) + '</h3>' : '') + '<p>' + _grMetin(b.m) + '</p></section>';
+                } else if (b.t === 'kiyas') {
+                    h += '<section class="gr-kiyas"><h3>' + _kacis(b.h || 'Türkçeyle yan yana') + '</h3>' + (b.m ? '<p>' + _grMetin(b.m) + '</p>' : '') + '<div class="gr-ky-liste">' + b.l.map(function (o) {
+                        return '<div class="gr-ky"><span class="gr-ky-h tr"><i>🇹🇷</i><b>' + _grRenk(o[0]) + '</b></span><span class="gr-ky-ok">↔</span><span class="gr-ky-h"><i>' + (ko ? '🇰🇷' : '🇪🇸') + '</i><b>' + _grRenk(o[1]) + (o[2] ? '<small class="gr-rom">' + _grRenk(o[2]) + '</small>' : '') + '</b></span></div>';
+                    }).join('') + '</div></section>';
+                } else if (b.t === 'ipucu') {
+                    h += '<section class="gr-ipucu"><b>💡 ' + _kacis(b.h || 'İpucu') + '</b><p>' + _grMetin(b.m) + '</p></section>';
+                } else if (b.t === 'tablo') {
+                    h += '<section class="gr-tablo-k">' + (b.h ? '<h3>' + _kacis(b.h) + '</h3>' : '') + '<div class="gr-tablo-sar"><table class="gr-tablo">' +
+                         (b.bas ? '<thead><tr>' + b.bas.map(function (c) { return '<th>' + _kacis(c) + '</th>'; }).join('') + '</tr></thead>' : '') +
+                         '<tbody>' + b.s.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + _grHucre(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div></section>';
+                } else if (b.t === 'ornek') {
+                    h += '<section class="gr-ornekler"><h3>' + _kacis(b.h || 'Örnekler') + '</h3>' + b.l.map(function (o) {
+                        return '<button class="gr-ornek" onclick="speakWord(this.getAttribute(\'data-s\'))" data-s="' + _kacis(_grDuz(o[0])) + '">' +
+                               '<span class="gr-o-y">' + _grRenk(o[0]) + '</span>' +
+                               (ko && o[2] ? '<span class="gr-o-r">' + _grRenk(o[2]) + '</span>' : '') +
+                               '<span class="gr-o-t">' + _grRenk(o[1]) + '</span><span class="gr-ses">🔊</span></button>';
+                    }).join('') + '</section>';
+                }
+            });
+            h += '<div class="gr-alt"><button class="primary-btn gr-basla" onclick="gramerTestBasla()">✏️ Alıştırmaya geç (' + (x.test || []).length + ' soru)</button></div>';
+            var g = document.getElementById('gr-govde');
+            g.innerHTML = h; g.scrollTop = 0;
+        }
+        function gramerTestBasla() {
+            if (!_grDers) return;
+            _grTest = { i: 0, dogru: 0, cevap: null };
+            _grSoruCiz();
+        }
+        function _grSoruCiz() {
+            var x = _grDers, T = _grTest, q = x.test[T.i];
+            _grUst('Alıştırma', x.baslik);
+            var h = '<div class="gr-t-ust"><span>Soru ' + (T.i + 1) + ' / ' + x.test.length + '</span><div class="gr-ilerleme"><i style="width:' + Math.round(T.i / x.test.length * 100) + '%"></i></div></div>';
+            h += '<div class="gr-soru">' + _kacis(q.s) + '</div><div class="gr-secenekler">' + q.o.map(function (o, k) {
+                var cls = '';
+                if (T.cevap !== null) cls = k === q.d ? ' dogru' : (k === T.cevap ? ' yanlis' : ' soluk');
+                return '<button class="gr-sec' + cls + '" ' + (T.cevap !== null ? 'disabled' : '') + ' onclick="gramerCevap(' + k + ')">' + _kacis(o) + '</button>';
+            }).join('') + '</div>';
+            if (T.cevap !== null) {
+                var dogru = T.cevap === q.d;
+                h += '<div class="gr-geri ' + (dogru ? 'iyi' : 'kotu') + '"><b>' + (dogru ? '✓ Doğru!' : '✗ Doğrusu: ' + _kacis(q.o[q.d])) + '</b><p>' + _kacis(q.a || '') + '</p></div>';
+                h += '<button class="primary-btn gr-basla" onclick="gramerSonraki()">' + (T.i + 1 < x.test.length ? 'Sonraki soru' : 'Sonucu gör') + '</button>';
+            }
+            var g = document.getElementById('gr-govde');
+            g.innerHTML = h; g.scrollTop = 0;
+        }
+        function gramerCevap(k) {
+            var T = _grTest; if (!T || T.cevap !== null) return;
+            T.cevap = k;
+            if (k === _grDers.test[T.i].d) T.dogru++;
+            _grSoruCiz();
+        }
+        function gramerSonraki() {
+            var T = _grTest, x = _grDers;
+            T.i++; T.cevap = null;
+            if (T.i < x.test.length) { _grSoruCiz(); return; }
+            var d = gramerDurum(), onceki = d[x.id];
+            d[x.id] = { skor: Math.max(T.dogru, onceki ? onceki.skor : 0), toplam: x.test.length, at: Date.now() };
+            gramerKaydet(d);
+            var oz = gramerOzet(), sonraki = oz.sonraki;
+            var tam = T.dogru === x.test.length;
+            _grUst('Ders tamamlandı', x.baslik);
+            var h = '<div class="gr-sonuc"><div class="gr-sonuc-ikon">' + (tam ? '🎉' : '👍') + '</div>' +
+                    '<h2>' + T.dogru + ' / ' + x.test.length + ' doğru</h2>' +
+                    '<p>' + (tam ? 'Mükemmel! Bu konuyu kavradın.' : 'Ders tamamlandı. İstersen dersi tekrar okuyup alıştırmayı yeniden çözebilirsin.') + '</p>' +
+                    (sonraki ? '<button class="primary-btn gr-basla" onclick="gramerDersAc(\'' + sonraki.id + '\')">Sıradaki ders: ' + _kacis(sonraki.baslik) + '</button>' : '<p class="gr-not">Şimdilik bütün dersleri bitirdin. Yeni dersler yakında!</p>') +
+                    '<button class="gr-ikincil" onclick="gramerTestBasla()">Alıştırmayı tekrarla</button>' +
+                    '<button class="gr-ikincil" onclick="gramerListe()">Ders listesine dön</button></div>';
+            _grTest = null;
+            var g = document.getElementById('gr-govde');
+            g.innerHTML = h; g.scrollTop = 0;
+        }
+        // Ana sayfa kartı (yalnızca yeni diller)
+        function gramerPanoKart() {
+            if (window.DIL === 'en') return '';
+            var oz = gramerOzet();
+            if (!oz) { gramerPaketYukle(function (ok) { if (ok) { try { anaSayfaCiz(); } catch (e) { } } }); return ''; }
+            var oran = oz.toplam ? oz.tamam / oz.toplam : 0;
+            return '<section class="ap-kart gr-pano" aria-label="Gramer dersleri"><div class="ap-baslik">Gramer Dersleri</div>' +
+                   apSatir('📗', '#e3f5ee', 'Tamamlanan ders', oz.tamam + ' / ' + oz.toplam, oran, '#0f8a77') +
+                   (oz.sonraki
+                       ? '<button class="gr-pano-btn" onclick="gramerAc(\'' + oz.sonraki.id + '\')"><span>Sıradaki: <b>' + _kacis(oz.sonraki.baslik) + '</b></span><em>Başla ›</em></button>'
+                       : '<button class="gr-pano-btn" onclick="gramerAc()"><span>Bütün dersleri bitirdin 🎉</span><em>Listeye bak ›</em></button>') +
+                   '</section>';
+        }
+
         function gkOgren() {
             if (!_gk) return;
             addStarred(_gk.en);
@@ -16323,6 +16650,7 @@
                 metin: function () { document.getElementById('home-story-btn').click(); },
                 ifade: function () { document.getElementById('home-ifade-btn').click(); },
                 diyalog: function () { diyalogAc(); },
+                gramer: function () { gramerAc(); },
                 oyun: function () { document.getElementById('home-fun-btn').click(); },
                 ayar: function () { ayarlarAc(); },
                 paylas: function () { paylasimAc('uygulama'); },
