@@ -22,7 +22,7 @@
             es: { ad: 'İspanyolca', bayrak: '🇪🇸', tts: 'es-ES', rx: /^es/i, test: true, alt: 'İspanya İspanyolcası · A1–C1' },
             ko: { ad: 'Korece', bayrak: '🇰🇷', tts: 'ko-KR', rx: /^ko/i, test: true, alt: 'TOPIK 1–6 · okunuşlu' }
         };
-        window.DIL_PAKET_SURUM = '6';
+        window.DIL_PAKET_SURUM = '10';
         (function () {
             var d = 'en', test = false;
             try {
@@ -1638,6 +1638,59 @@
         html.karanlik .admin-save-wrap { background:#101217 }
         html.karanlik .admin-save-btn { background:#31a24c; color:#fff }
         html.karanlik .admin-save-btn:disabled { background:#24262a; color:#989ea7 }
+        #admin-duzelt-link { display: none; text-align: center; font-size: 12px; color: #b26a00; font-weight: 700; cursor: pointer; margin-top: 2px; padding: 6px; }
+        .report-dil { display: block; font-size: 12px; font-weight: 700; color: #606770; margin-bottom: 4px; }
+        .rep-etiketler { display: flex; align-items: center; gap: 6px; flex: none; }
+        .rep-dil { font-size: 11.5px; font-weight: 700; color: #33415a; background: #eef1f6; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+        .rep-dil-es { background: #fff1d6; color: #a15c00; }
+        .rep-dil-ko { background: #e6efff; color: #1d4fb8; }
+        .rep-dil-en { background: #eaf6ec; color: #1f7a3a; }
+        .rep-anlam { font-size: 13px; color: #4b4f56; margin: -2px 0 6px; }
+        .rep-alt { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .rep-duzelt { border: 0; background: #1877f2; color: #fff; font-weight: 700; font-size: 13px; padding: 8px 12px; border-radius: 9px; cursor: pointer; }
+        .rep-geri-al { border: 1.5px solid #e4e6eb; background: transparent; color: #606770; font-weight: 700; font-size: 12.5px; padding: 7px 10px; border-radius: 9px; cursor: pointer; }
+        .admin-sekme { display: flex; gap: 4px; background: #f0f2f5; padding: 4px; border-radius: 11px; margin-bottom: 12px; }
+        .admin-sekme button { flex: 1; border: 0; background: transparent; padding: 8px 4px; font-size: 13px; font-weight: 700; color: #606770; border-radius: 8px; cursor: pointer; }
+        .admin-sekme button.on { background: #fff; color: #1c1e21; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+        .admin-dil { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 12px; }
+        .admin-dil button { flex: none; border: 1.5px solid #e4e6eb; background: #fff; color: #4b4f56; font-size: 12.5px; font-weight: 700; padding: 6px 10px; border-radius: 20px; cursor: pointer; }
+        .admin-dil button.on { border-color: #1877f2; background: #e8f4fd; color: #1877f2; }
+        .dz-ust { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .dz-geri { border: 0; background: #f0f2f5; color: #1c1e21; font-weight: 700; font-size: 13px; padding: 7px 10px; border-radius: 9px; cursor: pointer; }
+        .dz-kelime { font-size: 17px; font-weight: 800; color: #1c1e21; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .dz-bilgi { font-size: 12.5px; color: #606770; line-height: 1.5; margin: 0 0 12px; }
+        .dz-alan { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+        .dz-alan span { font-size: 12px; font-weight: 700; color: #4b4f56; }
+        .dz-alan.degisik span { color: #b26a00; }
+        .dz-alan input, .dz-alan textarea { width: 100%; box-sizing: border-box; padding: 10px; font-size: 14px; border: 2px solid #e4e6eb; border-radius: 9px; background: #f8f9fa; color: #1c1e21; font-family: inherit; resize: vertical; }
+        .dz-alan.degisik input, .dz-alan.degisik textarea { border-color: #ffd699; }
+        .dz-alan input:focus, .dz-alan textarea:focus { outline: none; border-color: #1877f2; background: #fff; }
+        .dz-alan small { font-size: 11.5px; color: #8a8d91; }
+        .dz-satir { font-size: 13px; color: #3a3b3c; line-height: 1.45; margin-bottom: 3px; }
+        .yn-form { display: flex; gap: 8px; margin-bottom: 10px; }
+        .yn-form input { flex: 1; min-width: 0; padding: 10px; font-size: 14px; border: 2px solid #e4e6eb; border-radius: 9px; background: #f8f9fa; color: #1c1e21; }
+        .yn-satir { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 2px; border-bottom: 1px solid #eef0f3; font-size: 14px; color: #1c1e21; }
+        .yn-satir span { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+        .yn-satir small { font-size: 11.5px; color: #8a8d91; }
+        .yn-sahip { font-size: 11.5px; color: #b26a00; background: #fff3e0; padding: 3px 8px; border-radius: 20px; }
+        html.karanlik #admin-duzelt-link { color: #e1c397; }
+        html.karanlik .report-dil, html.karanlik .rep-anlam, html.karanlik .dz-bilgi, html.karanlik .dz-alan span { color: #aeb3ba; }
+        html.karanlik .rep-dil { background: #1f242c; color: #c9ccd1; }
+        html.karanlik .rep-dil-es { background: #33260f; color: #f0c06a; }
+        html.karanlik .rep-dil-ko { background: #13233d; color: #8fb6ff; }
+        html.karanlik .rep-dil-en { background: #142a1a; color: #8adc9e; }
+        html.karanlik .admin-sekme { background: #1a1d21; }
+        html.karanlik .admin-sekme button { color: #aeb3ba; }
+        html.karanlik .admin-sekme button.on { background: #2a2e35; color: #e4e6eb; }
+        html.karanlik .admin-dil button, html.karanlik .rep-geri-al { background: #101217; border-color: #35383e; color: #c9ccd1; }
+        html.karanlik .admin-dil button.on { border-color: #1877f2; background: #10202b; color: #4d9bff; }
+        html.karanlik .dz-geri { background: #1f242c; color: #e4e6eb; }
+        html.karanlik .dz-kelime, html.karanlik .yn-satir { color: #e4e6eb; }
+        html.karanlik .dz-alan input, html.karanlik .dz-alan textarea, html.karanlik .yn-form input { background: #16181a; border-color: #35383e; color: #dadcdf; }
+        html.karanlik .dz-alan.degisik span { color: #e1c397; }
+        html.karanlik .dz-satir { color: #c9ccd1; }
+        html.karanlik .yn-satir { border-color: #2a2e35; }
+        html.karanlik .yn-sahip { background: #32240f; color: #e1c397; }
         html.karanlik .fb-badge.ok { color:#a2e4b5; background:#19291e }
         html.karanlik .fb-badge.no { color:#c1352c; background:#291110 }
         html.karanlik .fb-word { color:#dadcdf }
@@ -2450,6 +2503,7 @@
                 </div>
 
                 <div id="report-link">⚑ Bu kelimede hata bildir</div>
+                <div id="admin-duzelt-link">✎ Kartı düzenle (yönetici)</div>
 
                 <div id="guess-prompt" style="display:none;">
                     <div class="guess-text">Önce kendin tahmin et 🤔</div>
@@ -2757,7 +2811,7 @@
             signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile, signInWithCredential,
             deleteUser, reauthenticateWithPopup, reauthenticateWithCredential, EmailAuthProvider
         } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, query, orderBy, limit, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, query, orderBy, limit, getDocs, updateDoc, deleteField } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
         import { getMessaging, getToken, deleteToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging.js";
 
         const firebaseConfig = {
@@ -2800,7 +2854,8 @@
             orderBy: orderBy,
             limit: limit,
             getDocs: getDocs,
-            updateDoc: updateDoc
+            updateDoc: updateDoc,
+            deleteField: deleteField
         };
 
         // ---- Gunluk hatirlatma: Firebase Cloud Messaging ----
@@ -7914,6 +7969,51 @@
             });
         })();
 
+        // --- Yonetici duzeltmeleri ---
+        // Firestore'daki duzeltmeler/{dil} belgesi { k: { "<kelime>": { tr, ex, ... } } } kartlarin uzerine yazilir.
+        // Dosya yuklemeden, tum kullanicilarda bir sonraki acilista gecerli olur.
+        var DUZELTME_ALANLARI = ['tr', 'type', 'level', 'topik', 'rom', 'ex', 'exTr', 'exRom', 'ex2', 'ex2Tr', 'ex2Rom', 'usage'];
+        var DUZ_ANAHTAR = 'wm_duzeltme_' + (window.DIL || 'en');
+        var TOPIK_SEVIYE = { '1': 'A1', '2': 'A2', '3': 'B1', '4': 'B2', '5': 'C1', '6': 'C1' };
+        window.__duzeltmeler = {};
+        function duzeltmeleriUygula(k) {
+            k = k || {};
+            window.__duzeltmeler = k;
+            var n = 0;
+            wordDatabase.forEach(function (w) {
+                var d = k[w.en];
+                if (!d && !w.__orijinal) return;
+                if (!w.__orijinal) {
+                    var o = {};
+                    DUZELTME_ALANLARI.forEach(function (f) { if (w[f] !== undefined) o[f] = w[f]; });
+                    Object.defineProperty(w, '__orijinal', { value: o, enumerable: false });
+                }
+                DUZELTME_ALANLARI.forEach(function (f) {
+                    if (d && typeof d[f] === 'string') w[f] = d[f];
+                    else if (f in w.__orijinal) w[f] = w.__orijinal[f];
+                });
+                if (d && d.topik && TOPIK_SEVIYE[d.topik]) w.level = TOPIK_SEVIYE[d.topik];
+                if (d) n++;
+            });
+            return n;
+        }
+        try { duzeltmeleriUygula(JSON.parse(localStorage.getItem(DUZ_ANAHTAR) || 'null')); } catch (e) { }
+        async function duzeltmeleriCek() {
+            if (!window.__fb) return;
+            try {
+                var s = await window.__fb.getDoc(window.__fb.doc(window.__fb.db, 'duzeltmeler', window.DIL || 'en'));
+                var k = (s.exists() && s.data().k) || {};
+                try { localStorage.setItem(DUZ_ANAHTAR, JSON.stringify(k)); } catch (e) { }
+                duzeltmeleriUygula(k);
+            } catch (e) { console.warn('Duzeltmeler alinamadi:', e); }
+        }
+        (function () {
+            var deneme = 0;
+            var t = setInterval(function () {
+                if (window.__fb || ++deneme > 40) { clearInterval(t); duzeltmeleriCek(); }
+            }, 500);
+        })();
+
         // ==========================================
         // COK DILLI: dil secici, test modu ve dile ozel gosterim
         // ==========================================
@@ -9635,6 +9735,8 @@
             reportCurrentWord = w;
             const rl = document.getElementById('report-link');
             if (rl) rl.style.display = 'block';
+            const dl = document.getElementById('admin-duzelt-link');
+            if (dl) dl.style.display = isAdmin() ? 'block' : 'none';
             const el = document.getElementById('example-en');
             if (!el) return;
             const kutu = document.getElementById('example-container');
@@ -9676,6 +9778,8 @@
             reportCurrentWord = null;
             const rl = document.getElementById('report-link');
             if (rl) rl.style.display = 'none';
+            const dl = document.getElementById('admin-duzelt-link');
+            if (dl) dl.style.display = 'none';
         }
         function speakWord(word) {
             if (!('speechSynthesis' in window)) {
@@ -10053,7 +10157,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-11-16 · parti-6';
+        const YAPIM = '2026-11-16 · parti-10';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -13711,6 +13815,7 @@
             fbInitializing = false;
             const justLoggedIn = !accountWasLoggedIn && !!user;
             if (user) { await reconcileCloudState(user); }
+            await yoneticiKontrol(user);
             renderAccountPanel();
             updateWarnBanner();
             updateAdminBadges();
@@ -14010,15 +14115,40 @@
             }
         }
 
-        // --- Yonetici paneli (sadece admin hesabi gorur) ---
+        // --- Yonetici paneli ---
+        // Sahip (asagidaki e-posta) her zaman yoneticidir ve baska yonetici ekleyip cikarabilir.
+        // Ek yoneticiler Firestore'da admins/{e-posta} belgesiyle tanimlanir.
         const ADMIN_EMAIL = 'isg.deniz@gmail.com';
         let adminReports = [];
         let adminFilter = 'open';     // 'open' | 'all'
+        let adminDilFiltre = 'hepsi'; // 'hepsi' | 'en' | 'es' | 'ko'
+        let adminSekme = 'bildirim';  // 'bildirim' | 'duzeltme' | 'yonetici' | 'duzelt'
         let adminLoading = false;
+        let ekYonetici = false;
 
-        function isAdmin() {
+        function _hx(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+        function _js(s) { return _hx(JSON.stringify(String(s == null ? '' : s))); }
+        function kullaniciEposta() {
             const u = window.__fb && window.__fb.auth.currentUser;
-            return !!(u && (u.email || '').toLowerCase() === ADMIN_EMAIL);
+            return u && u.email ? u.email.toLowerCase() : '';
+        }
+        function isOwner() { return kullaniciEposta() === ADMIN_EMAIL; }
+        function isAdmin() { return isOwner() || (ekYonetici && !!kullaniciEposta()); }
+        async function yoneticiKontrol(user) {
+            ekYonetici = false;
+            if (!user || !user.email || isOwner() || !window.__fb) return;
+            try {
+                const s = await window.__fb.getDoc(window.__fb.doc(window.__fb.db, 'admins', user.email.toLowerCase()));
+                ekYonetici = s.exists();
+            } catch (e) { ekYonetici = false; }
+        }
+        function dilEtiketi(d, kisa) {
+            const b = (window.DILLER || {})[d || 'en'] || window.DILLER.en;
+            return '<span class="rep-dil rep-dil-' + _hx(d || 'en') + '">' + b.bayrak + (kisa ? '' : ' ' + b.ad) + '</span>';
         }
 
         function reasonLabel(id) {
@@ -14052,6 +14182,8 @@
             const hb = document.getElementById('header-admin-badge');
             if (wb) wb.style.display = admin ? 'flex' : 'none';
             if (hb) hb.style.display = admin ? 'block' : 'none';
+            const dl = document.getElementById('admin-duzelt-link');
+            if (dl) dl.style.display = (admin && reportCurrentWord) ? 'block' : 'none';
             if (!admin) return;
             const wc = document.getElementById('welcome-admin-count');
             const hc = document.getElementById('header-admin-count');
@@ -14068,18 +14200,39 @@
             updateAdminBadges();
         }
 
+        function adminSekmeler() {
+            const bekleyen = adminUnresolved ? ' (' + adminUnresolved + ')' : '';
+            const s = [['bildirim', 'Bildirimler' + bekleyen], ['duzeltme', 'Düzeltmeler']];
+            if (isOwner()) s.push(['yonetici', 'Yöneticiler']);
+            return '<div class="admin-sekme">' + s.map(function (x) {
+                return '<button class="' + (adminSekme === x[0] ? 'on' : '') + '" onclick="adminSekmeSec(\'' + x[0] + '\')">' + x[1] + '</button>';
+            }).join('') + '</div>';
+        }
+        function adminSekmeSec(s) { adminSekme = s; renderAdminPanel(); if (s === 'yonetici') yoneticileriYukle(); if (s === 'duzeltme') duzeltmeListesiYukle(); }
+        function adminDilSec(d) { adminDilFiltre = d; renderAdminPanel(); if (adminSekme === 'duzeltme') duzeltmeListesiYukle(); }
+        function adminDilCipleri(hepsiVar) {
+            const diller = (hepsiVar ? ['hepsi'] : []).concat(Object.keys(window.DILLER || { en: 1 }));
+            return '<div class="admin-dil">' + diller.map(function (d) {
+                const et = d === 'hepsi' ? 'Tüm diller' : (window.DILLER[d].bayrak + ' ' + window.DILLER[d].ad);
+                return '<button class="' + (adminDilFiltre === d ? 'on' : '') + '" onclick="adminDilSec(\'' + d + '\')">' + et + '</button>';
+            }).join('') + '</div>';
+        }
+
         function renderAdminPanel() {
             const body = document.getElementById('admin-body');
             if (!body) return;
-            const filterBar =
+            if (adminSekme === 'duzelt') { body.innerHTML = duzeltFormHtml(); return; }
+            if (adminSekme === 'duzeltme') { body.innerHTML = adminSekmeler() + duzeltmeListesiHtml(); return; }
+            if (adminSekme === 'yonetici') { body.innerHTML = adminSekmeler() + yoneticiHtml(); return; }
+            const filterBar = adminSekmeler() +
                 '<div class="admin-filter">' +
                     '<button class="' + (adminFilter === 'open' ? 'on' : '') + '" onclick="setAdminFilter(\'open\')">Bekleyen</button>' +
                     '<button class="' + (adminFilter === 'all' ? 'on' : '') + '" onclick="setAdminFilter(\'all\')">Tümü</button>' +
-                '</div>';
+                '</div>' + adminDilCipleri(true);
             if (adminLoading) { body.innerHTML = filterBar + '<div class="stat-empty">Yükleniyor...</div>'; return; }
             const list = adminReports.filter(function(r) {
+                if (adminDilFiltre !== 'hepsi' && (r.dil || 'en') !== adminDilFiltre) return false;
                 if (adminFilter === 'all') return true;
-                // Bekleyen listesinde, bu oturumda isaretlenenler de kaydedilene kadar gorunur kalsin
                 return !r.resolved;
             });
             const degisiklikSayisi = Object.keys(adminPending).length;
@@ -14098,16 +14251,21 @@
             body.innerHTML = filterBar + list.map(function(r) {
                 const who = r.email ? r.email : 'misafir';
                 const isSel = (r.id in adminPending) ? adminPending[r.id] : !!r.resolved;
+                const kart = r.kart || {};
                 return '<div class="rep-item' + (isSel ? ' done' : '') + '">' +
                     '<div class="rep-top">' +
-                        '<span class="rep-word">' + (r.word || '-') + '</span>' +
-                        '<span class="rep-lvl">' + (r.level || '?') + '</span>' +
+                        '<span class="rep-word">' + _hx(r.word || '-') + '</span>' +
+                        '<span class="rep-etiketler">' + dilEtiketi(r.dil) + '<span class="rep-lvl">' + _hx(r.level || '?') + '</span></span>' +
                     '</div>' +
-                    '<div class="rep-reason">' + reasonLabel(r.reason) + '</div>' +
-                    (r.note ? '<div class="rep-note">' + r.note + '</div>' : '') +
-                    '<div class="rep-meta">' + who + ' · ' + timeAgo(r.createdAt) + '</div>' +
-                    '<div class="rep-check' + (isSel ? ' on' : '') + '" onclick="toggleResolved(\'' + r.id + '\')">' +
-                        '<div class="consent-box">✓</div> Çözüldü' +
+                    (kart.tr ? '<div class="rep-anlam">' + _hx(kart.tr) + (kart.rom ? ' · <i>' + _hx(kart.rom) + '</i>' : '') + '</div>' : '') +
+                    '<div class="rep-reason">' + _hx(reasonLabel(r.reason)) + '</div>' +
+                    (r.note ? '<div class="rep-note">' + _hx(r.note) + '</div>' : '') +
+                    '<div class="rep-meta">' + _hx(who) + ' · ' + timeAgo(r.createdAt) + (r.fixedBy ? ' · ✎ ' + _hx(r.fixedBy) + ' düzeltti' : '') + '</div>' +
+                    '<div class="rep-alt">' +
+                        '<div class="rep-check' + (isSel ? ' on' : '') + '" onclick="toggleResolved(\'' + r.id + '\')">' +
+                            '<div class="consent-box">✓</div> Çözüldü' +
+                        '</div>' +
+                        '<button class="rep-duzelt" onclick="duzeltAc(' + _js(r.dil || 'en') + ',' + _js(r.word) + ',' + _js(r.id) + ')">✎ Düzelt</button>' +
                     '</div>' +
                 '</div>';
             }).join('') + saveBar;
@@ -14124,6 +14282,17 @@
             if (yeni === !!rep.resolved) { delete adminPending[id]; }
             else { adminPending[id] = yeni; }
             renderAdminPanel();
+        }
+
+        function adminHata(mesaj) {
+            const body = document.getElementById('admin-body');
+            if (!body) return;
+            const err = document.createElement('div');
+            err.className = 'account-error';
+            err.style.display = 'block';
+            err.textContent = mesaj;
+            body.insertBefore(err, body.firstChild);
+            body.parentNode.scrollTop = 0;
         }
 
         async function saveAdminChanges() {
@@ -14145,14 +14314,7 @@
             } catch (e) {
                 console.error('Kaydedilemedi:', e);
                 renderAdminPanel();
-                const body = document.getElementById('admin-body');
-                if (body) {
-                    const err = document.createElement('div');
-                    err.className = 'account-error';
-                    err.style.display = 'block';
-                    err.textContent = 'Kaydedilemedi. Bağlantını ve Firestore kurallarını kontrol et.';
-                    body.insertBefore(err, body.firstChild);
-                }
+                adminHata('Kaydedilemedi. Bağlantını ve Firestore kurallarını kontrol et.');
             }
         }
 
@@ -14164,7 +14326,7 @@
                 const q = window.__fb.query(
                     window.__fb.collection(window.__fb.db, 'reports'),
                     window.__fb.orderBy('createdAt', 'desc'),
-                    window.__fb.limit(200)
+                    window.__fb.limit(300)
                 );
                 const snap = await window.__fb.getDocs(q);
                 adminReports = [];
@@ -14176,8 +14338,10 @@
             } catch (e) {
                 console.error('Bildirimler alinamadi:', e);
                 adminLoading = false;
-                document.getElementById('admin-body').innerHTML =
-                    '<div class="account-error" style="display:block;">Bildirimler alınamadı. Firestore kurallarının güncel olduğundan emin ol.</div>';
+                if (adminSekme === 'bildirim') {
+                    document.getElementById('admin-body').innerHTML = adminSekmeler() +
+                        '<div class="account-error" style="display:block;">Bildirimler alınamadı. Firestore kurallarının güncel olduğundan emin ol.</div>';
+                }
                 return;
             }
             adminLoading = false;
@@ -14188,10 +14352,238 @@
         function openAdmin() {
             document.getElementById('admin-panel').style.display = 'flex';
             adminFilter = 'open';
+            adminSekme = 'bildirim';
             adminPending = {};
             loadReports();
         }
         function closeAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
+
+        // ---- Kelime duzeltme formu ----
+        let duzeltDurum = null;   // { dil, en, raporId, temel: {...}, mevcut: {...}, yukleniyor, hata }
+        const DUZELT_ETIKET = {
+            tr: 'Türkçe anlamı', type: 'Tür (isim, fiil…)', level: 'Seviye (A1–C1)', topik: 'TOPIK (1–6)', rom: 'Okunuş',
+            ex: '1. örnek cümle', exRom: '1. cümlenin okunuşu', exTr: '1. cümlenin Türkçesi',
+            ex2: '2. örnek cümle', ex2Rom: '2. cümlenin okunuşu', ex2Tr: '2. cümlenin Türkçesi', usage: 'Not / açıklama'
+        };
+        function duzeltAlanlari(dil) {
+            if (dil === 'ko') return ['tr', 'rom', 'type', 'topik', 'ex', 'exRom', 'exTr', 'ex2', 'ex2Rom', 'ex2Tr', 'usage'];
+            return ['tr', 'type', 'level', 'ex', 'exTr', 'ex2', 'ex2Tr', 'usage'];
+        }
+        async function duzeltAc(dil, en, raporId, kaynak) {
+            if (!isAdmin()) return;
+            document.getElementById('admin-panel').style.display = 'flex';
+            adminSekme = 'duzelt';
+            duzeltDurum = { dil: dil, en: en, raporId: raporId || null, kaynak: kaynak || (raporId ? 'bildirim' : 'kart'), yukleniyor: true };
+            renderAdminPanel();
+            let temel = null, mevcut = {};
+            try {
+                if (dil === (window.DIL || 'en')) {
+                    const w = wordDatabase.filter(function (x) { return x.en === en; })[0];
+                    if (w) { temel = w.__orijinal || {}; if (!w.__orijinal) duzeltAlanlari(dil).forEach(function (f) { if (w[f] !== undefined) temel[f] = w[f]; }); }
+                    mevcut = (window.__duzeltmeler || {})[en] || {};
+                } else {
+                    const s = await window.__fb.getDoc(window.__fb.doc(window.__fb.db, 'duzeltmeler', dil));
+                    mevcut = ((s.exists() && s.data().k) || {})[en] || {};
+                    const rep = adminReports.filter(function (r) { return r.id === raporId; })[0];
+                    if (rep && rep.kart) temel = rep.kart;
+                }
+            } catch (e) { console.warn(e); }
+            if (!temel) {
+                duzeltDurum.yukleniyor = false;
+                duzeltDurum.hata = 'Bu bildirim eski sürümden geldiği için kartın içeriği kayıtlı değil. Kartı düzeltmek için uygulamayı ' +
+                    window.DILLER[dil].ad + ' diline geçirip bu ekranı tekrar aç.';
+                renderAdminPanel();
+                return;
+            }
+            duzeltDurum.temel = temel;
+            duzeltDurum.mevcut = mevcut;
+            duzeltDurum.yukleniyor = false;
+            renderAdminPanel();
+        }
+        function duzeltFormHtml() {
+            const d = duzeltDurum;
+            if (!d) return '';
+            const ust = '<div class="dz-ust"><button class="dz-geri" onclick="duzeltKapat()">‹ Geri</button>' +
+                '<span class="dz-kelime">' + _hx(d.en) + '</span>' + dilEtiketi(d.dil) + '</div>';
+            if (d.yukleniyor) return ust + '<div class="stat-empty">Yükleniyor...</div>';
+            if (d.hata) return ust + '<div class="account-error" style="display:block;">' + _hx(d.hata) + '</div>' +
+                (d.dil !== (window.DIL || 'en') ? '<button class="primary-btn" onclick="dilDegistir(\'' + d.dil + '\')">' + window.DILLER[d.dil].bayrak + ' ' + window.DILLER[d.dil].ad + ' diline geç</button>' : '');
+            const alanlar = duzeltAlanlari(d.dil).filter(function (f) {
+                return f === 'tr' || f in d.temel || f in d.mevcut || f === 'usage';
+            });
+            const satirlar = alanlar.map(function (f) {
+                const deger = (f in d.mevcut) ? d.mevcut[f] : (d.temel[f] == null ? '' : d.temel[f]);
+                const degisik = (f in d.mevcut) && d.mevcut[f] !== d.temel[f];
+                const uzun = /^(ex|usage)/.test(f);
+                return '<label class="dz-alan' + (degisik ? ' degisik' : '') + '"><span>' + DUZELT_ETIKET[f] + (degisik ? ' · düzeltildi' : '') + '</span>' +
+                    (uzun ? '<textarea data-f="' + f + '" rows="2">' + _hx(deger) + '</textarea>'
+                          : '<input data-f="' + f + '" value="' + _hx(deger) + '">') +
+                    (degisik ? '<small>Orijinal: ' + _hx(d.temel[f] || '—') + '</small>' : '') + '</label>';
+            }).join('');
+            return ust +
+                '<p class="dz-bilgi">Değiştirdiğin alanlar kaydedilir ve tüm kullanıcılarda uygulama bir sonraki açılışta düzelir. ' +
+                'Çeviride vurgulanacak kelimeyi {süslü parantez} içine yaz.</p>' +
+                '<div id="dz-hata" class="account-error"></div>' + satirlar +
+                '<div class="admin-save-wrap"><button class="admin-save-btn" id="dz-kaydet" onclick="duzeltKaydet()">Düzeltmeyi kaydet' +
+                (d.raporId ? ' ve bildirimi kapat' : '') + '</button></div>';
+        }
+        function duzeltKapat() {
+            const kaynak = duzeltDurum ? duzeltDurum.kaynak : 'bildirim';
+            duzeltDurum = null;
+            if (kaynak === 'kart') { adminSekme = 'bildirim'; closeAdmin(); return; }
+            adminSekme = kaynak;
+            renderAdminPanel();
+            if (kaynak === 'duzeltme') duzeltmeListesiYukle();
+        }
+        async function duzeltKaydet() {
+            const d = duzeltDurum;
+            if (!d || !isAdmin() || !window.__fb) return;
+            const yeni = {};
+            let sayi = 0;
+            document.querySelectorAll('#admin-body [data-f]').forEach(function (el) {
+                const f = el.getAttribute('data-f');
+                const v = el.value.trim();
+                const orj = d.temel[f] == null ? '' : String(d.temel[f]);
+                if (v !== orj) { yeni[f] = v; sayi++; }
+                else if (f in d.mevcut) { yeni[f] = window.__fb.deleteField(); sayi++; }
+            });
+            const hataEl = document.getElementById('dz-hata');
+            if (yeni.topik && !TOPIK_SEVIYE[yeni.topik]) { hataEl.textContent = 'TOPIK 1 ile 6 arasında bir sayı olmalı.'; hataEl.style.display = 'block'; return; }
+            if (yeni.level && !/^(A1|A2|B1|B2|C1)$/.test(yeni.level)) { hataEl.textContent = 'Seviye A1, A2, B1, B2 veya C1 olmalı.'; hataEl.style.display = 'block'; return; }
+            if (!sayi) { hataEl.textContent = 'Hiçbir alanı değiştirmedin.'; hataEl.style.display = 'block'; return; }
+            const btn = document.getElementById('dz-kaydet');
+            btn.disabled = true; btn.textContent = 'Kaydediliyor...';
+            try {
+                const kayit = Object.assign({}, yeni, { by: kullaniciEposta(), at: Date.now() });
+                const govde = { k: {}, updatedAt: Date.now() };
+                govde.k[d.en] = kayit;
+                await window.__fb.setDoc(window.__fb.doc(window.__fb.db, 'duzeltmeler', d.dil), govde, { merge: true });
+                if (d.raporId) {
+                    await window.__fb.updateDoc(window.__fb.doc(window.__fb.db, 'reports', d.raporId), { resolved: true, fixedBy: kullaniciEposta(), fixedAt: Date.now() });
+                    const rep = adminReports.filter(function (r) { return r.id === d.raporId; })[0];
+                    if (rep) { rep.resolved = true; rep.fixedBy = kullaniciEposta(); }
+                    delete adminPending[d.raporId];
+                    countUnresolved();
+                }
+                if (d.dil === (window.DIL || 'en')) await duzeltmeleriCek();
+                kisaBildirimGoster('✓ Düzeltme kaydedildi');
+                duzeltKapat();
+            } catch (e) {
+                console.error('Duzeltme kaydedilemedi:', e);
+                btn.disabled = false; btn.textContent = 'Düzeltmeyi kaydet';
+                hataEl.textContent = 'Kaydedilemedi. Firestore kurallarına "duzeltmeler" bölümünün eklendiğinden emin ol.';
+                hataEl.style.display = 'block';
+            }
+        }
+        function kisaBildirimGoster(m) {
+            try { if (typeof kisaBildirim === 'function') { kisaBildirim(m); return; } } catch (e) { }
+            const el = document.getElementById('kisa-bildirim');
+            if (!el) return;
+            el.textContent = m; el.classList.add('acik');
+            setTimeout(function () { el.classList.remove('acik'); }, 2200);
+        }
+
+        // ---- Duzeltmeler listesi ----
+        let duzeltmeListe = null, duzeltmeListeDil = null;
+        async function duzeltmeListesiYukle() {
+            const dil = adminDilFiltre === 'hepsi' ? (window.DIL || 'en') : adminDilFiltre;
+            duzeltmeListe = null; duzeltmeListeDil = dil;
+            renderAdminPanel();
+            try {
+                const s = await window.__fb.getDoc(window.__fb.doc(window.__fb.db, 'duzeltmeler', dil));
+                duzeltmeListe = (s.exists() && s.data().k) || {};
+            } catch (e) { duzeltmeListe = { __hata: true }; }
+            if (adminSekme === 'duzeltme') renderAdminPanel();
+        }
+        function duzeltmeListesiHtml() {
+            if (adminDilFiltre === 'hepsi') adminDilFiltre = window.DIL || 'en';
+            const cip = adminDilCipleri(false);
+            if (!duzeltmeListe) return cip + '<div class="stat-empty">Yükleniyor...</div>';
+            if (duzeltmeListe.__hata) return cip + '<div class="account-error" style="display:block;">Düzeltmeler alınamadı. Firestore kurallarını kontrol et.</div>';
+            const ks = Object.keys(duzeltmeListe).sort(function (a, b) { return (duzeltmeListe[b].at || 0) - (duzeltmeListe[a].at || 0); });
+            if (!ks.length) return cip + '<div class="stat-empty">Bu dilde henüz düzeltme yok.<br><small>Kartta “✎ Kartı düzenle” ya da bildirimde “✎ Düzelt” ile ekleyebilirsin.</small></div>';
+            return cip + ks.map(function (en) {
+                const d = duzeltmeListe[en];
+                const alanlar = Object.keys(d).filter(function (f) { return DUZELT_ETIKET[f]; });
+                return '<div class="rep-item"><div class="rep-top"><span class="rep-word">' + _hx(en) + '</span>' + dilEtiketi(duzeltmeListeDil, true) + '</div>' +
+                    alanlar.map(function (f) { return '<div class="dz-satir"><b>' + DUZELT_ETIKET[f] + ':</b> ' + _hx(d[f]) + '</div>'; }).join('') +
+                    '<div class="rep-meta">' + _hx(d.by || '') + ' · ' + timeAgo(d.at) + '</div>' +
+                    '<div class="rep-alt">' +
+                        (duzeltmeListeDil === (window.DIL || 'en') ? '<button class="rep-duzelt" onclick="duzeltAc(' + _js(duzeltmeListeDil) + ',' + _js(en) + ',null,\'duzeltme\')">✎ Düzenle</button>' : '<span></span>') +
+                        '<button class="rep-geri-al" onclick="duzeltmeGeriAl(' + _js(duzeltmeListeDil) + ',' + _js(en) + ')">↺ Orijinale dön</button>' +
+                    '</div></div>';
+            }).join('');
+        }
+        let geriAlOnay = null;
+        async function duzeltmeGeriAl(dil, en) {
+            if (geriAlOnay !== dil + '|' + en) {
+                geriAlOnay = dil + '|' + en;
+                kisaBildirimGoster('Emin misin? Onaylamak için tekrar dokun.');
+                setTimeout(function () { geriAlOnay = null; }, 4000);
+                return;
+            }
+            geriAlOnay = null;
+            try {
+                const govde = { k: {}, updatedAt: Date.now() };
+                govde.k[en] = window.__fb.deleteField();
+                await window.__fb.setDoc(window.__fb.doc(window.__fb.db, 'duzeltmeler', dil), govde, { merge: true });
+                if (dil === (window.DIL || 'en')) await duzeltmeleriCek();
+                kisaBildirimGoster('↺ Kart orijinal haline döndü');
+                duzeltmeListesiYukle();
+            } catch (e) { adminHata('Geri alınamadı. Firestore kurallarını kontrol et.'); }
+        }
+
+        // ---- Yonetici ekleme / cikarma (yalnizca sahip) ----
+        let yoneticiListe = null;
+        async function yoneticileriYukle() {
+            if (!isOwner()) return;
+            yoneticiListe = null; renderAdminPanel();
+            try {
+                const snap = await window.__fb.getDocs(window.__fb.collection(window.__fb.db, 'admins'));
+                yoneticiListe = [];
+                snap.forEach(function (d) { yoneticiListe.push(Object.assign({ id: d.id }, d.data())); });
+            } catch (e) { yoneticiListe = { hata: true }; }
+            if (adminSekme === 'yonetici') renderAdminPanel();
+        }
+        function yoneticiHtml() {
+            const form = '<p class="dz-bilgi">Yönetici olacak kişi önce uygulamada bu e-postayla <b>üye olmuş</b> olmalı. Eklenen kişi bildirimleri görür ve kart düzeltebilir; yönetici ekleyip çıkarmak yalnızca sende kalır.</p>' +
+                '<div class="yn-form"><input id="yn-eposta" type="email" placeholder="ornek@gmail.com" autocomplete="off">' +
+                '<button class="rep-duzelt" onclick="yoneticiEkle()">Ekle</button></div><div id="yn-hata" class="account-error"></div>';
+            const sahip = '<div class="yn-satir"><span>' + ADMIN_EMAIL + '</span><b class="yn-sahip">Sahip</b></div>';
+            if (!yoneticiListe) return form + sahip + '<div class="stat-empty">Yükleniyor...</div>';
+            if (yoneticiListe.hata) return form + sahip + '<div class="account-error" style="display:block;">Liste alınamadı. Firestore kurallarına "admins" bölümünü ekledin mi?</div>';
+            return form + sahip + yoneticiListe.map(function (y) {
+                return '<div class="yn-satir"><span>' + _hx(y.id) + '<small>' + timeAgo(y.createdAt) + ' eklendi</small></span>' +
+                    '<button class="rep-geri-al" onclick="yoneticiCikar(' + _js(y.id) + ')">Çıkar</button></div>';
+            }).join('');
+        }
+        async function yoneticiEkle() {
+            const inp = document.getElementById('yn-eposta');
+            const e = (inp.value || '').trim().toLowerCase();
+            const hataEl = document.getElementById('yn-hata');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { hataEl.textContent = 'Geçerli bir e-posta yaz.'; hataEl.style.display = 'block'; return; }
+            if (e === ADMIN_EMAIL) { hataEl.textContent = 'Bu zaten senin hesabın.'; hataEl.style.display = 'block'; return; }
+            try {
+                await window.__fb.setDoc(window.__fb.doc(window.__fb.db, 'admins', e), { createdAt: Date.now(), ekleyen: kullaniciEposta() });
+                kisaBildirimGoster('✓ ' + e + ' yönetici yapıldı');
+                yoneticileriYukle();
+            } catch (er) { hataEl.textContent = 'Eklenemedi. Firestore kurallarını kontrol et.'; hataEl.style.display = 'block'; }
+        }
+        let cikarOnay = null;
+        async function yoneticiCikar(e) {
+            if (cikarOnay !== e) {
+                cikarOnay = e;
+                kisaBildirimGoster('Çıkarmak için tekrar dokun.');
+                setTimeout(function () { cikarOnay = null; }, 4000);
+                return;
+            }
+            cikarOnay = null;
+            try {
+                await window.__fb.deleteDoc(window.__fb.doc(window.__fb.db, 'admins', e));
+                kisaBildirimGoster(e + ' artık yönetici değil');
+                yoneticileriYukle();
+            } catch (er) { adminHata('Çıkarılamadı.'); }
+        }
 
         // --- Hata Bildir ---
         let reportCurrentWord = null;
@@ -14202,6 +14594,7 @@
             { id: 'ex', label: 'Örnek cümlede hata var' },
             { id: 'extr', label: 'Cümlenin çevirisi hatalı' },
             { id: 'usage', label: 'Kelime açıklaması hatalı' },
+            { id: 'rom', label: 'Okunuşu (romanizasyon) hatalı', dil: 'ko' },
             { id: 'level', label: 'Seviyesi yanlış görünüyor' },
             { id: 'other', label: 'Diğer' }
         ];
@@ -14220,13 +14613,13 @@
                 return;
             }
             const w = reportCurrentWord;
-            const opts = REPORT_REASONS.map(function(r) {
+            const opts = REPORT_REASONS.filter(function(r) { return !r.dil || r.dil === (window.DIL || 'en'); }).map(function(r) {
                 return '<div class="report-opt' + (reportReason === r.id ? ' sel' : '') + '" onclick="selectReportReason(\'' + r.id + '\')">' +
                        (reportReason === r.id ? '●' : '○') + ' ' + r.label + '</div>';
             }).join('');
             body.innerHTML =
                 '<div id="report-error" class="account-error"></div>' +
-                '<div class="report-word">' + w.en + ' — ' + w.tr + '</div>' +
+                '<div class="report-word"><span class="report-dil">' + ((window.DILLER[window.DIL || 'en'] || {}).bayrak || '') + ' ' + ((window.DILLER[window.DIL || 'en'] || {}).ad || '') + '</span>' + _hx(w.en) + (w.rom ? ' <i>(' + _hx(w.rom) + ')</i>' : '') + ' — ' + _hx(w.tr) + '</div>' +
                 opts +
                 '<textarea id="report-note" placeholder="Detay eklemek istersen yaz (isteğe bağlı)"></textarea>' +
                 '<button class="primary-btn" id="report-send-btn" onclick="submitReport()">' + (reportSending ? 'Gönderiliyor...' : 'Gönder') + '</button>';
@@ -14264,16 +14657,28 @@
             reportSending = true;
             renderReportPanel();
             try {
-                await window.__fb.addDoc(window.__fb.collection(window.__fb.db, 'reports'), {
+                const temelRapor = {
                     word: reportCurrentWord.en || '',
-                    level: reportCurrentWord.level || '',
+                    level: seviyeEtiketi(reportCurrentWord) || reportCurrentWord.level || '',
                     reason: reportReason,
                     note: note,
                     uid: user ? user.uid : null,
                     email: user ? (user.email || null) : null,
                     resolved: false,
                     createdAt: Date.now()
-                });
+                };
+                const kart = {};
+                const kaynak = reportCurrentWord.__orijinal ? Object.assign({}, reportCurrentWord.__orijinal) : reportCurrentWord;
+                DUZELTME_ALANLARI.forEach(function (f) { if (kaynak[f] != null && kaynak[f] !== '') kart[f] = String(kaynak[f]).slice(0, 600); });
+                try {
+                    await window.__fb.addDoc(window.__fb.collection(window.__fb.db, 'reports'),
+                        Object.assign({ dil: window.DIL || 'en', kart: kart }, temelRapor));
+                } catch (e1) {
+                    // Firestore kurallari henuz yeni alanlara izin vermiyorsa eski bicimde gonder
+                    if (!e1 || e1.code !== 'permission-denied') throw e1;
+                    temelRapor.note = '[' + (window.DIL || 'en').toUpperCase() + '] ' + note;
+                    await window.__fb.addDoc(window.__fb.collection(window.__fb.db, 'reports'), temelRapor);
+                }
                 reportSending = false;
                 renderReportPanel('sent');
             } catch (e) {
@@ -14286,6 +14691,7 @@
         }
 
         document.getElementById('report-link').addEventListener('click', openReport);
+        document.getElementById('admin-duzelt-link').addEventListener('click', function () { if (reportCurrentWord) duzeltAc(window.DIL || 'en', reportCurrentWord.en, null); });
         document.getElementById('report-close').addEventListener('click', closeReport);
         document.getElementById('report-panel').addEventListener('click', function(ev) {
             if (ev.target.id === 'report-panel') closeReport();
