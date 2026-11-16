@@ -7,6 +7,45 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1877f2">
     <script>try{if(localStorage.getItem('wm_tema')==='koyu')document.documentElement.classList.add('karanlik')}catch(e){}</script>
+    <script>
+        // ==========================================
+        // COK DILLI ALTYAPI (Kasim 2026)
+        // Ogrenilen dil cihazda 'wm_dil' anahtarinda durur (varsayilan 'en').
+        // Yeni diller (test: true) yalnizca test modunda gorunur; test modu
+        // Ayarlar'in en altindaki surum yazisina 5 kez dokunarak acilir.
+        // Ilerleme her dil icin ayri tutulur: asagidaki anahtarlar Ingilizce
+        // disindaki dillerde otomatik olarak "anahtar__dil" adiyla saklanir.
+        // Dil paketi (dil-xx.js) sayfa yuklenirken, ana betikten ONCE yuklenir.
+        // ==========================================
+        window.DILLER = {
+            en: { ad: 'İngilizce', bayrak: '🇬🇧', tts: 'en-US', rx: /^en/i },
+            es: { ad: 'İspanyolca', bayrak: '🇪🇸', tts: 'es-ES', rx: /^es/i, test: true, alt: 'İspanya İspanyolcası · A1–C1' },
+            ko: { ad: 'Korece', bayrak: '🇰🇷', tts: 'ko-KR', rx: /^ko/i, test: true, alt: 'TOPIK 1–6 · okunuşlu' }
+        };
+        window.DIL_PAKET_SURUM = '1';
+        (function () {
+            var d = 'en', test = false;
+            try {
+                if (/[?&]dilTest=1/.test(location.search)) localStorage.setItem('wm_dil_test', '1');
+                test = localStorage.getItem('wm_dil_test') === '1';
+                d = localStorage.getItem('wm_dil') || 'en';
+            } catch (e) { }
+            if (!DILLER[d] || (DILLER[d].test && !test)) d = 'en';
+            window.DIL = d;
+            window.DIL_TEST = test;
+            window.DIL_BILGI = DILLER[d];
+            if (d === 'en') return;
+            document.documentElement.classList.add('dil-yeni', 'dil-' + d);
+            var DIL_ANAHTARLAR = ['gunlukKelime_v1', 'wm_starred_v1', 'wm_cw_v1', 'wm_diyalog_v1', 'wm_okunan_v1',
+                'wm_bugun_v1', 'wm_gunun_kelimesi_v1', 'wm_voice_v1', 'wm_tanitim_v1', 'wm_ilk_akis_v1', 'wm_seviye_v1'];
+            function cevir(k) { return DIL_ANAHTARLAR.indexOf(k) > -1 ? k + '__' + d : k; }
+            var P = Storage.prototype, g = P.getItem, s = P.setItem, r = P.removeItem;
+            P.getItem = function (k) { return g.call(this, this === window.localStorage ? cevir(k) : k); };
+            P.setItem = function (k, v) { return s.call(this, this === window.localStorage ? cevir(k) : k, v); };
+            P.removeItem = function (k) { return r.call(this, this === window.localStorage ? cevir(k) : k); };
+            document.write('<script src="dil-' + d + '.js?v=' + DIL_PAKET_SURUM + '"><\/script>');
+        })();
+    </script>
     <meta name="description" content="İngilizce kelimeleri kalıcı olarak öğrenmeniz için aralıklı tekrar uygulaması.">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1996,7 +2035,145 @@
         html.karanlik .ck-yeni { color:#fff; background:#e0452b }
         
         html.karanlik .ay-anahtar::after { background: #f1f4f9; }
-    </style>
+            /* ---- Cok dilli ---- */
+        html.dil-yeni .sadece-en { display: none !important; }
+        .dil-test-et { font-size: 9px; background: #fde68a; color: #7a5200; border-radius: 6px; padding: 1px 6px; margin-left: 6px; letter-spacing: .04em; vertical-align: middle; }
+        .ay-ok { margin-left: auto; font-size: 22px; color: #9aa3b2; }
+        .ab-dil-rozet { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e3e7ef; background: #fff; font-size: 19px; line-height: 1; cursor: pointer; margin-right: 6px; }
+        .dil-aciklama { font-size: 13px; color: #5b6475; line-height: 1.5; margin: 0 4px 12px; }
+        #dil-liste { display: flex; flex-direction: column; gap: 8px; padding-bottom: 8px; }
+        .dil-oge { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 1.5px solid #e3e7ef; border-radius: 14px; background: #fff; cursor: pointer; text-align: left; }
+        .dil-oge.secili { border-color: #1877f2; background: #f2f7ff; }
+        .dil-bayrak { font-size: 28px; line-height: 1; }
+        .dil-ad { display: flex; flex-direction: column; gap: 2px; }
+        .dil-ad b { font-size: 16px; color: #172033; }
+        .dil-ad small { font-size: 12px; color: #6b7385; }
+        .dil-tik { margin-left: auto; color: #1877f2; font-weight: 800; font-size: 18px; }
+        #english-word .rom-satir, #english-word .hh-serit { flex-basis: 100%; }
+        #english-word .rom-satir { margin-top: -4px; }
+        .rom-satir { display: block; font-size: 15px; font-weight: 500; color: #6b7385; font-style: italic; margin-top: 4px; letter-spacing: .02em; }
+        .gk-kelime h3 .rom-satir { font-size: 14px; }
+        .res-rom { font-size: 13px; color: #6b7385; font-weight: 500; }
+        .ex-rom { display: block; font-size: 12.5px; color: #7b8496; font-style: italic; margin-top: 2px; }
+        .hh-serit { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
+        .hh-hece { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; background: #f3f6fb; border: 1px solid #e3e8f1; border-radius: 12px; padding: 6px 10px; }
+        .hh-hece > b { font-size: 22px; color: #172033; font-weight: 700; }
+        .hh-hece small { display: flex; align-items: flex-start; gap: 3px; font-size: 18px; color: #33415a; }
+        .hh-hece small i { font-style: normal; display: inline-flex; flex-direction: column; align-items: center; line-height: 1.1; }
+        .hh-hece small i u { text-decoration: none; font-size: 10.5px; color: #1877f2; font-weight: 700; }
+        .hh-hece small i.ss u { color: #9aa3b2; }
+        .hh-hece small em { font-style: normal; color: #a3abb9; font-size: 12px; padding-top: 2px; }
+        html.karanlik .ab-dil-rozet, html.karanlik .dil-oge { background: #161b24; border-color: #2a3240; }
+        html.karanlik .dil-oge.secili { background: #13233d; border-color: #1877f2; }
+        html.karanlik .dil-ad b, html.karanlik .hh-hece > b { color: #e8ecf3; }
+        html.karanlik .dil-ad small, html.karanlik .dil-aciklama, html.karanlik .rom-satir, html.karanlik .ex-rom { color: #9aa3b2; }
+        html.karanlik .hh-hece { background: #161b24; border-color: #2a3240; }
+        html.karanlik .hh-hece small { color: #c9d1de; }
+        html.karanlik .dil-test-et { background: #5a4500; color: #fde68a; }
+
+        /* ---- Ilk acilis akisi, baslangic turu ve rehber ---- */
+        #ilk-akis { position: fixed; inset: 0; z-index: 3000; background: #f4f6fa; overflow-y: auto; display: flex; justify-content: center;
+            padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px calc(env(safe-area-inset-bottom, 0px) + 18px); box-sizing: border-box; }
+        .ia-kart { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 12px; margin: auto 0; }
+        .ia-orta { align-items: center; text-align: center; }
+        .ia-kart h2 { margin: 0; font-size: 23px; line-height: 1.25; color: #172033; text-wrap: balance; }
+        .ia-alt { margin: 0; font-size: 15px; line-height: 1.55; color: #556072; }
+        .ia-logo { width: 84px; height: 84px; border-radius: 22px; box-shadow: 0 10px 28px rgba(24, 119, 242, .22); margin-bottom: 6px; }
+        .ia-madde { list-style: none; margin: 6px 0; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; width: 100%; }
+        .ia-madde li { background: #fff; border: 1px solid #e3e8f1; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; }
+        .ia-madde b { font-size: 15px; color: #172033; }
+        .ia-madde span { font-size: 13.5px; color: #5b6475; line-height: 1.45; }
+        .ia-ana { width: 100%; border: 0; border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 700; color: #fff; background: #1877f2; cursor: pointer; box-shadow: 0 10px 22px rgba(24, 119, 242, .25); }
+        .ia-ikinci { width: 100%; border: 0; border-radius: 14px; padding: 13px; font-size: 15px; font-weight: 600; color: #44506a; background: transparent; cursor: pointer; }
+        .ia-ust { display: flex; align-items: center; gap: 8px; }
+        .ia-geri { border: 0; background: #e8ecf3; color: #33415a; width: 36px; height: 36px; border-radius: 50%; font-size: 24px; line-height: 1; cursor: pointer; flex: none; }
+        .ia-liste { display: flex; flex-direction: column; gap: 10px; }
+        .ia-sec { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; border: 1.5px solid #e3e8f1; border-radius: 16px; background: #fff; cursor: pointer; text-align: left; }
+        .ia-sec:active { transform: scale(.99); border-color: #1877f2; }
+        .ia-bayrak { font-size: 30px; line-height: 1; flex: none; }
+        .ia-sev { flex: none; min-width: 42px; height: 42px; border-radius: 12px; background: #e7f0fe; color: #1767d8; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+        .ia-sec-yazi { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+        .ia-sec-yazi b { font-size: 16px; color: #172033; }
+        .ia-sec-yazi small { font-size: 13px; color: #6b7385; line-height: 1.4; }
+        .ia-tik { margin-left: auto; color: #1877f2; font-weight: 800; font-size: 18px; }
+        .ia-buyuk-ikon { font-size: 40px; font-weight: 800; color: #1767d8; width: 92px; height: 92px; border-radius: 26px; background: #e7f0fe; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+        .ia-rozetler { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 2px 0 6px; }
+        .ia-rozetler span { font-size: 12.5px; font-weight: 600; color: #33415a; background: #fff; border: 1px solid #e3e8f1; border-radius: 99px; padding: 5px 10px; }
+        .ia-not { margin: 0; font-size: 12.5px; color: #8a93a3; }
+
+        /* tur */
+        .ia-tur { margin: 0; gap: 10px; }
+        .tr-ust { display: flex; align-items: center; gap: 8px; }
+        .tr-baslik { font-size: 13px; font-weight: 700; color: #1767d8; letter-spacing: .02em; }
+        .tr-kapat { margin-left: auto; border: 0; background: #e8ecf3; color: #44506a; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; cursor: pointer; }
+        .tr-cubuk { height: 6px; border-radius: 99px; background: #e3e8f1; overflow: hidden; }
+        .tr-cubuk i { display: block; height: 100%; background: #1877f2; border-radius: 99px; transition: width .25s; }
+        .tr-sayac { font-size: 12px; color: #8a93a3; font-variant-numeric: tabular-nums; }
+        .tr-ikon { font-size: 38px; line-height: 1; margin-top: 2px; }
+        .tr-m { margin: 0; font-size: 15.5px; line-height: 1.6; color: #2c3546; }
+        .tr-ornekler { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .tr-ornek { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 11px 12px; border: 1px solid #e3e8f1; border-radius: 14px; background: #fff; cursor: pointer; text-align: left; min-width: 0; }
+        .tr-ornek:active { border-color: #1877f2; background: #f2f7ff; }
+        .tr-y { font-size: 19px; font-weight: 700; color: #172033; word-break: break-word; padding-right: 20px; }
+        .tr-o { font-size: 13.5px; color: #1767d8; font-weight: 600; font-style: italic; word-break: break-word; }
+        .tr-t { font-size: 12.5px; color: #6b7385; line-height: 1.35; }
+        .tr-ses { position: absolute; top: 9px; right: 9px; font-size: 14px; opacity: .7; }
+        .tr-blok { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 2px; }
+        .tr-ipucu { margin: -2px 0 0; font-size: 12px; color: #8a93a3; text-align: center; }
+        .tr-alt { display: flex; gap: 10px; margin-top: 6px; position: sticky; bottom: 0; padding: 10px 0 2px; background: linear-gradient(transparent, #f4f6fa 30%); }
+        .tr-alt .ia-ikinci { width: 38%; background: #e8ecf3; }
+        .tr-alt .ia-ana { flex: 1; }
+
+        /* hangil hece kutusu: kirmizi unsuz, mavi unlu, turuncu batchim */
+        .hb { display: inline-grid; gap: 0 1px; padding: 3px 5px; border: 1.5px dashed #c9d2e0; border-radius: 8px; background: #fbfcfe; font-size: 19px; line-height: 1.05; font-style: normal; justify-items: center; align-items: center; }
+        .hb i { font-style: normal; font-weight: 700; }
+        .hb-dik, .hb-karma { grid-template-columns: auto auto; }
+        .hb-yatay { grid-template-columns: auto; }
+        .hb-dik .s, .hb-karma .s { grid-column: 1 / 3; }
+        .hb .k, .hb-k, .hh-hece i.k { color: #e5484d; }
+        .hb .u, .hb-u, .hh-hece i.u { color: #1f6feb; }
+        .hb .s, .hb-s, .hh-hece i.s { color: #e8590c; }
+        .hb .k.ss { color: #f1a3a6; }
+        .hb-k, .hb-u, .hb-s { font-weight: 700; }
+
+        /* rehber */
+        #rehber { position: fixed; inset: 0; z-index: 3100; }
+        .rh-delik { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(10, 16, 28, .66); transition: all .28s ease; pointer-events: none; outline: 2px solid rgba(255, 255, 255, .85); }
+        .rh-balon { position: fixed; background: #fff; border-radius: 16px; padding: 14px 16px 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, .28); box-sizing: border-box; transition: top .28s ease, left .28s ease; }
+        .rh-balon::before { content: ''; position: absolute; left: var(--ok-x, 50%); width: 14px; height: 14px; background: #fff; transform: translateX(-50%) rotate(45deg); }
+        .rh-balon.ust-ok::before { top: -6px; }
+        .rh-balon.alt-ok::before { bottom: -6px; }
+        .rh-balon > b { font-size: 16px; color: #172033; display: block; margin-bottom: 4px; }
+        .rh-balon p b { color: #172033; }
+        .rh-balon p { margin: 0; font-size: 14px; line-height: 1.5; color: #44506a; }
+        .rh-alt { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+        .rh-atla { border: 0; background: transparent; color: #6b7385; font-weight: 600; font-size: 14px; padding: 8px 10px; cursor: pointer; }
+        .rh-ileri { border: 0; background: #1877f2; color: #fff; font-weight: 700; font-size: 14px; padding: 9px 16px; border-radius: 10px; cursor: pointer; }
+        #rh-teklif { position: fixed; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); z-index: 2900; max-width: 460px; margin: 0 auto;
+            display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e3e8f1; border-radius: 16px; padding: 12px; box-shadow: 0 14px 34px rgba(0, 0, 0, .18); animation: menuUp .25s ease both; }
+        .rh-t-ikon { font-size: 26px; }
+        .rh-t-yazi { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+        .rh-t-yazi b { font-size: 14px; color: #172033; }
+        .rh-t-yazi small { font-size: 12px; color: #6b7385; }
+        .rh-t-evet { border: 0; background: #1877f2; color: #fff; font-weight: 700; font-size: 14px; padding: 9px 14px; border-radius: 10px; cursor: pointer; }
+        .rh-t-hayir { border: 0; background: transparent; color: #8a93a3; font-size: 16px; cursor: pointer; padding: 6px; }
+
+        html.karanlik #ilk-akis { background: #0d1015; }
+        html.karanlik .ia-kart h2, html.karanlik .ia-madde b, html.karanlik .ia-sec-yazi b, html.karanlik .tr-y, html.karanlik .rh-balon > b, html.karanlik .rh-balon p b, html.karanlik .rh-t-yazi b { color: #e8ecf3; }
+        html.karanlik .ia-alt, html.karanlik .tr-m, html.karanlik .rh-balon p { color: #b6bfcd; }
+        html.karanlik .ia-madde li, html.karanlik .ia-sec, html.karanlik .tr-ornek, html.karanlik .ia-rozetler span, html.karanlik .rh-balon, html.karanlik .rh-balon::before, html.karanlik #rh-teklif { background: #161b24; border-color: #2a3240; }
+        html.karanlik .ia-geri, html.karanlik .tr-kapat, html.karanlik .tr-alt .ia-ikinci { background: #222936; color: #c9d1de; }
+        html.karanlik .ia-ikinci { color: #b6bfcd; }
+        html.karanlik .ia-buyuk-ikon, html.karanlik .ia-sev { background: #13233d; color: #7fb0ff; }
+        html.karanlik .tr-cubuk { background: #222936; }
+        html.karanlik .tr-alt { background: linear-gradient(transparent, #0d1015 30%); }
+        html.karanlik .tr-o { color: #7fb0ff; }
+        html.karanlik .hb { background: #11161e; border-color: #2f3846; }
+        html.karanlik .hb .k, html.karanlik .hb-k, html.karanlik .hh-hece i.k { color: #ff6b6f; }
+        html.karanlik .hb .u, html.karanlik .hb-u, html.karanlik .hh-hece i.u { color: #5b9bff; }
+        html.karanlik .hb .s, html.karanlik .hb-s, html.karanlik .hh-hece i.s { color: #ff922b; }
+        html.karanlik .ia-rozetler span { color: #c9d1de; }
+</style>
 </head>
 <body>
     <!-- KELIME CARKI (tam ekran katman) -->
@@ -2083,6 +2260,7 @@
                 <button class="ab-ikon" id="ab-menu" onclick="cekmeceAc()" aria-label="Menüyü aç" aria-controls="cekmece" aria-expanded="false"><i data-ikon="menu"></i></button>
                 <div class="ab-sag">
                     <div class="welcome-admin-badge" id="welcome-admin-badge" title="Bildirimler">⚑ <span class="count-bubble" id="welcome-admin-count">0</span></div>
+                    <button class="ab-dil-rozet" id="ab-dil-rozet" onclick="dilSecAc()" aria-label="Öğrenilen dili değiştir" hidden>🇬🇧</button>
                     <button class="ab-avatar misafir" id="ab-avatar" onclick="openAccount('signin')" aria-label="Hesabım"></button>
                 </div>
             </div>
@@ -2303,7 +2481,7 @@
                 <div id="practice-menu">
                     <button id="quiz-btn" class="menu-item">📝 Şıklı Test</button>
                     <button id="quiz-write-btn" class="menu-item">✍️ Yazma Alıştırması</button>
-                    <button id="fun-btn" class="menu-item">🎮 Eğlence</button>
+                    <button id="fun-btn" class="menu-item sadece-en">🎮 Eğlence</button>
                 </div>
                 <button id="practice-fab" class="bar-btn practice">🎯 Alıştırma <span id="fab-arrow">▴</span></button>
             </div>
@@ -2431,19 +2609,19 @@
         <div class="ck-grup">
             <div class="ck-gb">KELİME KARTLARI</div>
             <button class="ck-oge" onclick="cekmeceGit('ezber')"><span class="ck-ik" style="background:#e7f0fe;color:#1767d8"><i data-ikon="kart"></i></span><span><b>Kelime Ezberi</b><small>Seviyene göre her gün yeni kelimeler</small></span></button>
-            <button class="ck-oge" onclick="cekmeceGit('cark')"><span class="ck-ik" style="background:#e1f5f4;color:#0f8b8d"><i data-ikon="cark"></i></span><span><b>Kelime Çarkı</b><small>Kelime aileleri ve konular</small></span></button>
+            <button class="ck-oge sadece-en" onclick="cekmeceGit('cark')"><span class="ck-ik" style="background:#e1f5f4;color:#0f8b8d"><i data-ikon="cark"></i></span><span><b>Kelime Çarkı</b><small>Kelime aileleri ve konular</small></span></button>
             <button class="ck-oge" onclick="cekmeceGit('sozluk')"><span class="ck-ik" style="background:#eef1f6;color:#44506a"><i data-ikon="ara"></i></span><span><b>Sözlük</b><small>İngilizce ya da Türkçe ara</small></span></button>
             <button class="ck-oge" onclick="cekmeceGit('test')"><span class="ck-ik" style="background:#e6f6ec;color:#1c7a43"><i data-ikon="hedef"></i></span><span><b>Seviye Testi</b><small>Seviyeni birkaç dakikada öğren</small></span></button>
         </div>
         <div class="ck-grup">
             <div class="ck-gb">OKU VE ÖĞREN</div>
-            <button class="ck-oge" onclick="cekmeceGit('metin')"><span class="ck-ik" style="background:#fff1e0;color:#c46a00"><i data-ikon="kitap"></i></span><span><b>Metinler</b><small>Sesli hikâyeler ve podcastler</small></span></button>
-            <button class="ck-oge" onclick="cekmeceGit('ifade')"><span class="ck-ik" style="background:#f0eaff;color:#6b3fd4"><i data-ikon="katman"></i></span><span><b>Gramer & Deyimler</b><small>Deyimler, gramer, sokak ağzı</small></span></button>
-            <button class="ck-oge" onclick="cekmeceGit('diyalog')"><span class="ck-ik" style="background:#e3f5ee;color:#0f7a5c"><i data-ikon="sohbet"></i></span><span><b>Diyaloglar<span class="ck-yeni">YENİ</span></b><small>Konuşmaya katıl, gramerle öğren</small></span></button>
+            <button class="ck-oge sadece-en" onclick="cekmeceGit('metin')"><span class="ck-ik" style="background:#fff1e0;color:#c46a00"><i data-ikon="kitap"></i></span><span><b>Metinler</b><small>Sesli hikâyeler ve podcastler</small></span></button>
+            <button class="ck-oge sadece-en" onclick="cekmeceGit('ifade')"><span class="ck-ik" style="background:#f0eaff;color:#6b3fd4"><i data-ikon="katman"></i></span><span><b>Gramer & Deyimler</b><small>Deyimler, gramer, sokak ağzı</small></span></button>
+            <button class="ck-oge sadece-en" onclick="cekmeceGit('diyalog')"><span class="ck-ik" style="background:#e3f5ee;color:#0f7a5c"><i data-ikon="sohbet"></i></span><span><b>Diyaloglar<span class="ck-yeni">YENİ</span></b><small>Konuşmaya katıl, gramerle öğren</small></span></button>
         </div>
         <div class="ck-grup">
             <div class="ck-gb">EĞLENCE</div>
-            <button class="ck-oge" onclick="cekmeceGit('oyun')"><span class="ck-ik" style="background:#f1ebff;color:#7c4dff"><i data-ikon="oyun"></i></span><span><b>Kelime Oyunları</b><small>Eşleştirme, bulmaca, cümle kurma</small></span></button>
+            <button class="ck-oge sadece-en" onclick="cekmeceGit('oyun')"><span class="ck-ik" style="background:#f1ebff;color:#7c4dff"><i data-ikon="oyun"></i></span><span><b>Kelime Oyunları</b><small>Eşleştirme, bulmaca, cümle kurma</small></span></button>
         </div>
         <div class="ck-grup">
             <div class="ck-gb">UYGULAMA</div>
@@ -2479,6 +2657,25 @@
     <div class="ab-sayfa" id="ayar-sayfa" role="dialog" aria-modal="true" aria-labelledby="ayar-baslik" hidden>
         <div class="ab-tutamak"></div>
         <div class="ab-sayfa-bas"><h3 id="ayar-baslik">Ayarlar</h3><button class="ab-ikon" onclick="altSayfaKapat('ayar-sayfa')" aria-label="Kapat"><i data-ikon="kapat"></i></button></div>
+        <div id="ay-dil-grup" hidden>
+            <div class="ay-gb">ÖĞRENDİĞİN DİL <span class="dil-test-et">TEST</span></div>
+            <button class="ay-satir" onclick="dilSecAc()">
+                <span class="ay-ik" style="background:#0f7a5c">🌍</span>
+                <div class="ay-ad"><b id="ay-dil-ad">🇬🇧 İngilizce</b><small>Dil değişince o dilin kartları ve ilerlemesi açılır</small></div>
+                <span class="ay-ok">›</span>
+            </button>
+        </div>
+        <div class="ay-gb">REHBER</div>
+        <button class="ay-satir" onclick="altSayfaKapat('ayar-sayfa'); setTimeout(function () { turBaslat(false); }, 250)">
+            <span class="ay-ik" style="background:#1767d8">🎓</span>
+            <div class="ay-ad"><b>Başlangıç turu</b><small id="ay-tur-alt">Okunuş kuralları, sesli örneklerle</small></div>
+            <span class="ay-ok">›</span>
+        </button>
+        <button class="ay-satir" onclick="altSayfaKapat('ayar-sayfa'); setTimeout(rehberBaslat, 350)">
+            <span class="ay-ik" style="background:#0f8b8d">🧭</span>
+            <div class="ay-ad"><b>Uygulama rehberi</b><small>Neyi nerede bulacağını göster</small></div>
+            <span class="ay-ok">›</span>
+        </button>
         <div class="ay-gb">GÖRÜNÜM</div>
         <div class="ay-satir">
             <span class="ay-ik" style="background:#1f2937"><i data-ikon="ay"></i></span>
@@ -2520,6 +2717,12 @@
         <p class="pk-not" id="pk-not" hidden></p>
     </div>
 
+    <div class="ab-sayfa" id="dil-sayfa" role="dialog" aria-modal="true" aria-labelledby="dil-baslik" hidden>
+        <div class="ab-tutamak"></div>
+        <div class="ab-sayfa-bas"><h3 id="dil-baslik">Hangi dili öğreniyorsun?</h3><button class="ab-ikon" onclick="altSayfaKapat('dil-sayfa')" aria-label="Kapat"><i data-ikon="kapat"></i></button></div>
+        <p class="dil-aciklama">Arayüz Türkçe kalır. Her dilin kartları, serisi ve ilerlemesi ayrı tutulur; istediğin zaman geri dönebilirsin.</p>
+        <div id="dil-liste"></div>
+    </div>
     <div class="ab-sayfa" id="nasil-sayfa" role="dialog" aria-modal="true" aria-labelledby="nasil-baslik" hidden>
         <div class="ab-tutamak"></div>
         <div class="ab-sayfa-bas"><h3 id="nasil-baslik">Nasıl çalışıyor?</h3><button class="ab-ikon" onclick="altSayfaKapat('nasil-sayfa')" aria-label="Kapat"><i data-ikon="kapat"></i></button></div>
@@ -7692,6 +7895,688 @@
             { en: "zone", tr: "bölge/alan", type: "n.", level: "B2", day: 1, mistakeCount: 0, ex: "This is a no-parking zone.", exTr: "Burası park yasak {bölgesi}.", ex2: "The city created a new pedestrian zone in the old town center.", ex2Tr: "Şehir eski kasaba merkezinde yeni bir yaya {bölgesi} oluşturdu.", usage: "Belirli bir amaca ayrılmış alan.", synonyms: [] },
         ];
 
+        // --- Dil paketi: Ingilizce disinda bir dil seciliyse kelime listesi paketten gelir ---
+        // Paketteki kartlar ayni yapidadir; "en" alani ogrenilen dildeki kelimeyi tutar.
+        (function () {
+            if (window.DIL === 'en') return;
+            var P = window.DIL_PAKET;
+            wordDatabase.length = 0;
+            if (!P || P.dil !== window.DIL || !P.kelimeler || !P.kelimeler.length) {
+                // Paket yuklenemediyse (internet yok, onbellekte degil) Ingilizceye don
+                try { localStorage.setItem('wm_dil', 'en'); } catch (e) { }
+                location.reload();
+                return;
+            }
+            P.kelimeler.forEach(function (w) {
+                wordDatabase.push(Object.assign({ day: 1, mistakeCount: 0, synonyms: [] }, w));
+            });
+        })();
+
+        // ==========================================
+        // COK DILLI: dil secici, test modu ve dile ozel gosterim
+        // ==========================================
+        var DIL_TTS = (window.DIL_BILGI || {}).tts || 'en-US';
+        var DIL_RX = (window.DIL_BILGI || {}).rx || /^en/i;
+        function dilAd() { return (window.DIL_BILGI || {}).ad || 'İngilizce'; }
+
+        // Kartta gorunen seviye etiketi: Korecede TOPIK, digerlerinde A1–C1
+        function seviyeEtiketi(w) {
+            if (w && w.topik) return 'TOPIK ' + w.topik;
+            return (w && w.level) || '';
+        }
+
+        // --- Hangil: heceyi harflerine ayir (ilk ses + unlu + son ses) ---
+        var HG_ILK = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+        var HG_ILK_R = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+        var HG_UNLU = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+        var HG_UNLU_R = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+        var HG_SON = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+        var HG_SON_R = ['','k','k','k','n','n','n','t','l','k','m','l','l','l','p','l','m','p','p','t','t','ng','t','t','k','t','p','t'];
+        function hangulAyristir(metin) {
+            var out = [];
+            for (var i = 0; i < metin.length; i++) {
+                var c = metin.charCodeAt(i) - 0xAC00;
+                if (c < 0 || c > 11171) continue;
+                var ilk = Math.floor(c / 588), unlu = Math.floor((c % 588) / 28), son = c % 28;
+                var p = [];
+                if (ilk !== 11) p.push({ h: HG_ILK[ilk], r: HG_ILK_R[ilk], rol: 'k' });
+                else p.push({ h: 'ㅇ', r: '–', sessiz: true, rol: 'k' });
+                p.push({ h: HG_UNLU[unlu], r: HG_UNLU_R[unlu], rol: 'u' });
+                if (son) p.push({ h: HG_SON[son], r: HG_SON_R[son], rol: 's' });
+                out.push({ hece: metin.charAt(i), harfler: p });
+            }
+            return out;
+        }
+        // TOPIK 1 kartlarinda kelimenin altinda harf harf okunus seridi
+        function harfHarfHtml(w) {
+            if (!w || window.DIL !== 'ko' || w.topik !== 1) return '';
+            var hs = hangulAyristir(w.en);
+            if (!hs.length) return '';
+            return '<div class="hh-serit" aria-label="Harf harf okunuş">' + hs.map(function (x) {
+                return '<span class="hh-hece"><b>' + x.hece + '</b><small>' + x.harfler.map(function (h) {
+                    return '<i class="' + h.rol + (h.sessiz ? ' ss' : '') + '">' + h.h + '<u>' + h.r + '</u></i>';
+                }).join('<em>+</em>') + '</small></span>';
+            }).join('') + '</div>';
+        }
+        // Karttaki kelime basligi: kelime + (Korecede) okunus + tur + seviye
+        function kartBaslikHtml(w) {
+            var typeHtml = w.type ? '<span class="type-tag">' + w.type + '</span>' : '';
+            var rom = w.rom ? '<span class="rom-satir">' + w.rom + '</span>' : '';
+            return w.en + ' ' + typeHtml + ' <span class="level-tag">#' + seviyeEtiketi(w) + '</span>' + rom + harfHarfHtml(w);
+        }
+
+        // Yazma modunda kabul edilen cevaplar. Ingilizcede yalniz kelimenin kendisi.
+        // Paket dillerinde: "todo / toda" -> ikisi de; "la edad" -> "edad" de olur;
+        // Korecede Latin harfli okunus da kabul (telefonda Korece klavye olmayabilir).
+        function yazimKabul(w) {
+            var en = (w && w.en) || '';
+            if (window.DIL === 'en') return [en];
+            var out = [en];
+            en.split('/').forEach(function (p) {
+                p = p.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+                if (!p) return;
+                out.push(p);
+                var yalin = p.replace(/^(el|la|los|las|un|una)\s+/i, '');
+                if (yalin !== p) out.push(yalin);
+            });
+            if (w.rom) out.push(w.rom);
+            return out;
+        }
+
+        // Paket dillerinde ornek cumlede kelimeyi bulma (Ingilizce kok kurallari yerine)
+        function _paketKokler(en) {
+            var w = String(en || '').toLowerCase().split('/')[0].trim();
+            if (window.DIL === 'es') {
+                w = w.replace(/^(el|la|los|las|un|una)\s+/, '').replace(/\s*\(.*\)$/, '');
+                var ilk = w.split(' ')[0], k = [w];
+                if (w.indexOf(' ') > -1) k.push(ilk);
+                if (/(ar|er|ir)$/.test(ilk) && ilk.length > 4) k.push(ilk.slice(0, -2));
+                else if (/[oae]$/.test(ilk) && ilk.length > 3) k.push(ilk.slice(0, -1));
+                return k;
+            }
+            if (window.DIL === 'ko') {
+                var k2 = [w];
+                if (/하다$/.test(w) && w.length > 2) k2.push(w.slice(0, -2));
+                else if (/다$/.test(w) && w.length > 1) { k2.push(w.slice(0, -1)); if (w.length > 2) k2.push(w.slice(0, -2)); }
+                return k2;
+            }
+            return [w];
+        }
+        function _paketKelimeBul(en, ex) {
+            if (!en || !ex) return null;
+            var exl = ex.toLowerCase(), ks = _paketKokler(en);
+            for (var q = 0; q < ks.length; q++) {
+                var k = ks[q];
+                if (!k) continue;
+                var i = exl.indexOf(k);
+                if (i < 0) continue;
+                var j = i + k.length;
+                while (j < ex.length && !/[\s.,;:!?¡¿()"“”]/.test(ex.charAt(j))) j++;
+                return { start: i, len: j - i, form: exl.substring(i, j) };
+            }
+            return null;
+        }
+
+        // --- Test modu: surum yazisina 5 kez dokun ---
+        (function () {
+            var el = document.getElementById('ay-surum');
+            if (!el) return;
+            var n = 0, t = null;
+            el.addEventListener('click', function () {
+                n++; clearTimeout(t); t = setTimeout(function () { n = 0; }, 1500);
+                if (n < 5) return;
+                n = 0;
+                var acik = !window.DIL_TEST;
+                try { localStorage.setItem('wm_dil_test', acik ? '1' : '0'); } catch (e) { }
+                window.DIL_TEST = acik;
+                if (!acik && window.DIL !== 'en') { dilDegistir('en'); return; }
+                dilSatiriGuncelle();
+                kisaBildirim(acik ? '🧪 Dil testi açıldı: Ayarlar\'da “Öğrendiğin dil” göründü' : 'Dil testi kapatıldı');
+            });
+        })();
+
+        function dilSatiriGuncelle() {
+            var ta = document.getElementById('ay-tur-alt');
+            if (ta) ta.textContent = window.DIL === 'ko' ? 'Hangıl Okulu: alfabe ve okuma kuralları' : 'Okunuş kuralları, sesli örneklerle';
+            var grup = document.getElementById('ay-dil-grup');
+            if (grup) grup.hidden = !window.DIL_TEST;
+            var d = window.DIL_BILGI || DILLER.en;
+            var a = document.getElementById('ay-dil-ad');
+            if (a) a.textContent = d.bayrak + ' ' + d.ad;
+            var rozet = document.getElementById('ab-dil-rozet');
+            if (rozet) { rozet.hidden = !window.DIL_TEST; rozet.textContent = d.bayrak; }
+        }
+        function dilSecAc() {
+            var kutu = document.getElementById('dil-liste');
+            if (!kutu) return;
+            kutu.innerHTML = Object.keys(DILLER).filter(function (k) { return !DILLER[k].test || window.DIL_TEST; }).map(function (k) {
+                var d = DILLER[k], sec = k === window.DIL;
+                return '<button class="dil-oge' + (sec ? ' secili' : '') + '" onclick="dilDegistir(\'' + k + '\')">' +
+                       '<span class="dil-bayrak">' + d.bayrak + '</span><span class="dil-ad"><b>' + d.ad + '</b><small>' +
+                       (d.alt || 'A1–C1 · 5.000+ kelime') + (d.test ? ' · test' : '') + '</small></span>' +
+                       (sec ? '<span class="dil-tik">✓</span>' : '') + '</button>';
+            }).join('');
+            altSayfaAc('dil-sayfa');
+        }
+        function dilDegistir(k) {
+            if (!DILLER[k]) return;
+            if (k === window.DIL) { altSayfaKapat('dil-sayfa'); return; }
+            try { localStorage.setItem('wm_dil', k); sessionStorage.setItem('wm_ilk_akis_devam', 'dil-degisti'); } catch (e) { }
+            kisaBildirim(DILLER[k].bayrak + ' ' + DILLER[k].ad + ' açılıyor…');
+            setTimeout(function () { location.reload(); }, 350);
+        }
+
+        // Ingilizce disindaki dillerde: arayuzdeki "Ingilizce" sozcugunu secili dille degistir
+        // (henuz o dilde icerigi olmayan bolumler .sadece-en ile gizlenir)
+
+        // ==========================================
+        // BASLANGIC TURLARI (Kasim 2026)
+        // Baslangic seviyesini secen kullaniciya, secilen dilin okunusunda / alfabesinde
+        // dikkat etmesi gerekenleri adim adim gosterir. Her adim: baslik, kisa anlatim,
+        // sesli ornekler (y: yazilis, o: okunus, t: Turkce anlami, s: seslendirilecek metin).
+        // Korece adimlarda "blok: true" olan orneklerin heceleri renkli parcalariyla cizilir:
+        // kirmizi = unsuz, mavi = unlu, turuncu = alttaki son ses (batchim).
+        // ==========================================
+        var BASLANGIC_TURLARI = {
+            en: {
+                ad: 'İngilizce okunuş turu',
+                ozet: 'İngilizce yazıldığı gibi okunmaz. Bu kısa turda en çok takılınan okunuş kurallarını sesli örneklerle göreceksin.',
+                adimlar: [
+                    { i: '👂', b: 'Yazıldığı gibi okunmaz', m: 'Türkçede her harf hep aynı okunur; İngilizcede aynı harf kelimeye göre farklı seslere döner. Bu yüzden her kelimeyi <b>dinleyerek</b> öğren: kartlardaki 🔊 düğmesi bunun için var.', ornek: [
+                        { y: 'cat', o: 'ket', t: 'kedi' }, { y: 'car', o: 'kaar', t: 'araba' }, { y: 'cake', o: 'keyk', t: 'pasta' }, { y: 'call', o: 'kool', t: 'aramak' }] },
+                    { i: '🤫', b: 'Okunmayan harfler', m: 'Bazı harfler yazılır ama hiç okunmaz. En sık görülenler: kelime başındaki <b>k</b> (kn-) ve <b>w</b> (wr-), sondaki <b>b</b> (-mb), ortadaki <b>gh</b> ve <b>l</b>.', ornek: [
+                        { y: 'know', o: 'nou', t: 'bilmek' }, { y: 'write', o: 'rayt', t: 'yazmak' }, { y: 'climb', o: 'klaym', t: 'tırmanmak' }, { y: 'night', o: 'nayt', t: 'gece' }, { y: 'walk', o: 'wook', t: 'yürümek' }] },
+                    { i: '😛', b: 'TH sesi', m: 'Türkçede yok. Dilinin ucunu üst ve alt dişlerinin arasına koy, hafifçe üfle. "think" gibi kelimelerde sert ve titreşimsiz, "this" gibi kelimelerde yumuşak ve titreşimli çıkar. "t", "d", "s" ya da "z" demek anlamı değiştirebilir.', ornek: [
+                        { y: 'think', o: 'think (th: dil dişler arasında)', t: 'düşünmek' }, { y: 'three', o: 'thrii', t: 'üç' }, { y: 'this', o: 'dhis (yumuşak th)', t: 'bu' }, { y: 'mother', o: 'madhır (yumuşak th)', t: 'anne' }] },
+                    { i: '🔚', b: 'Sondaki sessiz "e"', m: 'Kelime sonundaki <b>e</b> genelde okunmaz ama önündeki ünlüyü "uzun" okutur: a → "ey", i → "ay", o → "ou", u → "yu".', ornek: [
+                        { y: 'hat', o: 'het', t: 'şapka' }, { y: 'hate', o: 'heyt', t: 'nefret etmek' }, { y: 'kit', o: 'kit', t: 'set, takım' }, { y: 'kite', o: 'kayt', t: 'uçurtma' }, { y: 'not', o: 'nat', t: 'değil' }, { y: 'note', o: 'nout', t: 'not' }] },
+                    { i: '↔️', b: 'Kısa ve uzun ünlüler', m: 'Ünlünün kısa ya da uzun okunması anlamı değiştirir. Uzun ünlü genelde çift harfle (ee, oo) ya da ea ile yazılır.', ornek: [
+                        { y: 'ship', o: 'şip', t: 'gemi' }, { y: 'sheep', o: 'şiip', t: 'koyun' }, { y: 'full', o: 'ful', t: 'dolu' }, { y: 'fool', o: 'fuul', t: 'aptal' }] },
+                    { i: '👄', b: 'W ve V farklıdır', m: '<b>w</b>: dudakların yuvarlak, "u" der gibi başla. <b>v</b>: alt dudağın üst dişlere değer. Türkçedeki "v" ikisinin arasında kalır; ikisini ayırmaya çalış.', ornek: [
+                        { y: 'wine', o: 'wayn', t: 'şarap' }, { y: 'vine', o: 'vayn', t: 'asma' }, { y: 'west', o: 'west', t: 'batı' }, { y: 'vest', o: 'vest', t: 'yelek' }] },
+                    { i: '⏮️', b: '-ed nasıl okunur?', m: 'Geçmiş zaman eki <b>-ed</b> üç farklı okunur: sert ünsüzden sonra "t", yumuşak ses ve ünlüden sonra "d", t ve d\'den sonra ayrı bir hece olarak "ıd".', ornek: [
+                        { y: 'worked', o: 'workt', t: 'çalıştı' }, { y: 'played', o: 'pleyd', t: 'oynadı' }, { y: 'wanted', o: 'wantıd', t: 'istedi' }] },
+                    { i: '🎯', b: 'Vurgu anlamı değiştirir', m: 'Her kelimenin bir vurgulu hecesi vardır. Aynı yazılan kelime vurguya göre isim ya da fiil olabilir: isimde vurgu başta, fiilde sonda.', ornek: [
+                        { y: 'PHOtograph', o: 'FO-tıgraf', t: 'fotoğraf', s: 'photograph' }, { y: 'phoTOgrapher', o: 'fı-TA-grıfır', t: 'fotoğrafçı', s: 'photographer' }, { y: 'a REcord', o: 'REkırd', t: 'bir kayıt (isim)', s: 'a record' }, { y: 'to reCORD', o: 'riKORD', t: 'kaydetmek (fiil)', s: 'to record' }] },
+                    { i: '🗣️', b: 'Konuşmada kelimeler birleşir', m: 'Hızlı konuşmada kelimeler birbirine bağlanır ve kısalır. Bunları yazıda kullanma ama duyunca tanı.', ornek: [
+                        { y: 'going to', o: 'gonna', t: '-ecek' }, { y: 'want to', o: 'wanna', t: 'istemek' }, { y: 'What do you…?', o: 'wadıyu', t: 'Ne …?' }] },
+                    { i: '✅', b: 'Hazırsın!', m: 'Kartlarda her kelimeyi önce dinle, sonra sesli tekrar et. Örnek cümlelerin çevirisini görmek için cümleye dokun. Bu turu istediğin zaman <b>Ayarlar → Başlangıç turu</b>\'ndan yeniden açabilirsin.' }
+                ]
+            },
+            es: {
+                ad: 'İspanyolca okunuş turu',
+                ozet: 'İspanyolca Türkçeye çok benzer okunur ama birkaç harfin sesi farklıdır. Bu turda İspanya İspanyolcasının okunuş kurallarını sesli örneklerle göreceksin.',
+                adimlar: [
+                    { i: '😊', b: 'İyi haber: okunduğu gibi yazılır', m: 'İspanyolcada 5 ünlü vardır: <b>a, e, i, o, u</b>. Hep aynı, Türkçedeki gibi açık ve net okunurlar. Kuralları bir kez öğrenince gördüğün her kelimeyi okuyabilirsin.', ornek: [
+                        { y: 'casa', o: 'kasa', t: 'ev' }, { y: 'mesa', o: 'mesa', t: 'masa' }, { y: 'libro', o: 'libro', t: 'kitap' }, { y: 'uno', o: 'uno', t: 'bir' }] },
+                    { i: '🤫', b: 'H hiç okunmaz', m: '<b>h</b> harfi yazılır ama okunmaz; kelime sanki h olmadan başlar.', ornek: [
+                        { y: 'hermano', o: 'ermano', t: 'erkek kardeş' }, { y: 'hola', o: 'ola', t: 'merhaba' }, { y: 'hoy', o: 'oy', t: 'bugün' }, { y: 'huevo', o: 'uebo', t: 'yumurta' }] },
+                    { i: '🌬️', b: 'J gırtlaktan "h" okunur', m: '<b>j</b> harfi Türkçedeki "c" değil, boğazdan gelen sert ve hırıltılı bir <b>"h"</b>dir. <b>ge</b> ve <b>gi</b> de aynı sesle okunur.', ornek: [
+                        { y: 'Juan', o: 'huan', t: 'Juan (isim)' }, { y: 'jamón', o: 'hamon', t: 'jambon' }, { y: 'gente', o: 'hente', t: 'insanlar' }, { y: 'gigante', o: 'higante', t: 'dev' }] },
+                    { i: '🧩', b: 'G\'nin sert hali: gue, gui', m: '<b>ga, go, gu</b> Türkçedeki gibi "g"dir. "ge, gi" sesini sert "g" ile okutmak için araya okunmayan bir <b>u</b> konur: gue = "ge", gui = "gi". u\'nun okunması gerekiyorsa üstüne iki nokta konur: <b>ü</b>.', ornek: [
+                        { y: 'gato', o: 'gato', t: 'kedi' }, { y: 'guerra', o: 'gerra', t: 'savaş' }, { y: 'guitarra', o: 'gitarra', t: 'gitar' }, { y: 'pingüino', o: 'pinguino', t: 'penguen' }] },
+                    { i: '🔤', b: 'C ve QU: "k" sesi', m: '<b>ca, co, cu</b> "ka, ko, ku" okunur. "ke, ki" demek için <b>que, qui</b> yazılır; buradaki u okunmaz.', ornek: [
+                        { y: 'cosa', o: 'kosa', t: 'şey' }, { y: 'cuatro', o: 'kuatro', t: 'dört' }, { y: 'queso', o: 'keso', t: 'peynir' }, { y: 'aquí', o: 'aki', t: 'burada' }] },
+                    { i: '😛', b: 'Z ve ce/ci: İspanya\'nın peltek sesi', m: 'İspanya\'da <b>z</b> harfi ile <b>ce, ci</b> heceleri, dilin ucu dişlerin arasında, İngilizcedeki "think" gibi <b>"th"</b> okunur. Latin Amerika\'da aynı harfler "s" okunur; ikisi de anlaşılır ama biz İspanya okunuşunu öğreniyoruz.', ornek: [
+                        { y: 'zapato', o: 'thapato', t: 'ayakkabı' }, { y: 'gracias', o: 'grathias', t: 'teşekkürler' }, { y: 'cerveza', o: 'therbetha', t: 'bira' }, { y: 'cine', o: 'thine', t: 'sinema' }] },
+                    { i: '🟡', b: 'LL ve Y: "y" sesi', m: 'Çift <b>ll</b> "y" okunur (İspanya\'nın bazı yerlerinde "c"ye yakın). <b>y</b> de "y"dir; ama tek başına <b>y</b> "ve" demektir ve "i" okunur.', ornek: [
+                        { y: 'calle', o: 'kaye', t: 'sokak' }, { y: 'pollo', o: 'poyo', t: 'tavuk' }, { y: 'llamar', o: 'yamar', t: 'aramak, çağırmak' }, { y: 'yo', o: 'yo', t: 'ben' }] },
+                    { i: '〰️', b: 'Ñ: "ny" sesi', m: '<b>ñ</b> ayrı bir harftir; "n" ile "y" birlikte okunur.', ornek: [
+                        { y: 'España', o: 'espanya', t: 'İspanya' }, { y: 'mañana', o: 'manyana', t: 'yarın; sabah' }, { y: 'niño', o: 'ninyo', t: 'erkek çocuk' }, { y: 'año', o: 'anyo', t: 'yıl' }] },
+                    { i: '🅱️', b: 'V de "b" okunur', m: '<b>v</b> ile <b>b</b> aynı okunur: ikisi de dudaklarla yapılan yumuşak bir "b"dir. Alt dudağı dişe değdiren Türkçe "v" sesi yoktur.', ornek: [
+                        { y: 'vino', o: 'bino', t: 'şarap' }, { y: 'vaca', o: 'baka', t: 'inek' }, { y: 'Valencia', o: 'balenthia', t: 'Valensiya' }, { y: 'nuevo', o: 'nuebo', t: 'yeni' }] },
+                    { i: '🌀', b: 'R ve RR: anlam değiştirir', m: 'Tek <b>r</b> Türkçedeki gibi hafiftir. Çift <b>rr</b> ve kelime başındaki r, dil titreştirilerek güçlü okunur. <b>pero</b> "ama" demektir, <b>perro</b> ise "köpek".', ornek: [
+                        { y: 'pero', o: 'pero', t: 'ama' }, { y: 'perro', o: 'pe-rro (titrek r)', t: 'köpek' }, { y: 'caro', o: 'karo', t: 'pahalı' }, { y: 'carro', o: 'ka-rro (titrek r)', t: 'el arabası, alışveriş arabası' }, { y: 'rojo', o: 'rroho', t: 'kırmızı' }] },
+                    { i: '🍫', b: 'CH = "ç"', m: '<b>ch</b> Türkçedeki "ç" sesidir.', ornek: [
+                        { y: 'chico', o: 'çiko', t: 'oğlan, genç' }, { y: 'mucho', o: 'muço', t: 'çok' }, { y: 'noche', o: 'noçe', t: 'gece' }] },
+                    { i: '🎯', b: 'Vurgu nerede?', m: 'Üç kural yeter: (1) Kelime ünlüyle, <b>n</b> ya da <b>s</b> ile bitiyorsa vurgu <b>sondan ikinci</b> hecededir. (2) Başka ünsüzle bitiyorsa <b>son</b> hecededir. (3) Üstünde işaret (á, é, í, ó, ú) varsa vurgu oradadır.', ornek: [
+                        { y: 'CA-sa', o: 'KA-sa', t: 'ev', s: 'casa' }, { y: 'ha-BLAR', o: 'a-BLAR', t: 'konuşmak', s: 'hablar' }, { y: 'ca-FÉ', o: 'ka-FE', t: 'kahve', s: 'café' }, { y: 'te-LÉ-fo-no', o: 'te-LE-fo-no', t: 'telefon', s: 'teléfono' }] },
+                    { i: '☝️', b: 'İşaret anlam da ayırır', m: 'Bazı kelimeler sadece vurgu işaretiyle ayrılır. Yazarken işareti unutma.', ornek: [
+                        { y: 'sí', o: 'si', t: 'evet' }, { y: 'si', o: 'si', t: 'eğer' }, { y: 'él', o: 'el', t: 'o (erkek)' }, { y: 'el', o: 'el', t: '(eril artikel)' }] },
+                    { i: '¿', b: 'Ters soru ve ünlem işareti', m: 'Soru ve ünlem cümleleri başta da ters işaretle açılır: <b>¿ … ?</b> ve <b>¡ … !</b>. Cümleyi okurken tonunu baştan ayarlamaya yarar.', ornek: [
+                        { y: '¿Cómo estás?', o: 'komo estas', t: 'Nasılsın?' }, { y: '¡Hola!', o: 'ola', t: 'Merhaba!' }] },
+                    { i: '⚖️', b: 'Her ismin cinsiyeti var', m: 'İsimler eril (<b>el</b>) ya da dişildir (<b>la</b>). -o ile bitenler çoğunlukla eril, -a ile bitenler dişildir ama istisnalar vardır. Bu yüzden kartlarda kelimeleri artikeliyle birlikte öğren.', ornek: [
+                        { y: 'el libro', o: 'el libro', t: 'kitap (eril)' }, { y: 'la mesa', o: 'la mesa', t: 'masa (dişil)' }, { y: 'el día', o: 'el dia', t: 'gün (istisna: eril)' }, { y: 'la mano', o: 'la mano', t: 'el (istisna: dişil)' }] },
+                    { i: '🤝', b: 'Sen mi, siz mi?', m: 'Samimi konuşmada <b>tú</b> (sen), resmî konuşmada <b>usted</b> (siz) kullanılır. İspanya\'da arkadaş grubuna <b>vosotros</b> (sizler) denir; Latin Amerika\'da bunun yerine ustedes kullanılır.', ornek: [
+                        { y: '¿Cómo estás?', o: 'komo estas', t: 'Nasılsın? (tú)' }, { y: '¿Cómo está usted?', o: 'komo esta usted', t: 'Nasılsınız? (usted)' }] },
+                    { i: '✅', b: 'Hazırsın!', m: 'Kartlarda her kelimeyi dinle ve sesli tekrar et. İsimleri artikeliyle (el / la) öğren. Bu turu istediğin zaman <b>Ayarlar → Başlangıç turu</b>\'ndan yeniden açabilirsin.' }
+                ]
+            },
+            ko: {
+                ad: 'Hangıl Okulu: Korece alfabe turu',
+                ozet: 'Korece alfabesi Hangıl, dünyanın en kolay öğrenilen alfabelerinden biri. Bu turda harfleri, hecelerin nasıl kurulduğunu ve okurken dikkat edilecek ses kurallarını adım adım göreceksin.',
+                adimlar: [
+                    { i: '🇰🇷', b: 'Hangıl bir alfabedir', m: 'Korece yazı resim değil, harflerden oluşur: <b>14 temel ünsüz</b> ve <b>10 temel ünlü</b>. Harfler tek tek yan yana dizilmez; her hece bir <b>kutu</b> içinde bir araya gelir. Aşağıdaki kelimede iki kutu, yani iki hece var.', ornek: [
+                        { y: '한국', o: 'hanguk', t: 'Kore', blok: true }, { y: '한글', o: 'hangeul', t: 'Hangıl (Kore alfabesi)', blok: true }] },
+                    { i: '🎨', b: 'Renklerin anlamı', m: 'Bu turda ve kartlarda heceleri parçalarına ayırırken: <span class="hb-k">kırmızı</span> = ünsüz, <span class="hb-u">mavi</span> = ünlü, <span class="hb-s">turuncu</span> = hecenin altına eklenen son ses (batchim). 한 hecesi: ㅎ (h) + ㅏ (a) + alta ㄴ (n) = han.', ornek: [
+                        { y: '한', o: 'han', t: 'bir (한 개 = bir tane)', blok: true }, { y: '산', o: 'san', t: 'dağ', blok: true }] },
+                    { i: '🔡', b: 'Okunuş yazısını nasıl okumalısın?', m: 'Kelimelerin altında Latin harfli okunuş var (resmî Revised Romanization). Türkçeden farklı okunan birkaç işaret: <b>eo</b> = ağzı açık bir "o", <b>eu</b> = Türkçedeki "ı", <b>ae / e</b> = "e", <b>j</b> = "c", <b>ch</b> = "ç", <b>ng</b> = genizden "n" (İngilizce "song" gibi).', ornek: [
+                        { y: '어머니', o: 'eomeoni', t: 'anne', blok: true }, { y: '음악', o: 'eumak', t: 'müzik', blok: true }, { y: '저', o: 'jeo', t: 'ben (kibar)', blok: true }, { y: '차', o: 'cha', t: 'çay; araba', blok: true }] },
+                    { i: '📏', b: 'Dik ünlüler: ünsüz solda', m: 'Dikey çizgili ünlüler: <b>ㅏ a</b>, <b>ㅓ eo</b>, <b>ㅣ i</b>. Bu ünlülerde ünsüz <b>sola</b>, ünlü <b>sağa</b> yazılır.', ornek: [
+                        { y: '가', o: 'ga', t: '(hece)', blok: true }, { y: '거', o: 'geo', t: '(hece)', blok: true }, { y: '기', o: 'gi', t: '(hece)', blok: true }, { y: '아이', o: 'ai', t: 'çocuk', blok: true }] },
+                    { i: '➖', b: 'Yatay ünlüler: ünsüz üstte', m: 'Yatay çizgili ünlüler: <b>ㅗ o</b>, <b>ㅜ u</b>, <b>ㅡ eu (ı)</b>. Bu ünlülerde ünsüz <b>üste</b>, ünlü <b>alta</b> yazılır.', ornek: [
+                        { y: '고기', o: 'gogi', t: 'et', blok: true }, { y: '우유', o: 'uyu', t: 'süt', blok: true }, { y: '그', o: 'geu', t: 'o (işaret)', blok: true }, { y: '도로', o: 'doro', t: 'yol', blok: true }] },
+                    { i: '✌️', b: 'Bir çizgi ekle: "y"li ünlüler', m: 'Ünlüye bir kısa çizgi daha eklenince başına "y" gelir: <b>ㅑ ya</b>, <b>ㅕ yeo</b>, <b>ㅛ yo</b>, <b>ㅠ yu</b>.', ornek: [
+                        { y: '야구', o: 'yagu', t: 'beyzbol', blok: true }, { y: '여자', o: 'yeoja', t: 'kadın', blok: true }, { y: '요리', o: 'yori', t: 'yemek yapmak', blok: true }, { y: '휴지', o: 'hyuji', t: 'peçete', blok: true }] },
+                    { i: '🔗', b: 'Birleşik ünlüler', m: '<b>ㅐ (ae)</b> ve <b>ㅔ (e)</b> bugün neredeyse aynı okunur: ikisi de "e". İki ünlü birleşince kayan sesler çıkar: <b>ㅘ wa</b>, <b>ㅝ wo</b>, <b>ㅟ wi</b>, <b>ㅚ oe ("we")</b>, <b>ㅢ ui</b>.', ornek: [
+                        { y: '개', o: 'gae', t: 'köpek', blok: true }, { y: '게', o: 'ge', t: 'yengeç', blok: true }, { y: '사과', o: 'sagwa', t: 'elma', blok: true }, { y: '의사', o: 'uisa', t: 'doktor', blok: true }] },
+                    { i: '⭕', b: 'ㅇ harfinin iki görevi', m: 'Bir hece ünlüyle başlayamaz. Ünlüyle başlayan hecenin başına <b>sessiz ㅇ</b> konur ve okunmaz. Aynı ㅇ hecenin <b>altında</b> ise genizden "ng" okunur.', ornek: [
+                        { y: '아', o: 'a', t: '(sessiz ㅇ + a)', blok: true }, { y: '오이', o: 'oi', t: 'salatalık', blok: true }, { y: '공항', o: 'gonghang', t: 'havalimanı', blok: true }, { y: '방', o: 'bang', t: 'oda', blok: true }] },
+                    { i: '🔠', b: 'Temel ünsüzler', m: '<b>ㄱ g</b>, <b>ㄴ n</b>, <b>ㄷ d</b>, <b>ㄹ r/l</b>, <b>ㅁ m</b>, <b>ㅂ b</b>, <b>ㅅ s</b>, <b>ㅈ j (c)</b>, <b>ㅎ h</b>. Şekilleri ağızdaki konumdan gelir: ㄱ dilin geriye kalkışını, ㄴ dilin üst damağa değişini, ㅁ kapalı dudakları gösterir.', ornek: [
+                        { y: '나무', o: 'namu', t: 'ağaç', blok: true }, { y: '바다', o: 'bada', t: 'deniz', blok: true }, { y: '하나', o: 'hana', t: 'bir', blok: true }, { y: '모자', o: 'moja', t: 'şapka', blok: true }] },
+                    { i: '🎚️', b: 'ㄱ ㄷ ㅂ ㅈ: başta sertleşir', m: 'Bu dört harf kelime başında "k, t, p, ç"ye yakın, iki ünlü arasında ise "g, d, b, c" gibi okunur. Okunuş yazısında hep g, d, b, j yazarız; kulağına güven.', ornek: [
+                        { y: '고기', o: 'gogi (ilk ㄱ k\'ye yakın)', t: 'et', blok: true }, { y: '바보', o: 'babo', t: 'aptal', blok: true }, { y: '두부', o: 'dubu', t: 'tofu', blok: true }, { y: '지도', o: 'jido', t: 'harita', blok: true }] },
+                    { i: '🌊', b: 'ㄹ: başta "r", sonda "l"', m: '<b>ㄹ</b> hece başında ve iki ünlü arasında hafif bir "r", hecenin sonunda "l" okunur. Yan yana iki ㄹ gelirse "ll" olur.', ornek: [
+                        { y: '나라', o: 'nara', t: 'ülke', blok: true }, { y: '물', o: 'mul', t: 'su', blok: true }, { y: '서울', o: 'seoul', t: 'Seul', blok: true }, { y: '몰라요', o: 'mollayo', t: 'bilmiyorum', blok: true }] },
+                    { i: '💨', b: 'Nefesli ünsüzler', m: 'Temel harfe bir çizgi eklenince ağızdan güçlü hava çıkan sesler olur: <b>ㅋ k</b>, <b>ㅌ t</b>, <b>ㅍ p</b>, <b>ㅊ ch (ç)</b>. Elini ağzının önüne tut: bu harflerde havayı hissetmelisin.', ornek: [
+                        { y: '커피', o: 'keopi', t: 'kahve', blok: true }, { y: '토마토', o: 'tomato', t: 'domates', blok: true }, { y: '포도', o: 'podo', t: 'üzüm', blok: true }, { y: '친구', o: 'chingu', t: 'arkadaş', blok: true }] },
+                    { i: '💪', b: 'Çift (gergin) ünsüzler', m: 'Harf ikilenince havasız, sert ve kısa okunur: <b>ㄲ kk</b>, <b>ㄸ tt</b>, <b>ㅃ pp</b>, <b>ㅆ ss</b>, <b>ㅉ jj</b>. Üçlü fark anlamı değiştirir: <b>달</b> (ay) – <b>탈</b> (maske) – <b>딸</b> (kız evlat).', ornek: [
+                        { y: '달', o: 'dal', t: 'ay (gökteki)', blok: true }, { y: '탈', o: 'tal', t: 'maske', blok: true }, { y: '딸', o: 'ttal', t: 'kız evlat', blok: true }, { y: '아빠', o: 'appa', t: 'baba', blok: true }, { y: '빵', o: 'ppang', t: 'ekmek', blok: true }] },
+                    { i: '🐍', b: 'ㅅ + i = "şi"', m: '<b>ㅅ</b> normalde "s"dir; ama <b>ㅣ</b> ve "y"li ünlülerden önce "ş"ye döner.', ornek: [
+                        { y: '시간', o: 'sigan ("şigan")', t: 'zaman, saat', blok: true }, { y: '신발', o: 'sinbal ("şinbal")', t: 'ayakkabı', blok: true }, { y: '사람', o: 'saram', t: 'insan', blok: true }] },
+                    { i: '⬇️', b: 'Alttaki son ses: batchim', m: 'Hecenin <b>altına</b> eklenen ünsüze <b>batchim</b> denir (turuncu). Hece önce soldan sağa / yukarıdan aşağı, en son da alttaki harfle okunur.', ornek: [
+                        { y: '밥', o: 'bap', t: 'pilav; yemek', blok: true }, { y: '집', o: 'jip', t: 'ev', blok: true }, { y: '책', o: 'chaek', t: 'kitap', blok: true }, { y: '문', o: 'mun', t: 'kapı', blok: true }] },
+                    { i: '7️⃣', b: 'Batchimde sadece 7 ses var', m: 'Alttaki harf ne yazılırsa yazılsın şu 7 sesten biriyle okunur: <b>k, n, t, l, m, p, ng</b>. Örneğin ㅅ, ㅈ, ㅊ, ㅌ altta "t"; ㅋ "k"; ㅍ "p" okunur.', ornek: [
+                        { y: '옷', o: 'ot', t: 'giysi (ㅅ → t)', blok: true }, { y: '꽃', o: 'kkot', t: 'çiçek (ㅊ → t)', blok: true }, { y: '부엌', o: 'bueok', t: 'mutfak (ㅋ → k)', blok: true }, { y: '앞', o: 'ap', t: 'ön (ㅍ → p)', blok: true }] },
+                    { i: '✌️', b: 'Çift batchim', m: 'Bazı hecelerin altında iki ünsüz vardır. Tek başına okunurken genelde bunlardan <b>yalnız biri</b> okunur.', ornek: [
+                        { y: '닭', o: 'dak', t: 'tavuk (ㄹ okunmaz)', blok: true }, { y: '앉다', o: 'anda', t: 'oturmak', blok: true }, { y: '읽다', o: 'ikda', t: 'okumak', blok: true }, { y: '값', o: 'gap', t: 'fiyat', blok: true }] },
+                    { i: '➡️', b: 'Ses bağlama', m: 'Batchimli heceden sonra sessiz <b>ㅇ</b> ile başlayan hece gelirse, alttaki ses bir sonraki heceye <b>kayar</b>. Korece okurken en önemli kural budur.', ornek: [
+                        { y: '한국어', o: 'han-gu-geo (hanguk-eo değil)', t: 'Korece', blok: true }, { y: '음악', o: 'eu-mak', t: 'müzik', blok: true }, { y: '옷이', o: 'o-si', t: 'giysi (özne)', blok: true }, { y: '서울에', o: 'seou-re', t: 'Seul\'e', blok: true }] },
+                    { i: '👃', b: 'Genizden okunma', m: 'Altta <b>ㅂ, ㄱ, ㄷ</b> varken sonraki hece <b>ㄴ</b> ya da <b>ㅁ</b> ile başlarsa bu sesler <b>m, ng, n</b>\'ye döner. En sık duyacağın kalıp: -ㅂ니다 "-mnida".', ornek: [
+                        { y: '감사합니다', o: 'gamsahamnida', t: 'teşekkür ederim', blok: true }, { y: '입니다', o: 'imnida', t: '…dır', blok: true }, { y: '한국말', o: 'hangungmal', t: 'Korece (dil)', blok: true }, { y: '작년', o: 'jangnyeon', t: 'geçen yıl', blok: true }] },
+                    { i: '🌫️', b: 'ㅎ zayıflar', m: '<b>ㅎ</b> iki ünlü arasında ya da ㄴ, ㄹ, ㅁ\'den sonra çok zayıflar, çoğu zaman hiç duyulmaz. ㄱ, ㄷ, ㅂ, ㅈ ile yan yana gelince onları nefesli yapar.', ornek: [
+                        { y: '좋아요', o: 'joayo', t: 'iyi; beğeniyorum', blok: true }, { y: '괜찮아요', o: 'gwaenchanayo', t: 'sorun yok', blok: true }, { y: '좋다', o: 'jota', t: 'iyi olmak', blok: true }, { y: '축하해요', o: 'chukahaeyo', t: 'tebrikler', blok: true }] },
+                    { i: '📝', b: 'Kelimeler ve ekler', m: 'Korece soldan sağa yazılır; kelimeler arasında boşluk vardır. Türkçe gibi ekler kelimeye <b>bitişik</b> yazılır ve fiil cümlenin <b>sonunda</b> gelir. Bu açıdan Korece, Türkçe konuşanlar için çok tanıdıktır.', ornek: [
+                        { y: '저는 학생이에요', o: 'jeoneun haksaengieyo', t: 'Ben öğrenciyim' }, { y: '물을 마셔요', o: 'mureul masyeoyo', t: 'Su içiyorum' }] },
+                    { i: '✅', b: 'Hazırsın!', m: 'TOPIK 1 kartlarında her kelimenin altında heceler harf harf ayrılmış olarak duruyor; okurken bu şeride bak. Kelimeyi dinle, sesli tekrar et. Bu turu istediğin zaman <b>Ayarlar → Başlangıç turu</b>\'ndan yeniden açabilirsin.' }
+                ]
+            }
+        };
+
+        // ==========================================
+        // ILK ACILIS AKISI (Kasim 2026)
+        // Yeni kullanici: Hos geldin -> (test modunda) dil secimi -> seviye
+        // (biliyorum / yeni basliyorum / kisa test) -> baslangic seviyesindeyse
+        // okunus/alfabe turu -> uygulama rehberi (ekranda "su burada" gezintisi).
+        // Mevcut kullanici akisi gormez; yalnizca bir kez rehber teklifi alir.
+        // Anahtarlar: wm_ilk_akis_v1 ve wm_seviye_v1 dile ozel, wm_rehber_v1 ortak.
+        // ==========================================
+        var ILK_AKIS_KEY = 'wm_ilk_akis_v1', SEVIYE_KEY = 'wm_seviye_v1', REHBER_KEY = 'wm_rehber_v1';
+        var SEVIYE_BILGI = {
+            A1: { ad: 'Başlangıç', m: 'Hiç bilmiyorum ya da çok az biliyorum' },
+            A2: { ad: 'Temel', m: 'Basit cümleleri anlıyorum' },
+            B1: { ad: 'Orta', m: 'Günlük konuşmaları takip edebiliyorum' },
+            B2: { ad: 'İyi', m: 'Film, haber ve metinleri büyük ölçüde anlıyorum' },
+            C1: { ad: 'İleri', m: 'Akıcıyım, kelime hazinemi derinleştirmek istiyorum' }
+        };
+        var TOPIK_ADI = { A1: 'TOPIK 1', A2: 'TOPIK 2', B1: 'TOPIK 3', B2: 'TOPIK 4', C1: 'TOPIK 5–6' };
+        function seviyeAdi(L) { return window.DIL === 'ko' ? (TOPIK_ADI[L] || L) : L; }
+        function _lsAl(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+        function _lsYaz(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+
+        // --- Korece hece kutusu: harfleri hecedeki yerleriyle ve renkleriyle cizer ---
+        var HG_DIK = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅣ', HG_YATAY = 'ㅗㅛㅜㅠㅡ';
+        function hangulBlokHtml(metin) {
+            return hangulAyristir(metin).map(function (x) {
+                var k = x.harfler[0], u = x.harfler[1], s = x.harfler[2];
+                var tur = HG_YATAY.indexOf(u.h) > -1 ? 'yatay' : (HG_DIK.indexOf(u.h) > -1 ? 'dik' : 'karma');
+                return '<span class="hb hb-' + tur + (s ? ' hb-alt' : '') + '" title="' + x.hece + '">' +
+                    '<i class="k' + (k.sessiz ? ' ss' : '') + '">' + k.h + '</i><i class="u">' + u.h + '</i>' +
+                    (s ? '<i class="s">' + s.h + '</i>' : '') + '</span>';
+            }).join('');
+        }
+
+        // ---------- Akis katmani ----------
+        var _ia = { ekran: 'hos', tur: null, adim: 0, akista: false };
+        function _iaKutu() {
+            var k = document.getElementById('ilk-akis');
+            if (!k) {
+                k = document.createElement('div');
+                k.id = 'ilk-akis';
+                k.setAttribute('role', 'dialog');
+                k.setAttribute('aria-modal', 'true');
+                document.body.appendChild(k);
+            }
+            return k;
+        }
+        function ilkAkisAc(ekran, akista) {
+            _ia.akista = akista !== false;
+            window.__tanitimAcik = true;
+            _iaGoster(ekran || 'hos');
+        }
+        function ilkAkisKapat() {
+            var k = document.getElementById('ilk-akis');
+            if (k) k.parentNode.removeChild(k);
+            window.__tanitimAcik = false;
+        }
+        function _iaGoster(ekran) {
+            _ia.ekran = ekran;
+            var k = _iaKutu(), d = window.DIL_BILGI || DILLER.en, h = '';
+            if (ekran === 'hos') {
+                h = '<div class="ia-kart ia-orta">' +
+                    '<img class="ia-logo" src="icon-192.png" alt="">' +
+                    '<h2>Word Memorizer\'a hoş geldin</h2>' +
+                    '<p class="ia-alt">Birkaç adımda seni doğru seviyeden başlatalım.</p>' +
+                    '<ul class="ia-madde">' +
+                    '<li><b>📚 Her gün birkaç kelime</b><span>Seviyene göre yeni kelimeler ve tekrar zamanı gelenler her gün hazır.</span></li>' +
+                    '<li><b>🧠 Unutmadan öğren</b><span>Her kelime birkaç gün karşına çıkar; haftalık ve aylık tekrarlar kendiliğinden gelir.</span></li>' +
+                    '<li><b>🔊 Dinle ve tekrar et</b><span>Her kelimenin ve örnek cümlenin sesi var.</span></li>' +
+                    '</ul>' +
+                    '<button class="ia-ana" onclick="_iaGoster(window.DIL_TEST ? \'dil\' : \'seviye\')">Başlayalım</button>' +
+                    '</div>';
+            } else if (ekran === 'dil') {
+                h = '<div class="ia-kart">' + _iaUst('Hangi dili öğrenmek istiyorsun?', 'Arayüz Türkçe kalır. Dilini sonra Ayarlar\'dan değiştirebilirsin.') +
+                    '<div class="ia-liste">' + Object.keys(DILLER).filter(function (x) { return !DILLER[x].test || window.DIL_TEST; }).map(function (x) {
+                        var y = DILLER[x];
+                        return '<button class="ia-sec" onclick="_iaDilSec(\'' + x + '\')"><span class="ia-bayrak">' + y.bayrak + '</span>' +
+                            '<span class="ia-sec-yazi"><b>' + y.ad + '</b><small>' + (y.alt || 'A1–C1 · 5.000+ kelime') + '</small></span>' +
+                            (x === window.DIL ? '<span class="ia-tik">✓</span>' : '') + '</button>';
+                    }).join('') + '</div></div>';
+            } else if (ekran === 'seviye') {
+                h = '<div class="ia-kart">' + _iaUst(d.ad + ' seviyen ne?', 'Doğru yerden başlarsan hem sıkılmazsın hem zorlanmazsın.') +
+                    '<div class="ia-liste">' +
+                    '<button class="ia-sec" onclick="_iaSeviyeSec(\'A1\')"><span class="ia-bayrak">🌱</span><span class="ia-sec-yazi"><b>Yeni başlıyorum</b><small>' + seviyeAdi('A1') + ' · temelden, ' + (window.DIL === 'ko' ? 'alfabeden' : 'okunuştan') + ' başla</small></span></button>' +
+                    '<button class="ia-sec" onclick="_iaGoster(\'seviye-sec\')"><span class="ia-bayrak">📚</span><span class="ia-sec-yazi"><b>Seviyemi biliyorum</b><small>' + seviyeAdi('A1') + ' – ' + seviyeAdi('C1') + ' arasından seç</small></span></button>' +
+                    '<button class="ia-sec" onclick="_iaTestBaslat()"><span class="ia-bayrak">🎯</span><span class="ia-sec-yazi"><b>Kısa testle bulalım</b><small>Birkaç dakikalık seviye testi</small></span></button>' +
+                    '</div></div>';
+            } else if (ekran === 'seviye-sec') {
+                h = '<div class="ia-kart">' + _iaUst('Seviyeni seç', 'Emin değilsen bir alt seviyeden başla; kolay gelen kelimeleri hızla geçersin.', 'seviye') +
+                    '<div class="ia-liste">' + ['A1', 'A2', 'B1', 'B2', 'C1'].map(function (L) {
+                        return '<button class="ia-sec" onclick="_iaSeviyeSec(\'' + L + '\')"><span class="ia-sev">' + seviyeAdi(L).replace('TOPIK ', 'T') + '</span>' +
+                            '<span class="ia-sec-yazi"><b>' + seviyeAdi(L) + ' · ' + SEVIYE_BILGI[L].ad + '</b><small>' + SEVIYE_BILGI[L].m + '</small></span></button>';
+                    }).join('') + '</div></div>';
+            } else if (ekran === 'tur-teklif') {
+                var T = BASLANGIC_TURLARI[window.DIL] || BASLANGIC_TURLARI.en, n = T.adimlar.length;
+                h = '<div class="ia-kart ia-orta">' +
+                    '<div class="ia-buyuk-ikon">' + (window.DIL === 'ko' ? '한' : (window.DIL === 'es' ? '¡Ñ!' : 'Aa')) + '</div>' +
+                    '<h2>Önce bilmen gerekenler</h2>' +
+                    '<p class="ia-alt">' + T.ozet + '</p>' +
+                    '<div class="ia-rozetler"><span>' + n + ' adım</span><span>~' + Math.max(2, Math.round(n / 2.5)) + ' dakika</span><span>🔊 sesli örnekler</span></div>' +
+                    '<button class="ia-ana" onclick="turBaslat(true)">Tura başla</button>' +
+                    '<button class="ia-ikinci" onclick="_iaGoster(\'rehber-teklif\')">Şimdilik geç</button>' +
+                    '<p class="ia-not">Turu daha sonra Ayarlar → Başlangıç turu\'ndan açabilirsin.</p>' +
+                    '</div>';
+            } else if (ekran === 'tur') {
+                h = _iaTurHtml();
+            } else if (ekran === 'rehber-teklif') {
+                if (_lsAl(REHBER_KEY)) { ilkAkisBitir(false); return; }
+                h = '<div class="ia-kart ia-orta">' +
+                    '<div class="ia-buyuk-ikon">🧭</div>' +
+                    '<h2>Neyi nerede bulacaksın?</h2>' +
+                    '<p class="ia-alt">Kısa bir gezintiyle ekranda neyin nerede olduğunu göstereyim. Yarım dakika sürer.</p>' +
+                    '<button class="ia-ana" onclick="ilkAkisBitir(true)">Göster</button>' +
+                    '<button class="ia-ikinci" onclick="_lsYaz(REHBER_KEY, \'1\'); ilkAkisBitir(false)">Gerek yok, kendim keşfederim</button>' +
+                    '</div>';
+            }
+            k.innerHTML = h;
+            k.scrollTop = 0;
+            if (window.__ikonlariCiz) try { __ikonlariCiz(k); } catch (e) { }
+        }
+        function _iaUst(baslik, alt, geri) {
+            return '<div class="ia-ust">' + (geri ? '<button class="ia-geri" onclick="_iaGoster(\'' + geri + '\')" aria-label="Geri">‹</button>' : '') +
+                '<h2>' + baslik + '</h2></div>' + (alt ? '<p class="ia-alt">' + alt + '</p>' : '');
+        }
+        function _iaDilSec(x) {
+            if (x === window.DIL) { _iaGoster('seviye'); return; }
+            try { sessionStorage.setItem('wm_ilk_akis_devam', 'seviye'); } catch (e) { }
+            _lsYaz('wm_dil', x);
+            location.reload();
+        }
+        function seviyeKaydet(L) {
+            _lsYaz(SEVIYE_KEY, L);
+            var c = document.getElementById('current-level'), t = document.getElementById('target-level');
+            if (c) c.value = L;
+            if (t && typeof levelHierarchy !== 'undefined' && levelHierarchy.indexOf(t.value) < levelHierarchy.indexOf(L)) t.value = 'C1';
+        }
+        function _iaSeviyeSec(L) {
+            seviyeKaydet(L);
+            _iaGoster(L === 'A1' ? 'tur-teklif' : 'rehber-teklif');
+        }
+        function _iaTestBaslat() {
+            window.__ilkAkisTest = true;
+            ilkAkisKapat();
+            startPlacementTest();
+        }
+        // Seviye testi bitip "Seviyemi uygula" denince buradan devam edilir
+        function ilkAkisTestSonrasi(L) {
+            window.__ilkAkisTest = false;
+            seviyeKaydet(L);
+            ['test-result-screen', 'placement-test-screen', 'ezber-screen'].forEach(function (id) {
+                var e = document.getElementById(id); if (e) e.style.display = 'none';
+            });
+            document.getElementById('welcome-screen').style.display = 'flex';
+            ilkAkisAc(L === 'A1' ? 'tur-teklif' : 'rehber-teklif');
+        }
+        function ilkAkisBitir(rehber) {
+            _lsYaz(ILK_AKIS_KEY, '1');
+            _lsYaz('wm_tanitim_v1', '1');
+            ilkAkisKapat();
+            if (rehber) setTimeout(rehberBaslat, 250);
+        }
+
+        // ---------- Baslangic turu (adim adim) ----------
+        function turBaslat(akista) {
+            _ia.adim = 0;
+            if (akista !== true) { _ia.akista = false; window.__tanitimAcik = true; }
+            _iaGoster('tur');
+        }
+        function _iaTurHtml() {
+            var T = BASLANGIC_TURLARI[window.DIL] || BASLANGIC_TURLARI.en, A = T.adimlar, a = A[_ia.adim], son = _ia.adim === A.length - 1;
+            var oran = Math.round((_ia.adim + 1) / A.length * 100);
+            var ornekler = (a.ornek || []).map(function (o, i) {
+                var ses = (o.s || o.y).replace(/'/g, "\\'");
+                return '<button class="tr-ornek" onclick="speakWord(\'' + ses + '\')">' +
+                    '<span class="tr-y">' + o.y + '</span>' +
+                    (o.blok ? '<span class="tr-blok">' + hangulBlokHtml(o.y) + '</span>' : '') +
+                    '<span class="tr-o">' + o.o + '</span>' +
+                    '<span class="tr-t">' + o.t + '</span>' +
+                    '<span class="tr-ses" aria-hidden="true">🔊</span></button>';
+            }).join('');
+            return '<div class="ia-kart ia-tur">' +
+                '<div class="tr-ust"><span class="tr-baslik">' + T.ad + '</span><button class="tr-kapat" onclick="turKapat()" aria-label="Turu kapat">✕</button></div>' +
+                '<div class="tr-cubuk"><i style="width:' + oran + '%"></i></div>' +
+                '<div class="tr-sayac">' + (_ia.adim + 1) + ' / ' + A.length + '</div>' +
+                '<div class="tr-ikon">' + a.i + '</div>' +
+                '<h2>' + a.b + '</h2>' +
+                '<p class="tr-m">' + a.m + '</p>' +
+                (ornekler ? '<div class="tr-ornekler">' + ornekler + '</div><p class="tr-ipucu">Örneğe dokun, sesli dinle.</p>' : '') +
+                '<div class="tr-alt">' +
+                (_ia.adim > 0 ? '<button class="ia-ikinci" onclick="turAdim(-1)">Geri</button>' : '<button class="ia-ikinci" onclick="turKapat()">Atla</button>') +
+                '<button class="ia-ana" onclick="turAdim(1)">' + (son ? 'Bitir' : 'İleri') + '</button>' +
+                '</div></div>';
+        }
+        function turAdim(y) {
+            var A = (BASLANGIC_TURLARI[window.DIL] || BASLANGIC_TURLARI.en).adimlar;
+            var n = _ia.adim + y;
+            if (n >= A.length) { turKapat(); return; }
+            _ia.adim = Math.max(0, n);
+            _iaGoster('tur');
+        }
+        function turKapat() {
+            try { speechSynthesis.cancel(); } catch (e) { }
+            if (_ia.akista) _iaGoster('rehber-teklif');
+            else ilkAkisKapat();
+        }
+
+        // ---------- Uygulama rehberi: ekrandaki yerleri tek tek parlatir ----------
+        function _rhAdimlar() {
+            var dil = dilAd(), yeni = window.DIL !== 'en';
+            var ck = function (h) { return '#cekmece [onclick="cekmeceGit(\'' + h + '\')"]'; };
+            return [
+                { s: '.ap-basla', b: 'Her gün buradan başla', m: 'Günün yeni kelimeleri ve tekrar zamanı gelenler burada hazır. Kart ekranındaki <b>🎯 Alıştırma</b> düğmesiyle şıklı test ve yazma alıştırması da yapabilirsin.' },
+                { s: '#ana-pano .ap-kart:not(.gk)', b: 'İlerlemen', m: 'Günlük hedefin, serin (üst üste çalıştığın günler) ve seviyendeki ilerleme burada.' },
+                { s: '#ana-pano .ap-kart.gk', b: 'Günün kelimesi', m: 'Her gün yeni bir kelime. Dinle, örnek cümlesine bak, beğendiysen listene ekle.' },
+                { s: '#ab-arama', b: 'Sözlük', m: dil + ' ya da Türkçe yaz; kelimeyi örnek cümleleri ve sesiyle birlikte bul.' + (window.DIL === 'ko' ? ' Okunuşla da arayabilirsin (ör. gonghang).' : '') },
+                { s: '#ab-dil-rozet', b: 'Öğrendiğin dil', m: 'Dili buradan değiştirirsin. Her dilin kartları ve ilerlemesi ayrı tutulur.' },
+                { s: '#ab-avatar', b: 'Hesabın', m: 'Giriş yaparsan ilerlemen buluta yedeklenir; telefonun değişse de kaybolmaz.' },
+                { s: '#ab-menu', b: 'Menü', m: 'Diğer her şey menüde. Birlikte içine bakalım.', sonra: function () { if (typeof cekmeceAc === 'function') cekmeceAc(); } },
+                { s: ck('cark'), b: 'Kelime Çarkı', m: 'Bir kelimenin ailesini (isim, fiil, sıfat halleri) ve konu konu kelimeleri çarkta keşfet.', bekle: 350 },
+                { s: ck('test'), b: 'Seviye Testi', m: 'Seviyeni istediğin zaman yeniden ölçebilirsin.' },
+                { s: ck('metin'), b: 'Metinler', m: 'Seviyene göre sesli hikâyeler ve podcastler; bilmediğin kelimeye dokun, anlamını gör.' },
+                { s: ck('ifade'), b: 'Gramer & Deyimler', m: 'Gramer konuları, deyimler ve günlük konuşma kalıpları.' },
+                { s: ck('diyalog'), b: 'Diyaloglar', m: 'Mesajlaşır gibi gerçek bir konuşmaya katıl; yanlış seçimde neden yanlış olduğunu gör.' },
+                { s: ck('oyun'), b: 'Kelime Oyunları', m: 'Eşleştirme, bulmaca ve cümle kurma oyunlarıyla tekrar et.' },
+                { s: ck('ayar'), b: 'Ayarlar', m: 'Hatırlatma saati, karanlık mod, ses' + (yeni || window.DIL_TEST ? ', öğrendiğin dil' : '') + ' ve <b>Başlangıç turu</b> burada.' },
+                { s: ck('nasil'), b: 'Takıldığında', m: 'Uygulamanın nasıl çalıştığını buradan okuyabilirsin. Bu gezintiyi Ayarlar\'dan yeniden açabilirsin. İyi çalışmalar! 🎉', son: true }
+            ];
+        }
+        var _rh = { liste: [], i: 0 };
+        function _rhGorunur(el) {
+            if (!el || el.hidden) return false;
+            var r = el.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
+        }
+        function rehberBaslat() {
+            _lsYaz(REHBER_KEY, '1');
+            var ws = document.getElementById('welcome-screen');
+            if (!ws || ws.offsetParent === null) {
+                ['ezber-screen', 'test-result-screen', 'placement-test-screen'].forEach(function (id) { var e = document.getElementById(id); if (e) e.style.display = 'none'; });
+                ws.style.display = 'flex';
+            }
+            _rh.liste = _rhAdimlar();
+            _rh.i = -1;
+            window.__tanitimAcik = true;
+            var k = document.getElementById('rehber');
+            if (!k) {
+                k = document.createElement('div');
+                k.id = 'rehber';
+                k.innerHTML = '<div class="rh-delik"></div><div class="rh-balon" role="dialog" aria-live="polite"></div>';
+                k.addEventListener('click', function (e) { if (e.target === k) rehberIleri(); });
+                document.body.appendChild(k);
+            }
+            rehberIleri();
+        }
+        function rehberIleri() {
+            var onceki = _rh.liste[_rh.i];
+            var devam = function () {
+                _rh.i++;
+                while (_rh.i < _rh.liste.length && !_rhGorunur(document.querySelector(_rh.liste[_rh.i].s))) _rh.i++;
+                if (_rh.i >= _rh.liste.length) { rehberKapat(); return; }
+                _rhCiz();
+            };
+            if (onceki && onceki.sonra) { onceki.sonra(); setTimeout(devam, 380); }
+            else devam();
+        }
+        function _rhCiz() {
+            var a = _rh.liste[_rh.i], el = document.querySelector(a.s), k = document.getElementById('rehber');
+            if (!el || !k) return;
+            try { el.scrollIntoView({ block: 'center', behavior: 'instant' }); } catch (e) { el.scrollIntoView(); }
+            var r = el.getBoundingClientRect(), p = 6;
+            var delik = k.querySelector('.rh-delik'), balon = k.querySelector('.rh-balon');
+            delik.style.left = (r.left - p) + 'px'; delik.style.top = (r.top - p) + 'px';
+            delik.style.width = (r.width + p * 2) + 'px'; delik.style.height = (r.height + p * 2) + 'px';
+            var kalan = 0;
+            for (var j = _rh.i + 1; j < _rh.liste.length; j++) if (_rhGorunur(document.querySelector(_rh.liste[j].s)) || _rh.liste[j].bekle || _rh.liste[j - 1].sonra) kalan++;
+            var son = a.son || kalan === 0;
+            balon.innerHTML = '<b>' + a.b + '</b><p>' + a.m + '</p><div class="rh-alt">' +
+                (son ? '' : '<button class="rh-atla" onclick="rehberKapat()">Geç</button>') +
+                '<button class="rh-ileri" onclick="rehberIleri()">' + (son ? 'Tamam' : 'İleri ›') + '</button></div>';
+            var vh = window.innerHeight, vw = window.innerWidth, bw = Math.min(320, vw - 32);
+            balon.style.width = bw + 'px';
+            balon.style.left = Math.max(16, Math.min(vw - bw - 16, r.left + r.width / 2 - bw / 2)) + 'px';
+            var bh = balon.offsetHeight || 150;
+            if (r.bottom + p + 12 + bh < vh - 8) { balon.style.top = (r.bottom + p + 12) + 'px'; balon.className = 'rh-balon ust-ok'; }
+            else { balon.style.top = Math.max(8, r.top - p - 12 - bh) + 'px'; balon.className = 'rh-balon alt-ok'; }
+            var okX = Math.max(18, Math.min(bw - 18, r.left + r.width / 2 - parseFloat(balon.style.left)));
+            balon.style.setProperty('--ok-x', okX + 'px');
+        }
+        function rehberKapat() {
+            var k = document.getElementById('rehber');
+            if (k) k.parentNode.removeChild(k);
+            window.__tanitimAcik = false;
+            var ck = document.getElementById('cekmece');
+            if (ck && !ck.hidden && typeof katmanKapat === 'function') katmanKapat('cekmece');
+        }
+        window.addEventListener('resize', function () { if (document.getElementById('rehber') && _rh.liste[_rh.i]) _rhCiz(); });
+
+        // Mevcut kullaniciya bir kez: "Kisa gezinti ister misin?" karti
+        function rehberTeklifKarti() {
+            if (document.getElementById('rh-teklif')) return;
+            var k = document.createElement('div');
+            k.id = 'rh-teklif';
+            k.innerHTML = '<span class="rh-t-ikon">🧭</span><span class="rh-t-yazi"><b>Neyi nerede bulacağını göstereyim mi?</b><small>Yarım dakikalık gezinti</small></span>' +
+                '<button class="rh-t-evet">Göster</button><button class="rh-t-hayir" aria-label="Kapat">✕</button>';
+            k.querySelector('.rh-t-evet').onclick = function () { k.remove(); rehberBaslat(); };
+            k.querySelector('.rh-t-hayir').onclick = function () { k.remove(); _lsYaz(REHBER_KEY, '1'); };
+            document.body.appendChild(k);
+            _lsYaz(REHBER_KEY, '1');
+        }
+
+        // ---------- Tetikleyici: ana ekran gorunur olunca ----------
+        function ilkAkisBekle() {
+            var devam = null;
+            try { devam = sessionStorage.getItem('wm_ilk_akis_devam'); sessionStorage.removeItem('wm_ilk_akis_devam'); } catch (e) { }
+            var yeni = !_lsAl(ILK_AKIS_KEY) && !_lsAl(STORAGE_KEY);
+            var kayitli = _lsAl(SEVIYE_KEY);
+            if (kayitli) { var c = document.getElementById('current-level'); if (c && !_lsAl(STORAGE_KEY)) c.value = kayitli; }
+            var ne = null;
+            if (devam === 'seviye' && yeni) ne = 'seviye';
+            else if (devam === 'dil-degisti') ne = yeni ? 'seviye' : null;
+            else if (yeni) ne = 'hos';
+            else if (!_lsAl(REHBER_KEY)) ne = 'teklif';
+            if (!ne) return;
+            var n = 0;
+            (function bak() {
+                var ws = document.getElementById('welcome-screen');
+                var uygun = ws && ws.offsetParent !== null && document.visibilityState === 'visible' && !window.__tanitimAcik &&
+                    !document.querySelector('.ab-sayfa:not([hidden])');
+                if (uygun) {
+                    setTimeout(function () {
+                        if (ws.offsetParent === null || window.__tanitimAcik) { setTimeout(bak, 1000); return; }
+                        if (ne === 'teklif') rehberTeklifKarti(); else ilkAkisAc(ne, true);
+                    }, ne === 'teklif' ? 2500 : 500);
+                    return;
+                }
+                if (++n < 900) setTimeout(bak, 1000);
+            })();
+        }
+
+        // ---------- Paket dilleri icin seviye testi: kartlardan otomatik sorular ----------
+        function paketSeviyeBankasi() {
+            var banka = [], havuz = wordDatabase.filter(function (w) { return w.tr && w.en; });
+            function karistir(a) { return _shuffle(a.slice()); }
+            havuz.forEach(function (w, i) {
+                var digerTr = karistir(havuz.filter(function (x) { return x.tr !== w.tr; })).slice(0, 3).map(function (x) { return x.tr; });
+                var digerEn = karistir(havuz.filter(function (x) { return x.en !== w.en; })).slice(0, 3).map(function (x) { return x.en; });
+                if (digerTr.length < 3) return;
+                if (i % 2) banka.push({ level: w.level, type: 'meaning', q: '“' + w.en + '”' + (w.rom ? ' (' + w.rom + ')' : '') + ' ne demek?', options: [w.tr].concat(digerTr), ans: w.tr });
+                else banka.push({ level: w.level, type: 'meaning', q: '“' + w.tr + '” anlamına gelen kelime hangisi?', options: [w.en].concat(digerEn), ans: w.en });
+            });
+            return banka;
+        }
+
+        function dilMetinleriniCevir(kok) {
+            if (window.DIL === 'en' || !kok) return;
+            var ad = dilAd();
+            var yuruyen = document.createTreeWalker(kok, NodeFilter.SHOW_TEXT, null);
+            var n;
+            while ((n = yuruyen.nextNode())) {
+                if (n.nodeValue.indexOf('İngilizce') > -1) n.nodeValue = n.nodeValue.replace(/İngilizce/g, ad);
+            }
+            kok.querySelectorAll && kok.querySelectorAll('[placeholder]').forEach(function (el) {
+                el.placeholder = el.placeholder.replace(/İngilizce/g, ad);
+            });
+        }
+        (function () {
+            dilSatiriGuncelle();
+            if (window.DIL === 'en') return;
+            // Korecede seviye secicileri TOPIK adlariyla; paket dillerinde varsayilan baslangic A1
+            var TOPIK_AD = { A1: 'TOPIK 1 - Başlangıç', A2: 'TOPIK 2 - Temel', B1: 'TOPIK 3 - Orta', B2: 'TOPIK 4 - İyi', C1: 'TOPIK 5–6 - İleri' };
+            ['current-level', 'target-level'].forEach(function (id) {
+                var sel = document.getElementById(id);
+                if (!sel) return;
+                if (window.DIL === 'ko') Array.prototype.forEach.call(sel.options, function (o) { if (TOPIK_AD[o.value]) o.textContent = TOPIK_AD[o.value]; });
+            });
+            var cl = document.getElementById('current-level');
+            if (cl) cl.value = 'A1';
+            ['welcome-screen', 'ezber-screen', 'cekmece', 'ayar-sayfa', 'nasil-sayfa'].forEach(function (id) {
+                dilMetinleriniCevir(document.getElementById(id));
+            });
+            var ws = document.getElementById('ana-pano');
+            if (ws && window.MutationObserver) new MutationObserver(function () { dilMetinleriniCevir(ws); })
+                .observe(ws, { childList: true });
+        })();
+
         const synonymGroups = [
             ["begin","start","commence","initiate","launch"],
             ["finish","complete","conclude","end"],
@@ -8555,7 +9440,7 @@
         function _pickEnglishVoice() {
             try {
                 const vs = window.speechSynthesis.getVoices() || [];
-                return vs.find(v => /^en[-_]/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null;
+                return vs.find(v => DIL_RX.test(v.lang)) || null;
             } catch (e) { return null; }
         }
         if ('speechSynthesis' in window) {
@@ -8748,13 +9633,13 @@
             const kutu = document.getElementById('example-container');
             if (kutu) kutu.classList.remove('plain');
             const satirlar = [];
-            if (w.ex)  satirlar.push({ c: w.ex,  t: w.exTr  || '' });
-            if (w.ex2) satirlar.push({ c: w.ex2, t: w.ex2Tr || '' });
+            if (w.ex)  satirlar.push({ c: w.ex,  t: w.exTr  || '', r: w.exRom || '' });
+            if (w.ex2) satirlar.push({ c: w.ex2, t: w.ex2Tr || '', r: w.ex2Rom || '' });
             if (w.ex3) satirlar.push({ c: w.ex3, t: w.ex3Tr || '' });
             el.innerHTML = satirlar.map(function(s, i) {
                 const ceviriVar = !!s.t;
                 return '<div class="ex-line' + (ceviriVar ? ' has-tr' : '') + '" data-i="' + i + '">' +
-                       _vurgula(s.c, w.en) + '</div>' +
+                       _vurgula(s.c, w.en) + (s.r ? '<span class="ex-rom">' + s.r + '</span>' : '') + '</div>' +
                        (ceviriVar ? '<div class="ex-tr" id="ex-tr-' + i + '" style="display:none;">' + _vurgulaTr(s.t) + '</div>' : '');
             }).join('');
         }
@@ -8796,7 +9681,7 @@
             try { synth.cancel(); } catch (e) {}   // takili kuyrugu temizle
             const konus = function() {
                 const u = new SpeechSynthesisUtterance(word);
-                u.lang = 'en-US';
+                u.lang = DIL_TTS;
                 u.rate = 0.9;
                 const v = _pickEnglishVoice();
                 if (v) u.voice = v;
@@ -8824,7 +9709,7 @@
             // Ayni kelime birden fazla kez listelenmez: dogrudan eslesme her zaman kazanir.
             const bulunan = {};
             wordDatabase.forEach(function(w) {
-                if (w.en.toLowerCase().indexOf(query) >= 0 || (w.tr || '').toLowerCase().indexOf(query) >= 0) {
+                if (w.en.toLowerCase().indexOf(query) >= 0 || (w.tr || '').toLowerCase().indexOf(query) >= 0 || (w.rom && w.rom.toLowerCase().replace(/[^a-z]/g, '').indexOf(query.replace(/[^a-z]/g, '') || '§') >= 0)) {
                     bulunan[w.en.toLowerCase()] = { w: w, dogrudan: true };
                 }
             });
@@ -8868,13 +9753,13 @@
 
                 // Ornek cumleler: kelime vurgulu, cevirisi varsa dokununca acilir
                 const cumleler = [];
-                if (w.ex)  cumleler.push({ c: w.ex,  t: w.exTr  || '' });
-                if (w.ex2) cumleler.push({ c: w.ex2, t: w.ex2Tr || '' });
+                if (w.ex)  cumleler.push({ c: w.ex,  t: w.exTr  || '', r: w.exRom || '' });
+                if (w.ex2) cumleler.push({ c: w.ex2, t: w.ex2Tr || '', r: w.ex2Rom || '' });
                 if (w.ex3) cumleler.push({ c: w.ex3, t: w.ex3Tr || '' });
                 const cumleHtml = cumleler.map(function(s, j) {
                     const id = 'sr-' + idx + '-' + j;
                     return '<div class="res-ex' + (s.t ? ' has-tr' : '') + '" data-tr="' + (s.t ? id : '') + '">' +
-                               _vurgula(s.c, w.en) + '</div>' +
+                               _vurgula(s.c, w.en) + (s.r ? '<span class="ex-rom">' + s.r + '</span>' : '') + '</div>' +
                            (s.t ? '<div class="res-tr" id="' + id + '" style="display:none;">' + _vurgulaTr(s.t) + '</div>' : '');
                 }).join('');
 
@@ -8887,10 +9772,10 @@
                 const detayVar = !!(w.usage || esler.length);
 
                 return '<div class="search-result-card">' +
-                       '<div class="res-header"><strong>' + w.en + '</strong> ' +
+                       '<div class="res-header"><strong>' + w.en + '</strong> ' + (w.rom ? '<em class="res-rom">' + w.rom + '</em> ' : '') +
                        '<button class="speak-btn" data-w="' + w.en + '" title="Seslendir">🔊</button>' +
                        '<button class="pk-mini" data-pk="' + w.en + '" title="Paylaş">📤</button> ' +
-                       typeHtml + ' (' + w.tr + ') <span class="level-tag">#' + w.level + '</span></div>' +
+                       typeHtml + ' (' + w.tr + ') <span class="level-tag">#' + seviyeEtiketi(w) + '</span></div>' +
                        altSatir + cumleHtml + detay +
                        (detayVar ? '<div class="res-toggle" data-d="rd-' + idx + '">Detay ▾</div>' : '') +
                        '</div>';
@@ -9012,8 +9897,10 @@
         let placementQuestions = [];
         function buildPlacementTest() {
             const secilen = [];
+            // Ingilizce disindaki dillerde sorular o dilin kartlarindan uretilir
+            const banka = (window.DIL && window.DIL !== 'en') ? paketSeviyeBankasi() : placementBank;
             PLACEMENT_LEVELS.forEach(function(L) {
-                const havuz = placementBank.filter(function(q){ return q.level === L; });
+                const havuz = banka.filter(function(q){ return q.level === L; });
                 const karisik = _shuffle(havuz.slice());
                 for (let i = 0; i < karisik.length && i < PLACEMENT_PER_LEVEL; i++) secilen.push(karisik[i]);
             });
@@ -9041,7 +9928,7 @@
             
             const q = placementQuestions[pTestIndex];
             document.getElementById('test-progress').textContent = (pTestIndex + 1) + " / " + placementQuestions.length;
-            document.getElementById('test-question-type').textContent = (TYPE_LABEL[q.type] || q.type) + '  \u00b7  ' + q.level;
+            document.getElementById('test-question-type').textContent = (TYPE_LABEL[q.type] || q.type) + '  \u00b7  ' + seviyeAdi(q.level);
             document.getElementById('test-question-text').textContent = q.q;
             
             const container = document.getElementById('test-options-container');
@@ -9093,7 +9980,7 @@
                 
                 let answerClass = item.isCorrect ? 'ans-correct' : 'ans-wrong';
                 
-                div.innerHTML = '<strong>Soru ' + (index + 1) + ' (' + item.level + ' \u00b7 ' + (TYPE_LABEL[item.type] || '') + '):</strong> ' + item.question + '<br>Sizin Cevabınız: <span class="' + answerClass + '">' + item.userAnswer + '</span> ' + resultText;
+                div.innerHTML = '<strong>Soru ' + (index + 1) + ' (' + seviyeAdi(item.level) + ' \u00b7 ' + (TYPE_LABEL[item.type] || '') + '):</strong> ' + item.question + '<br>Sizin Cevabınız: <span class="' + answerClass + '">' + item.userAnswer + '</span> ' + resultText;
                 
                 listContainer.appendChild(div);
             });
@@ -9118,7 +10005,7 @@
             document.getElementById('final-score').textContent = toplamDogru;
             const lbl = document.getElementById('final-score-label');
             if (lbl) lbl.textContent = '/ ' + testHistory.length + ' Doğru';
-            document.getElementById('final-level-display').textContent = "Seviyeniz: " + determinedLevelGlobal;
+            document.getElementById('final-level-display').textContent = "Seviyeniz: " + seviyeAdi(determinedLevelGlobal);
 
             const bd = document.getElementById('level-breakdown');
             if (bd) {
@@ -9126,12 +10013,13 @@
                     const t = toplamSay[L] || 0, d = dogruSay[L] || 0;
                     if (!t) return '';
                     const gecti = (d / t) >= 0.6;
-                    return '<span style="color:' + (gecti ? '#1a7f37' : '#c1352c') + ';">' + L + ': ' + d + '/' + t + '</span>';
+                    return '<span style="color:' + (gecti ? '#1a7f37' : '#c1352c') + ';">' + seviyeAdi(L) + ': ' + d + '/' + t + '</span>';
                 }).filter(Boolean).join(' &nbsp;·&nbsp; ');
             }
         }
 
         function returnToWelcome() {
+            if (window.__ilkAkisTest) { ilkAkisTestSonrasi(determinedLevelGlobal); return; }
             document.getElementById('test-result-screen').style.display = "none";
             document.getElementById('current-level').value = determinedLevelGlobal;
             if (typeof ezberAc === 'function') ezberAc(true);
@@ -9158,7 +10046,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-11-13 · karanlik-mod';
+        const YAPIM = '2026-11-16 · ilk-akis-turlar';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
@@ -9509,7 +10397,7 @@
             hideEndActions();
             document.getElementById('progress').textContent = "Tekrar " + (reviewIndex + 1) + " / " + reviewPool.length;
             let typeHtml = w.type ? '<span class="type-tag">' + w.type + '</span>' : '';
-            document.getElementById('english-word').innerHTML = w.en + ' ' + typeHtml + ' <span class="level-tag">#' + w.level + '</span>';
+            document.getElementById('english-word').innerHTML = kartBaslikHtml(w);
             setCardSpeak(w.en);
             ornekleriYaz(w);
             document.getElementById('usage-note').textContent = w.usage;
@@ -9779,7 +10667,7 @@
                 currentMode = "test";
                 clearFeedback();
                 let typeHtml = w.type ? '<span class="type-tag">' + w.type + '</span>' : '';
-                document.getElementById('english-word').innerHTML = w.en + ' ' + typeHtml + ' <span class="level-tag">#' + w.level + '</span>';
+                document.getElementById('english-word').innerHTML = kartBaslikHtml(w);
                 setCardSpeak(w.en);
                 ornekleriYaz(w);
                 document.getElementById('usage-note').textContent = w.usage;
@@ -9798,7 +10686,7 @@
             } else {
                 currentMode = "typing";
                 clearFeedback();
-                document.getElementById('english-word').innerHTML = w.tr + ' <span class="level-tag">#' + w.level + '</span>';
+                document.getElementById('english-word').innerHTML = w.tr + ' <span class="level-tag">#' + seviyeEtiketi(w) + '</span>';
                 hideCardSpeak();
                 ornekleriYaz(w);
                 document.getElementById('usage-note').textContent = w.usage;
@@ -9828,7 +10716,7 @@
             // Yazma modu 4. gunde: Ingilizce kelime beklenir; aksan/tire/bosluk toleransli karsilastirma.
             // Tek harflik yazim hatasi dogru sayilir, ama hatali harf gosterilir.
             const hedef = dailyPool[currentIndex];
-            const tam = normalizeAnswer(raw) === normalizeAnswer(hedef.en);
+            const tam = yazimKabul(hedef).some(function (x) { return normalizeAnswer(raw) === normalizeAnswer(x); });
             const yakin = tam ? null : yazimYakin(raw, hedef.en);
             handleAnswer(tam || !!yakin, hedef, document.getElementById('turkish-input'), yakin);
         };
@@ -10033,6 +10921,7 @@
         // Ornek cumlede kelimenin gectigi yeri bulur (cekimli haliyle birlikte).
         // Bulamazsa null doner; o kelime yazma testine alinmaz.
         function _cumledeKelimeyiBul(en, ex) {
+            if (window.DIL && window.DIL !== 'en') return _paketKelimeBul(en, ex);
             if (!en || !ex) return null;
             const exl = ex.toLowerCase();
             const w = en.toLowerCase();
@@ -10072,10 +10961,10 @@
             if (bosluklu) {
                 const bosluk = secilenCumle.substring(0, yer.start) + '_____' + secilenCumle.substring(yer.start + yer.len);
                 // Hem sozluk hali hem cumledeki cekimli hali kabul edilir (gramer cezasi olmasin)
-                return { type: 'write', word: w, correct: w.en, sentence: bosluk, accepted: [w.en, yer.form], shown: yer.form };
+                return { type: 'write', word: w, correct: w.en, sentence: bosluk, accepted: yazimKabul(w).concat([yer.form]), shown: yer.form };
             }
             // Cumlesiz bicim: Turkce anlamdan kelimeyi yazma
-            return { type: 'write', word: w, correct: w.en, sentence: null, accepted: [w.en], shown: w.en };
+            return { type: 'write', word: w, correct: w.en, sentence: null, accepted: yazimKabul(w), shown: w.en };
         }
 
         function buildQuiz(mod) {
@@ -11236,7 +12125,7 @@
             try { synth.cancel(); _warmTTS(); synth.resume(); } catch (e) {}
             const u = new SpeechSynthesisUtterance(s.en);
             const v = _pickEnglishVoice();
-            if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
+            if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = DIL_TTS; }
             u.rate = hiz;
             u.pitch = OKUMA_TON;
             try { synth.speak(u); } catch (e) {}
@@ -11482,7 +12371,7 @@
         function ingilizceSesler() {
             try {
                 return (window.speechSynthesis.getVoices() || [])
-                    .filter(v => /^en/i.test(v.lang))
+                    .filter(v => DIL_RX.test(v.lang))
                     .sort((a, b) => _sesPuan(b) - _sesPuan(a));
             } catch (e) { return []; }
         }
@@ -11799,7 +12688,7 @@
             try { synth.resume(); } catch (e) {}
             const u = new SpeechSynthesisUtterance(metin);
             const v = _pickEnglishVoice();
-            if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
+            if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = DIL_TTS; }
             u.rate = OKUMA_HIZ;
             u.pitch = OKUMA_TON;
             if (bitince) { u.onend = bitince; u.onerror = bitince; }
@@ -12769,25 +13658,29 @@
             showGate();
         }
 
+        // Her dilin ilerlemesi ayni belgede ayri alanda: appState (Ingilizce), appState_es, appState_ko...
+        // mergeFields: yalniz bu dilin alani yazilir, diger dillerin ilerlemesi silinmez.
+        var BULUT_ALAN = (window.DIL && window.DIL !== 'en') ? 'appState_' + window.DIL : 'appState';
+        function bulutVerisi(st) { var o = { updatedAt: Date.now() }; o[BULUT_ALAN] = st; return o; }
+        // Bir dilde kayit var ama baska dilde bulut kaydi bulunmuyorsa "snap.exists()" yine true doner;
+        // bu yuzden alan bazinda bakiyoruz.
         async function reconcileCloudState(user) {
             try {
                 const ref = window.__fb.doc(window.__fb.db, 'progress', user.uid);
                 const snap = await window.__fb.getDoc(ref);
-                if (snap.exists()) {
-                    const cloud = snap.data();
-                    if (cloud && cloud.appState) {
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud.appState));
-                        if (!appState) {
-                            restoreWelcomeDefaults();
-                            showAccountMsg('Bulut ilerlemen yüklendi.');
-                        } else {
-                            showAccountMsg('Bulut verisi bulundu. Yeni ilerlemeyi görmek için ana sayfaya dönüp yeniden başla.');
-                        }
+                const cloud = snap.exists() ? snap.data() : null;
+                if (cloud && cloud[BULUT_ALAN]) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud[BULUT_ALAN]));
+                    if (!appState) {
+                        restoreWelcomeDefaults();
+                        showAccountMsg('Bulut ilerlemen yüklendi.');
+                    } else {
+                        showAccountMsg('Bulut verisi bulundu. Yeni ilerlemeyi görmek için ana sayfaya dönüp yeniden başla.');
                     }
                 } else {
                     const local = loadState();
                     if (local) {
-                        await window.__fb.setDoc(ref, { appState: local, updatedAt: Date.now() });
+                        await window.__fb.setDoc(ref, bulutVerisi(local), { mergeFields: [BULUT_ALAN, 'updatedAt'] });
                         showAccountMsg('Mevcut ilerlemen bu hesaba yüklendi.');
                     }
                 }
@@ -12801,7 +13694,7 @@
             if (!window.__fb || !window.__fb.auth.currentUser || !appState) return;
             try {
                 const ref = window.__fb.doc(window.__fb.db, 'progress', window.__fb.auth.currentUser.uid);
-                await window.__fb.setDoc(ref, { appState: appState, updatedAt: Date.now() });
+                await window.__fb.setDoc(ref, bulutVerisi(appState), { mergeFields: [BULUT_ALAN, 'updatedAt'] });
             } catch (e) { console.error('Bulut kayit hatasi:', e); }
         }
 
@@ -14623,7 +15516,7 @@
             const db = document.getElementById('degerlendir-btn');
             if (db) db.style.display = '';
         }
-        tanitimBekle();
+        ilkAkisBekle();
 
         // ==========================================
         // YENI ANA EKRAN (Ekim 2026)
@@ -14876,7 +15769,7 @@
             h += '<section class="ap-kart" aria-label="Günlük hedef ilerlemesi"><div class="ap-baslik">Günlük Hedef İlerlemesi</div>' +
                  '<div class="ap-halkalar">' +
                  '<div class="ap-halka">' + halkaSvg(v.bugunBitti ? 1 : oranK, '#1877f2', kIc) + '<b>Kelime Kartları</b><span>' + kAlt + '</span></div>' +
-                 '<div class="ap-halka">' + halkaSvg(oranM, '#f08c1a', v.metinOkunan, '/' + v.metinToplam) + '<b>Metinler</b><span>' + (v.metinOkunan ? v.metinOkunan + ' metin okundu' : 'Bir metin seç') + '</span></div>' +
+                 (window.DIL !== 'en' ? '' : '<div class="ap-halka">' + halkaSvg(oranM, '#f08c1a', v.metinOkunan, '/' + v.metinToplam) + '<b>Metinler</b><span>' + (v.metinOkunan ? v.metinOkunan + ' metin okundu' : 'Bir metin seç') + '</span></div>') +
                  '<div class="ap-halka">' + halkaSvg(seriOran, '#8b5cf6', v.seri, 'gün') + '<b>Seri</b><span>' + (v.seri ? '🔥 ' + v.seri + ' gün üst üste' : 'Bugün başlat') + '</span></div>' +
                  '</div></section>';
 
@@ -14886,7 +15779,7 @@
                 const tavan = Math.max(v.ogreniliyor, (v.ayar.dailyGoal || 10) * 4);
                 h += apSatir('🧠', '#e7f0fe', 'Öğrenilen kelime', sayiTR(v.ogrenilen) + ' / ' + sayiTR(v.toplam), v.toplam ? v.ogrenilen / v.toplam : 0, '#1877f2');
                 h += apSatir('📘', '#fff1e0', 'Şu an öğreniliyor', v.ogreniliyor + ' kelime', tavan ? v.ogreniliyor / tavan : 0, '#f08c1a');
-                h += apSatir('📖', '#f1ebff', 'Okunan metin', v.metinOkunan + ' / ' + v.metinToplam, oranM, '#8b5cf6');
+                if (window.DIL === 'en') h += apSatir('📖', '#f1ebff', 'Okunan metin', v.metinOkunan + ' / ' + v.metinToplam, oranM, '#8b5cf6');
                 h += '<div class="ap-seviyeler">' + v.seviyeler.map(function (x) {
                     const o = x.toplam ? x.biten / x.toplam : 0;
                     return '<div class="ap-sv"><b>' + x.L + '</b><span>' + sayiTR(x.biten) + ' / ' + sayiTR(x.toplam) + '</span>' +
@@ -14895,7 +15788,7 @@
                 h += '<div class="ap-dipnot">' + v.gun + '. çalışma günü · ' + v.ayar.currentLvl + ' → ' + v.ayar.targetLvl +
                      ' · günde ' + v.ayar.dailyGoal + ' kelime · <button onclick="ezberAc()">Değiştir</button></div>';
             } else {
-                h += apSatir('📖', '#f1ebff', 'Okunan metin', v.metinOkunan + ' / ' + v.metinToplam, oranM, '#8b5cf6');
+                if (window.DIL === 'en') h += apSatir('📖', '#f1ebff', 'Okunan metin', v.metinOkunan + ' / ' + v.metinToplam, oranM, '#8b5cf6');
                 h += '<div class="ap-bos">Seviyeni seçip çalışmaya başladığında öğrendiğin kelimeler, serin ve seviye ilerlemen burada görünecek.</div>';
             }
             h += '</section>';
@@ -14911,10 +15804,10 @@
                     : '<button class="gk-ogren" disabled>' + ikon('tik') + (durum === 'done' ? ' Öğrendin' : (durum === 'study' ? ' Çalışıyorsun' : ' Listende')) + '</button>';
                 h += '<section class="ap-kart gk" aria-label="Günün kelimesi">' +
                      '<div class="gk-ust"><b>Günün Kelimesi</b><span class="gk-tarih">' + d.getDate() + ' ' + TR_AYLAR[d.getMonth()] + '</span></div>' +
-                     '<div class="gk-kelime"><h3>' + _kacis(w.en) + '</h3><button class="gk-ses" onclick="speakWord(_gk.en)" aria-label="Telaffuzu dinle">' + ikon('ses') + '</button></div>' +
-                     '<div class="gk-etiket"><span class="lv">' + _kacis(w.level || '') + '</span>' + (w.type ? '<span>' + _kacis(turAdi(String(w.type).split(',')[0])) + '</span>' : '') + '</div>' +
+                     '<div class="gk-kelime"><h3>' + _kacis(w.en) + (w.rom ? '<small class="rom-satir">' + _kacis(w.rom) + '</small>' : '') + '</h3><button class="gk-ses" onclick="speakWord(_gk.en)" aria-label="Telaffuzu dinle">' + ikon('ses') + '</button></div>' +
+                     '<div class="gk-etiket"><span class="lv">' + _kacis(seviyeEtiketi(w)) + '</span>' + (w.type ? '<span>' + _kacis(turAdi(String(w.type).split(',')[0])) + '</span>' : '') + '</div>' +
                      '<div class="gk-tr">' + _kacis(String(w.tr).replace(/\//g, ', ')) + '</div>' +
-                     (w.ex ? '<div class="gk-ornek"><p class="en">' + _vurguluCumle(w.ex, w.en) + '</p>' + (w.exTr ? '<p class="tr">' + _susluTr(w.exTr) + '</p>' : '') + '</div>' : '') +
+                     (w.ex ? '<div class="gk-ornek"><p class="en">' + (window.DIL === 'en' ? _vurguluCumle(w.ex, w.en) : _vurgula(_kacis(w.ex), w.en)) + (w.exRom ? '<span class="ex-rom">' + _kacis(w.exRom) + '</span>' : '') + '</p>' + (w.exTr ? '<p class="tr">' + _susluTr(w.exTr) + '</p>' : '') + '</div>' : '') +
                      '<div class="gk-dugmeler">' + ogrenDugme +
                      '<button class="gk-paylas" onclick="kelimePaylas(_gk, &#39;gunun&#39;)">' + ikon('paylas') + ' Paylaş</button></div>' +
                      '</section>';
