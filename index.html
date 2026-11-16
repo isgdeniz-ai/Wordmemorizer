@@ -22,7 +22,7 @@
             es: { ad: 'İspanyolca', bayrak: '🇪🇸', tts: 'es-ES', rx: /^es/i, test: true, alt: 'İspanya İspanyolcası · A1–C1' },
             ko: { ad: 'Korece', bayrak: '🇰🇷', tts: 'ko-KR', rx: /^ko/i, test: true, alt: 'TOPIK 1–6 · okunuşlu' }
         };
-        window.DIL_PAKET_SURUM = '3';
+        window.DIL_PAKET_SURUM = '6';
         (function () {
             var d = 'en', test = false;
             try {
@@ -8550,7 +8550,12 @@
         function dilMetinleriniCevir(kok) {
             if (window.DIL === 'en' || !kok) return;
             var ad = dilAd();
-            var yuruyen = document.createTreeWalker(kok, NodeFilter.SHOW_TEXT, null);
+            // Kelime içerikleri (günün kelimesi, kartlar, örnek cümleler) çevrilmez: "İngilizce" orada gerçek anlamıyla geçebilir
+            var yuruyen = document.createTreeWalker(kok, NodeFilter.SHOW_TEXT, { acceptNode: function (n) {
+                var e = n.parentElement;
+                return e && e.closest && e.closest('.gk, .gk-kelime, .ex-line, #english-word, #turkish-meaning, #search-results, [data-dil-sabit]')
+                    ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+            } });
             var n;
             while ((n = yuruyen.nextNode())) {
                 if (n.nodeValue.indexOf('İngilizce') > -1) n.nodeValue = n.nodeValue.replace(/İngilizce/g, ad);
@@ -10048,7 +10053,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-11-16 · parti-3';
+        const YAPIM = '2026-11-16 · parti-6';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
