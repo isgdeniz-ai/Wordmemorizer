@@ -22,8 +22,8 @@
             es: { ad: 'İspanyolca', bayrak: '🇪🇸', tts: 'es-ES', rx: /^es/i, test: true, alt: 'İspanya İspanyolcası · A1–C1' },
             ko: { ad: 'Korece', bayrak: '🇰🇷', tts: 'ko-KR', rx: /^ko/i, test: true, alt: 'TOPIK 1–6 · okunuşlu' }
         };
-        window.DIL_PAKET_SURUM = '50';
-        window.GRAMER_SURUM = '4';
+        window.DIL_PAKET_SURUM = '57';
+        window.GRAMER_SURUM = '6';
         (function () {
             var d = 'en', test = false;
             try {
@@ -8256,6 +8256,8 @@
         function _paketKokler(en) {
             var w = String(en || '').toLowerCase().split('/')[0].trim();
             if (window.DIL === 'es') {
+                // "el / la artista" gibi kartlarda ilk parca yalniz artikeldir; asil kelime son parcadadir
+                if (/^(el|la|los|las)$/.test(w)) w = String(en).toLowerCase().split('/').pop().trim();
                 w = w.replace(/^(el|la|los|las|un|una)\s+/, '').replace(/\s*\(.*\)$/, '');
                 var ilk = w.split(' ')[0], k = [w];
                 if (w.indexOf(' ') > -1) k.push(ilk);
@@ -10328,7 +10330,7 @@
         // Hangi surumun calistigini anlamak icin damga. Uygulama (TWA) service
         // worker onbelleginden eski dosyayi sunabiliyor; tarayicida duzgun olup
         // uygulamada bozuk gorunen davranislarin sebebi genelde bu.
-        const YAPIM = '2026-11-18 · b1-p50';
+        const YAPIM = '2026-11-19 · b2-p2 · b1-gr-tam';
         const STORAGE_KEY = 'gunlukKelime_v1';
         let appState = null;     // { settings, studyDay, sessionDate, sessionCompleted, cohorts, wordState, pool, completed }
         let liveByEn = {};       // en -> bu oturumdaki canli kelime objesi
