@@ -2,7 +2,7 @@
 // HTML icin "once ag, olmazsa onbellek" (guncellemeler hemen gelsin)
 // Ses dosyalari ve zaman haritalari icin de "once ag"
 // Diger dosyalar (ikon, manifest) icin "once onbellek" (hizli acilsin)
-const CACHE = 'wordmem-v142';
+const CACHE = 'wordmem-v145';
 const ASSETS = [
   './',
   './index.html',
